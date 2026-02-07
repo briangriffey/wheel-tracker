@@ -57,7 +57,7 @@ export async function register(formData: FormData) {
     })
 
     return { success: true }
-  } catch (error) {
+  } catch {
     return {
       error: 'Failed to create user',
     }
@@ -85,7 +85,7 @@ export async function loginAction(formData: FormData) {
     })
 
     return { success: true }
-  } catch (error) {
+  } catch {
     return {
       error: 'Invalid email or password',
     }

@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum TradeType {
+  PUT
+  CALL
+}
+
+enum TradeAction {
+  SELL_TO_OPEN     // Opening a new position
+  BUY_TO_CLOSE     // Closing an existing position
+}
+
+enum TradeStatus {
+  OPEN             // Active option contract
+  CLOSED           // Manually closed
+  EXPIRED          // Expired worthless
+  ASSIGNED         // Option was exercised
+}
+
+enum PositionStatus {
+  OPEN             // Currently holding shares
+  CLOSED           // Position closed/sold
+}
+
+// Models
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  trades        Trade[]
+  positions     Position[]
+  benchmarks    Benchmark[]
+
+  @@index([email])
+}
+
+model Trade {
+  id              String      @id @default(cuid())
+  userId          String
+  ticker          String      // Stock symbol (e.g., "AAPL")
+  type            TradeType
+  action          TradeAction
+  status          TradeStatus @default(OPEN)
+  strikePrice     Decimal     @db.Decimal(10, 2)
+  premium         Decimal     @db.Decimal(10, 2) // Total premium collected/paid
+  contracts       Int         // Number of contracts
+  shares          Int         // contracts * 100
+  expirationDate  DateTime
+  openDate        DateTime    @default(now())
+  closeDate       DateTime?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations for assigned PUTs that create positions
+  createdPosition Position?   @relation("AssignmentTrade")
+
+  // Relations for covered calls against positions
+  position        Position?   @relation("CoveredCalls", fields: [positionId], references: [id])
+  positionId      String?
+
+  @@index([userId])
+  @@index([ticker])
+  @@index([status])
+  @@index([expirationDate])
+  @@index([userId, status])
+}
+
+model Position {
+  id                String          @id @default(cuid())
+  userId            String
+  ticker            String          // Stock symbol
+  shares            Int
+  costBasis         Decimal         @db.Decimal(10, 2) // Cost per share
+  totalCost         Decimal         @db.Decimal(10, 2) // Total amount paid
+  currentValue      Decimal?        @db.Decimal(10, 2) // Current market value
+  realizedGainLoss  Decimal?        @db.Decimal(10, 2) // Gain/loss when closed
+  status            PositionStatus  @default(OPEN)
+  acquiredDate      DateTime
+  closedDate        DateTime?
+  notes             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // The PUT trade that created this position (via assignment)
+  assignmentTrade   Trade           @relation("AssignmentTrade", fields: [assignmentTradeId], references: [id])
+  assignmentTradeId String          @unique
+
+  // Covered calls sold against this position
+  coveredCalls      Trade[]         @relation("CoveredCalls")
+
+  @@index([userId])
+  @@index([ticker])
+  @@index([status])
+  @@index([userId, status])
+}
+
+model StockPrice {
+  id        String   @id @default(cuid())
+  ticker    String
+  price     Decimal  @db.Decimal(10, 2)
+  date      DateTime
+  source    String   @default("alpha_vantage") // API source
+  createdAt DateTime @default(now())
+
+  @@unique([ticker, date])
+  @@index([ticker])
+  @@index([date])
+}
+
+model Benchmark {
+  id              String   @id @default(cuid())
+  userId          String
+  date            DateTime
+  totalValue      Decimal  @db.Decimal(10, 2) // Portfolio value
+  totalGainLoss   Decimal  @db.Decimal(10, 2) // Cumulative gain/loss
+  cashBalance     Decimal  @db.Decimal(10, 2) // Available cash
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}

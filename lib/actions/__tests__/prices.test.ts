@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
-import type { User, StockPrice } from '@/lib/generated/prisma'
+import type { User, StockPrice, Position } from '@/lib/generated/prisma'
 import {
   getLatestPrice,
   getLatestPrices,
@@ -276,11 +276,11 @@ describe('Price Actions', () => {
         createdAt: new Date(),
       }
 
-      vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions)
+      vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as unknown as Position[])
       vi.mocked(prisma.stockPrice.findFirst)
         .mockResolvedValueOnce(mockPriceAAPL)
         .mockResolvedValueOnce(mockPriceTSLA)
-      vi.mocked(prisma.position.update).mockResolvedValue({})
+      vi.mocked(prisma.position.update).mockResolvedValue({} as unknown as Position)
 
       const result = await refreshPositionPrices()
 
@@ -320,11 +320,11 @@ describe('Price Actions', () => {
         createdAt: new Date(),
       }
 
-      vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions)
+      vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as unknown as Position[])
       vi.mocked(prisma.stockPrice.findFirst)
         .mockResolvedValueOnce(mockPriceAAPL)
         .mockResolvedValueOnce(null)
-      vi.mocked(prisma.position.update).mockResolvedValue({})
+      vi.mocked(prisma.position.update).mockResolvedValue({} as unknown as Position)
 
       const result = await refreshPositionPrices()
 
@@ -370,9 +370,9 @@ describe('Price Actions', () => {
         createdAt: new Date(),
       }
 
-      vi.mocked(prisma.position.findUnique).mockResolvedValue(mockPosition)
+      vi.mocked(prisma.position.findUnique).mockResolvedValue(mockPosition as unknown as Position)
       vi.mocked(prisma.stockPrice.findFirst).mockResolvedValue(mockPrice)
-      vi.mocked(prisma.position.update).mockResolvedValue({})
+      vi.mocked(prisma.position.update).mockResolvedValue({} as unknown as Position)
 
       const result = await refreshSinglePositionPrice('pos1')
 
@@ -408,7 +408,7 @@ describe('Price Actions', () => {
         status: 'CLOSED',
       }
 
-      vi.mocked(prisma.position.findUnique).mockResolvedValue(mockPosition)
+      vi.mocked(prisma.position.findUnique).mockResolvedValue(mockPosition as unknown as Position)
 
       const result = await refreshSinglePositionPrice('pos1')
 
@@ -427,7 +427,7 @@ describe('Price Actions', () => {
         status: 'OPEN',
       }
 
-      vi.mocked(prisma.position.findUnique).mockResolvedValue(mockPosition)
+      vi.mocked(prisma.position.findUnique).mockResolvedValue(mockPosition as unknown as Position)
 
       const result = await refreshSinglePositionPrice('pos1')
 

@@ -3,12 +3,18 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CreateTradeFormSchema, type CreateTradeFormInput } from '@/lib/validations/trade'
+import { CreateTradeSchema, type CreateTradeInput } from '@/lib/validations/trade'
 import { createTrade } from '@/lib/actions/trades'
 
 interface TradeEntryFormProps {
   onSuccess?: () => void
   onCancel?: () => void
+}
+
+// Form data type - HTML inputs return strings for dates
+type TradeFormData = Omit<CreateTradeInput, 'expirationDate' | 'openDate'> & {
+  expirationDate: string
+  openDate?: string
 }
 
 export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
@@ -21,30 +27,25 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<CreateTradeFormInput>({
-    resolver: zodResolver(CreateTradeFormSchema),
+  } = useForm<TradeFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(CreateTradeSchema) as any,
     defaultValues: {
       action: 'SELL_TO_OPEN',
       openDate: new Date().toISOString().split('T')[0],
     },
   })
 
-  const onSubmit = async (formData: CreateTradeFormInput) => {
+  const onSubmit = async (formData: TradeFormData) => {
     setIsSubmitting(true)
     setSubmitError(null)
     setSubmitSuccess(false)
 
     try {
-      // Convert form data (string dates) to server action format (Date objects)
-      const data = {
-        ...formData,
-        openDate: new Date(formData.openDate),
-        expirationDate: new Date(formData.expirationDate),
-      }
+      // The schema will coerce string dates to Date objects automatically
+      const result = await createTrade(formData as unknown as CreateTradeInput)
 
-      const result = await createTrade(data)
-
-      if (result.error) {
+      if (!result.success) {
         setSubmitError(result.error)
       } else {
         setSubmitSuccess(true)

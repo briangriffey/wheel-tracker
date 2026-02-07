@@ -1,0 +1,7 @@
+.next
+node_modules
+.beads
+.runtime
+.git
+*.md
+pnpm-lock.yaml

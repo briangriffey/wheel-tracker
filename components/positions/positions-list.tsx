@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import type { PositionWithCalculations } from '@/lib/queries/positions'
 import { PositionCard } from './position-card'
+import { refreshPositionPrices, getLatestPrices, type PriceData } from '@/lib/actions/prices'
+import { useRouter } from 'next/navigation'
 
 interface PositionsListProps {
   initialPositions: PositionWithCalculations[]
@@ -13,11 +15,87 @@ type SortDirection = 'asc' | 'desc'
 type PLFilter = 'ALL' | 'PROFIT' | 'LOSS' | 'BREAKEVEN'
 
 export function PositionsList({ initialPositions }: PositionsListProps) {
+  const router = useRouter()
   const [positions] = useState<PositionWithCalculations[]>(initialPositions)
   const [tickerFilter, setTickerFilter] = useState('')
   const [plFilter, setPLFilter] = useState<PLFilter>('ALL')
   const [sortField, setSortField] = useState<SortField>('ticker')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
+  const [priceData, setPriceData] = useState<Record<string, PriceData>>({})
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [refreshError, setRefreshError] = useState<string | null>(null)
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
+
+  // Fetch price data for all positions
+  const fetchPriceData = useCallback(async () => {
+    const openPositions = positions.filter((p) => p.status === 'OPEN')
+    if (openPositions.length === 0) return
+
+    const tickers = [...new Set(openPositions.map((p) => p.ticker))]
+
+    try {
+      const result = await getLatestPrices(tickers)
+      if (result.success) {
+        setPriceData(result.data)
+        setRefreshError(null)
+      } else {
+        setRefreshError(result.error)
+      }
+    } catch (error) {
+      console.error('Error fetching price data:', error)
+      setRefreshError('Failed to fetch prices')
+    }
+  }, [positions])
+
+  // Handle manual refresh of all position prices
+  const handleRefreshAll = useCallback(async () => {
+    setIsRefreshing(true)
+    setRefreshError(null)
+
+    try {
+      const result = await refreshPositionPrices()
+
+      if (result.success) {
+        // Refresh the page to get updated position values
+        router.refresh()
+        // Also fetch latest price data
+        await fetchPriceData()
+      } else {
+        setRefreshError(result.error)
+      }
+    } catch (error) {
+      console.error('Error refreshing positions:', error)
+      setRefreshError('Failed to refresh positions')
+    } finally {
+      setIsRefreshing(false)
+    }
+  }, [router, fetchPriceData])
+
+  // Handle single position refresh callback
+  const handlePositionRefresh = useCallback(() => {
+    // Refresh the page to get updated values
+    router.refresh()
+    // Also fetch latest price data
+    fetchPriceData()
+  }, [router, fetchPriceData])
+
+  // Fetch price data on mount and when positions change
+  useEffect(() => {
+    fetchPriceData()
+  }, [fetchPriceData])
+
+  // Auto-refresh timer (every 5 minutes)
+  useEffect(() => {
+    if (!autoRefreshEnabled) return
+
+    const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000 // 5 minutes
+
+    const intervalId = setInterval(() => {
+      handleRefreshAll()
+    }, AUTO_REFRESH_INTERVAL)
+
+    return () => clearInterval(intervalId)
+  }, [autoRefreshEnabled, handleRefreshAll])
 
   // Filter and sort positions
   const filteredPositions = useMemo(() => {
@@ -151,7 +229,53 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
 
       {/* Filters and Sorting */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters & Sorting</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Filters & Sorting</h3>
+          <div className="flex items-center gap-3">
+            {/* Auto-refresh toggle */}
+            <label className="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={autoRefreshEnabled}
+                onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span>Auto-refresh (5m)</span>
+            </label>
+            {/* Manual refresh button */}
+            <button
+              onClick={handleRefreshAll}
+              disabled={isRefreshing}
+              className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              aria-label="Refresh all prices"
+            >
+              <svg
+                className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              {isRefreshing ? 'Refreshing...' : 'Refresh Prices'}
+            </button>
+          </div>
+        </div>
+
+        {/* Refresh Error */}
+        {refreshError && (
+          <div className="mb-4 rounded-md bg-red-50 p-3 border border-red-200">
+            <p className="text-sm text-red-800">{refreshError}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Ticker Filter */}
           <div>
@@ -273,6 +397,8 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               position={position}
               onSellCall={handleSellCall}
               onViewDetails={handleViewDetails}
+              priceData={priceData[position.ticker] || null}
+              onPriceRefresh={handlePositionRefresh}
             />
           ))}
         </div>
@@ -287,6 +413,8 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               position={position}
               onSellCall={handleSellCall}
               onViewDetails={handleViewDetails}
+              priceData={priceData[position.ticker] || null}
+              onPriceRefresh={handlePositionRefresh}
             />
           ))}
         </div>
@@ -301,6 +429,8 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               position={position}
               onSellCall={handleSellCall}
               onViewDetails={handleViewDetails}
+              priceData={priceData[position.ticker] || null}
+              onPriceRefresh={handlePositionRefresh}
             />
           ))}
         </div>

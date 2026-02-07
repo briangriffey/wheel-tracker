@@ -12,6 +12,7 @@ import {
   formatCurrency,
   formatPercentage,
 } from '@/lib/utils/position-calculations'
+import { refreshSinglePositionPrice, type PriceData } from '@/lib/actions/prices'
 
 /**
  * Position data type with related trades
@@ -39,6 +40,8 @@ interface PositionCardProps {
   onViewDetails?: (positionId: string) => void
   isLoadingPrice?: boolean
   priceError?: string | null
+  priceData?: PriceData | null
+  onPriceRefresh?: (positionId: string) => void
 }
 
 export function PositionCard({
@@ -47,8 +50,36 @@ export function PositionCard({
   onViewDetails,
   isLoadingPrice = false,
   priceError = null,
+  priceData = null,
+  onPriceRefresh,
 }: PositionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [refreshError, setRefreshError] = useState<string | null>(null)
+
+  // Handle manual price refresh
+  const handleRefreshPrice = async () => {
+    setIsRefreshing(true)
+    setRefreshError(null)
+
+    try {
+      const result = await refreshSinglePositionPrice(position.id)
+
+      if (!result.success) {
+        setRefreshError(result.error)
+      } else {
+        // Call parent callback if provided
+        if (onPriceRefresh) {
+          onPriceRefresh(position.id)
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing price:', error)
+      setRefreshError('Failed to refresh price')
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
 
   // Calculate derived values
   const currentPrice = position.currentValue
@@ -88,21 +119,60 @@ export function PositionCard({
               {position.status}
             </span>
           </div>
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
-            aria-expanded={isExpanded}
-            aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
-          >
-            {isExpanded ? 'Show Less' : 'Show More'}
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Refresh Button */}
+            {position.status === 'OPEN' && (
+              <button
+                onClick={handleRefreshPrice}
+                disabled={isRefreshing || isLoadingPrice}
+                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Refresh price"
+                title="Refresh current price"
+              >
+                <svg
+                  className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </button>
+            )}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+            >
+              {isExpanded ? 'Show Less' : 'Show More'}
+            </button>
+          </div>
         </div>
+        {/* Price Last Updated */}
+        {priceData && !priceError && !refreshError && (
+          <div className="mt-2 text-xs text-gray-500">
+            Last updated: {new Date(priceData.date).toLocaleString()}
+            {priceData.isStale && (
+              <span className="ml-2 text-orange-600 font-medium">
+                ({Math.floor(priceData.ageInHours)}h ago)
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Main Content */}
       <div className="px-4 py-4 sm:px-6 space-y-4">
         {/* Price Error State */}
-        {priceError && (
+        {(priceError || refreshError) && (
           <div className="rounded-md bg-yellow-50 p-3 border border-yellow-200">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -121,8 +191,45 @@ export function PositionCard({
               </div>
               <div className="ml-3">
                 <p className="text-sm text-yellow-800">
-                  Unable to fetch current price: {priceError}
+                  Unable to fetch current price: {priceError || refreshError}
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Price Staleness Warning */}
+        {!priceError && !refreshError && priceData?.isStale && position.status === 'OPEN' && (
+          <div className="rounded-md bg-orange-50 p-3 border border-orange-200">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-orange-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-orange-800">
+                    Price data is stale ({Math.floor(priceData.ageInHours)} hours old)
+                  </p>
+                  <button
+                    onClick={handleRefreshPrice}
+                    disabled={isRefreshing}
+                    className="ml-3 text-xs font-medium text-orange-800 hover:text-orange-900 focus:outline-none focus:ring-2 focus:ring-orange-500 rounded px-2 py-1"
+                    aria-label="Refresh price"
+                  >
+                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

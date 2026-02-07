@@ -43,3 +43,5 @@ next-env.d.ts
 # Gas Town
 .beads/
 .runtime/
+
+/lib/generated/prisma

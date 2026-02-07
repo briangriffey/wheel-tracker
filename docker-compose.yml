@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  integration:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - POSITION_API_URL=http://position-api:8081
+    depends_on:
+      - position-api
+    networks:
+      - wheeltracker
+
+  # Position Management API (placeholder - will be implemented by polecat shiny)
+  position-api:
+    image: alpine:latest
+    command: sh -c "echo 'Position API placeholder' && tail -f /dev/null"
+    ports:
+      - "8081:8081"
+    networks:
+      - wheeltracker
+
+  # Position Display UI (placeholder - will be implemented by polecat fury)
+  position-ui:
+    image: alpine:latest
+    command: sh -c "echo 'Position UI placeholder' && tail -f /dev/null"
+    ports:
+      - "3000:3000"
+    networks:
+      - wheeltracker
+
+networks:
+  wheeltracker:
+    driver: bridge

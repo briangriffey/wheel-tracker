@@ -2,3 +2,14 @@
 .claude/
 .beads/
 .logs/
+
+# Build artifacts
+wheeltracker
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test coverage
+*.out
+coverage.html

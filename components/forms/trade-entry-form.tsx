@@ -3,12 +3,18 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CreateTradeFormSchema, type CreateTradeFormInput } from '@/lib/validations/trade'
+import { CreateTradeSchema, type CreateTradeInput } from '@/lib/validations/trade'
 import { createTrade } from '@/lib/actions/trades'
 
 interface TradeEntryFormProps {
   onSuccess?: () => void
   onCancel?: () => void
+}
+
+// Form-specific type with string dates (HTML input compatibility)
+type TradeFormData = Omit<CreateTradeInput, 'expirationDate' | 'openDate'> & {
+  expirationDate: string | Date
+  openDate?: string | Date
 }
 
 export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
@@ -21,30 +27,31 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<CreateTradeFormInput>({
-    resolver: zodResolver(CreateTradeFormSchema),
+  } = useForm<TradeFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(CreateTradeSchema) as any,
     defaultValues: {
       action: 'SELL_TO_OPEN',
       openDate: new Date().toISOString().split('T')[0],
     },
   })
 
-  const onSubmit = async (formData: CreateTradeFormInput) => {
+  const onSubmit = async (formData: TradeFormData) => {
     setIsSubmitting(true)
     setSubmitError(null)
     setSubmitSuccess(false)
 
     try {
-      // Convert form data (string dates) to server action format (Date objects)
-      const data = {
+      // Convert form data to server action format (ensure dates are Date objects)
+      const data: CreateTradeInput = {
         ...formData,
-        openDate: new Date(formData.openDate),
+        openDate: formData.openDate ? new Date(formData.openDate) : undefined,
         expirationDate: new Date(formData.expirationDate),
       }
 
       const result = await createTrade(data)
 
-      if (result.error) {
+      if (!result.success) {
         setSubmitError(result.error)
       } else {
         setSubmitSuccess(true)

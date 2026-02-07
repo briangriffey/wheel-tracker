@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User model for authentication
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  password      String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts  Account[]
+  sessions  Session[]
+  trades    Trade[]
+  positions Position[]
+
+  @@index([email])
+}
+
+// NextAuth Account model
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// NextAuth Session model
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// NextAuth VerificationToken model
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Enums for Trade model
+enum TradeType {
+  CALL
+  PUT
+}
+
+enum TradeAction {
+  BUY
+  SELL
+}
+
+enum TradeStatus {
+  OPEN
+  CLOSED
+  EXPIRED
+}
+
+// Trade model for individual options trades
+model Trade {
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  positionId     String?
+  position       Position?   @relation(fields: [positionId], references: [id])
+
+  symbol         String
+  type           TradeType
+  action         TradeAction
+  quantity       Int
+  strikePrice    Float
+  premium        Float
+  expirationDate DateTime
+  tradeDate      DateTime    @default(now())
+
+  status         TradeStatus @default(OPEN)
+  closedAt       DateTime?
+  closedPremium  Float?
+
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([symbol])
+  @@index([positionId])
+  @@index([status])
+}
+
+// Enum for Position model
+enum PositionStatus {
+  ACTIVE
+  CLOSED
+}
+
+// Position model for tracking overall positions in a symbol
+model Position {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  symbol        String
+  status        PositionStatus @default(ACTIVE)
+  costBasis     Float
+  currentValue  Float?
+  realizedPnL   Float          @default(0)
+  unrealizedPnL Float?
+
+  openedAt      DateTime       @default(now())
+  closedAt      DateTime?
+
+  trades        Trade[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([symbol])
+  @@index([status])
+}
+
+// StockPrice model for tracking current stock prices
+model StockPrice {
+  id        String   @id @default(cuid())
+  symbol    String
+  price     Float
+  timestamp DateTime @default(now())
+
+  @@unique([symbol, timestamp])
+  @@index([symbol])
+}
+
+// Benchmark model for tracking benchmark performance (e.g., SPY, QQQ)
+model Benchmark {
+  id        String   @id @default(cuid())
+  symbol    String
+  price     Float
+  timestamp DateTime @default(now())
+
+  @@unique([symbol, timestamp])
+  @@index([symbol])
+}

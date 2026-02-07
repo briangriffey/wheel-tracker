@@ -1,0 +1,19 @@
+{
+  "api": {
+    "baseURL": "${API_BASE_URL}",
+    "timeout": 30000
+  },
+  "frontend": {
+    "port": "${PORT:-3000}",
+    "apiProxy": {
+      "enabled": false
+    }
+  },
+  "backend": {
+    "port": "${API_PORT:-3001}",
+    "cors": {
+      "enabled": true,
+      "origins": "${CORS_ORIGINS}"
+    }
+  }
+}

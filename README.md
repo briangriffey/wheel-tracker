@@ -4,6 +4,18 @@ Portfolio tracking application for managing and analyzing trading positions.
 
 ## Features
 
+### Trade Entry Integration (Phase 1)
+
+Integration layer connecting the frontend trade entry form with the backend API:
+
+- **TradeEntryIntegration** class for submitting trades and fetching history
+- **ApiClient** with authentication and error handling support
+- Environment-specific configuration (dev/prod)
+- Data validation and transformation
+- Comprehensive error handling and response formatting
+
+See [src/integration/](src/integration/) for the integration module and [frontend/README.md](frontend/README.md) / [backend/README.md](backend/README.md) for usage examples.
+
 ### Market Data Source (Phase 3)
 
 Unified market data interface supporting multiple providers:

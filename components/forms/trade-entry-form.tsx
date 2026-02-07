@@ -3,8 +3,14 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CreateTradeFormSchema, type CreateTradeFormInput } from '@/lib/validations/trade'
+import { CreateTradeSchema, type CreateTradeInput } from '@/lib/validations/trade'
 import { createTrade } from '@/lib/actions/trades'
+
+// Form-specific type with string dates (HTML input returns strings)
+type TradeFormInput = Omit<CreateTradeInput, 'expirationDate' | 'openDate'> & {
+  expirationDate: string
+  openDate: string
+}
 
 interface TradeEntryFormProps {
   onSuccess?: () => void
@@ -21,15 +27,14 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<CreateTradeFormInput>({
-    resolver: zodResolver(CreateTradeFormSchema),
+  } = useForm<TradeFormInput>({
     defaultValues: {
       action: 'SELL_TO_OPEN',
       openDate: new Date().toISOString().split('T')[0],
     },
   })
 
-  const onSubmit = async (formData: CreateTradeFormInput) => {
+  const onSubmit = async (formData: TradeFormInput) => {
     setIsSubmitting(true)
     setSubmitError(null)
     setSubmitSuccess(false)
@@ -44,7 +49,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
 
       const result = await createTrade(data)
 
-      if (result.error) {
+      if (!result.success) {
         setSubmitError(result.error)
       } else {
         setSubmitSuccess(true)

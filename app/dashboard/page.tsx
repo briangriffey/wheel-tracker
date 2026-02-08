@@ -8,6 +8,7 @@ import {
   getWinRateData,
 } from '@/lib/queries/dashboard'
 import { PLExportButton } from '@/components/export/pl-export-button'
+import { QuickTradeButton } from '@/components/dashboard/quick-trade-button'
 
 // Enable ISR with 60 second revalidation
 export const revalidate = 60
@@ -36,7 +37,8 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
+          <QuickTradeButton />
           <PLExportButton />
         </div>
         <PLDashboard

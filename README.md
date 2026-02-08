@@ -48,6 +48,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Available Scripts
 
+### Development
 - `pnpm dev` - Start development server with Turbopack
 - `pnpm build` - Build for production
 - `pnpm start` - Start production server
@@ -55,6 +56,22 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - `pnpm type-check` - Run TypeScript compiler checks
 - `pnpm format` - Format code with Prettier
 - `pnpm format:check` - Check code formatting
+
+### Testing
+- `pnpm test` - Run unit/integration tests (watch mode)
+- `pnpm test:run` - Run unit/integration tests (once)
+- `pnpm test:coverage` - Run tests with coverage report
+- `pnpm test:ui` - Run tests with UI
+- `pnpm test:e2e` - Run E2E tests with Playwright
+- `pnpm test:e2e:ui` - Run E2E tests with UI
+- `pnpm test:e2e:debug` - Debug E2E tests
+- `pnpm test:e2e:report` - View E2E test report
+
+### Database
+- `pnpm db:generate` - Generate Prisma Client
+- `pnpm db:migrate` - Run database migrations
+- `pnpm db:push` - Push schema to database
+- `pnpm db:studio` - Open Prisma Studio
 
 ## Project Structure
 
@@ -71,6 +88,33 @@ wheeltracker/
 └── package.json          # Dependencies
 ```
 
+## Testing
+
+Wheel Tracker has comprehensive test coverage across three layers:
+
+- **Unit Tests** - Test individual functions and components (Vitest + React Testing Library)
+- **Integration Tests** - Test Server Actions and API routes with database (Vitest + Prisma)
+- **E2E Tests** - Test complete user flows in browser (Playwright)
+
+### Quick Start
+
+```bash
+# Setup (first time only)
+docker compose up -d        # Start PostgreSQL
+pnpm db:generate           # Generate Prisma Client
+pnpm db:push              # Push schema to database
+pnpm exec playwright install chromium  # Install E2E browser
+
+# Run tests
+pnpm test                  # Unit/integration tests (watch)
+pnpm test:e2e             # E2E tests
+pnpm test:coverage        # Coverage report
+```
+
+**Coverage Goals**: >70% overall, 100% critical paths
+
+See [TESTING.md](./TESTING.md) for comprehensive testing documentation.
+
 ## Code Quality
 
 This project uses automated code quality tools:
@@ -79,8 +123,20 @@ This project uses automated code quality tools:
 - **Prettier** - Code formatting
 - **TypeScript** - Static type checking (strict mode)
 - **Husky** - Git hooks for pre-commit checks
+- **Vitest** - Fast unit testing framework
+- **Playwright** - Reliable E2E testing
 
 Pre-commit hooks automatically run linting and type checking before each commit.
+
+### CI/CD
+
+All pull requests must pass:
+- ✅ Type checking
+- ✅ Linting
+- ✅ Unit tests
+- ✅ Integration tests
+- ✅ E2E tests
+- ✅ Build verification
 
 ## Development Guidelines
 

@@ -1,0 +1,175 @@
+/**
+ * Design System CSS Custom Properties
+ *
+ * These custom properties enable runtime theming and provide a foundation
+ * for the Wheel Tracker design system. Values are in HSL format without
+ * the hsl() wrapper to enable Tailwind's opacity utilities.
+ *
+ * @see prds/design-system.md for complete design system documentation
+ */
+
+:root {
+  /* ==========================================
+   * PRIMARY GREEN SCALE
+   * Based on #43D984 (hsla(146, 66%, 55%))
+   * ========================================== */
+  --color-primary-50: 146 66% 97%;
+  --color-primary-100: 146 66% 93%;
+  --color-primary-200: 146 66% 85%;
+  --color-primary-300: 146 66% 73%;
+  --color-primary-400: 146 60% 61%;  /* Light Green: #62D995 */
+  --color-primary-500: 146 66% 55%;  /* PRIMARY DEFAULT: #43D984 */
+  --color-primary-600: 146 41% 38%;  /* Dark Green: #3A8C5D */
+  --color-primary-700: 146 41% 31%;
+  --color-primary-800: 146 41% 25%;
+  --color-primary-900: 146 41% 20%;
+  --color-primary: var(--color-primary-500); /* Alias for default */
+
+  /* ==========================================
+   * ACCENT BROWN SCALE
+   * Based on #59332A (hsla(11, 36%, 25%))
+   * ========================================== */
+  --color-accent-brown: 11 36% 25%;       /* DEFAULT: #59332A */
+  --color-accent-brown-light: 11 30% 42%; /* Light: #8B5A4D */
+  --color-accent-brown-dark: 11 36% 17%;  /* Dark: #3D2219 */
+
+  /* ==========================================
+   * NEUTRAL GRAY SCALE
+   * For text, borders, backgrounds
+   * ========================================== */
+  --color-neutral-50: 0 0% 95%;   /* Light Gray: #F2F2F2 */
+  --color-neutral-100: 0 0% 90%;  /* #E5E5E5 */
+  --color-neutral-200: 0 0% 80%;  /* #CCCCCC */
+  --color-neutral-300: 0 0% 70%;  /* #B3B3B3 */
+  --color-neutral-400: 0 0% 60%;  /* #999999 */
+  --color-neutral-500: 0 0% 50%;  /* #808080 */
+  --color-neutral-600: 0 0% 40%;  /* #666666 */
+  --color-neutral-700: 0 0% 30%;  /* #4D4D4D */
+  --color-neutral-800: 0 0% 20%;  /* #333333 */
+  --color-neutral-900: 0 0% 10%;  /* #1A1A1A */
+
+  /* ==========================================
+   * SEMANTIC COLORS
+   * For status indicators and UI feedback
+   * ========================================== */
+  --color-success: var(--color-primary-500);  /* Green: #43D984 */
+  --color-error: 0 84% 60%;                   /* Red: #EF4444 */
+  --color-warning: 38 92% 50%;                /* Amber: #F59E0B */
+  --color-info: 221 83% 53%;                  /* Blue: #3B82F6 */
+
+  /* ==========================================
+   * BORDER RADIUS
+   * Consistent corner rounding across components
+   * ========================================== */
+  --radius-none: 0;
+  --radius-sm: 0.125rem;    /* 2px */
+  --radius-md: 0.375rem;    /* 6px */
+  --radius-lg: 0.5rem;      /* 8px */
+  --radius-xl: 0.75rem;     /* 12px */
+  --radius-2xl: 1rem;       /* 16px */
+  --radius-full: 9999px;    /* Fully rounded */
+
+  /* ==========================================
+   * SHADOWS
+   * Elevation levels for depth and hierarchy
+   * ========================================== */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+  /* ==========================================
+   * SPACING
+   * Consistent spacing scale (extends Tailwind defaults)
+   * ========================================== */
+  --spacing-xs: 0.25rem;   /* 4px */
+  --spacing-sm: 0.5rem;    /* 8px */
+  --spacing-md: 1rem;      /* 16px */
+  --spacing-lg: 1.5rem;    /* 24px */
+  --spacing-xl: 2rem;      /* 32px */
+  --spacing-2xl: 3rem;     /* 48px */
+  --spacing-3xl: 4rem;     /* 64px */
+
+  /* ==========================================
+   * TYPOGRAPHY
+   * Font size scale (extends Tailwind defaults)
+   * ========================================== */
+  --font-size-xs: 0.75rem;      /* 12px */
+  --font-size-sm: 0.875rem;     /* 14px */
+  --font-size-base: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;     /* 18px */
+  --font-size-xl: 1.25rem;      /* 20px */
+  --font-size-2xl: 1.5rem;      /* 24px */
+  --font-size-3xl: 1.875rem;    /* 30px */
+  --font-size-4xl: 2.25rem;     /* 36px */
+
+  /* ==========================================
+   * Z-INDEX SCALE
+   * Consistent layering for overlays and modals
+   * ========================================== */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-notification: 1080;
+
+  /* ==========================================
+   * TRANSITIONS
+   * Standard timing for smooth interactions
+   * ========================================== */
+  --transition-fast: 150ms;
+  --transition-base: 250ms;
+  --transition-slow: 350ms;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1); /* ease-in-out */
+}
+
+/* ==========================================
+ * FALLBACK SUPPORT
+ * Ensure graceful degradation for older browsers
+ * ========================================== */
+@supports not (color: hsl(0 0% 0%)) {
+  :root {
+    /* Fallback to traditional HSL syntax */
+    --color-primary-500: hsl(146, 66%, 55%);
+    --color-neutral-500: hsl(0, 0%, 50%);
+    --color-success: hsl(146, 66%, 55%);
+    --color-error: hsl(0, 84%, 60%);
+    --color-warning: hsl(38, 92%, 50%);
+    --color-info: hsl(221, 83%, 53%);
+  }
+}
+
+/* ==========================================
+ * DARK MODE SUPPORT (Future Enhancement)
+ * Placeholder for dark theme custom properties
+ * ========================================== */
+@media (prefers-color-scheme: dark) {
+  /* Dark mode overrides can be added here when implementing dark theme */
+  /* Example:
+  :root {
+    --color-neutral-50: 0 0% 10%;
+    --color-neutral-900: 0 0% 95%;
+  }
+  */
+}
+
+/* ==========================================
+ * PRINT STYLES
+ * Optimize design tokens for print media
+ * ========================================== */
+@media print {
+  :root {
+    /* Remove shadows for print */
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --shadow-xl: none;
+    --shadow-2xl: none;
+  }
+}

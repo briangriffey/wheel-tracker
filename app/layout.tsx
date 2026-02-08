@@ -26,9 +26,25 @@ export default async function RootLayout({
             <header className="bg-white shadow-sm">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
-                  <Link href="/dashboard" className="text-xl font-bold text-gray-900">
-                    Wheel Tracker
-                  </Link>
+                  <div className="flex items-center gap-8">
+                    <Link href="/dashboard" className="text-xl font-bold text-gray-900">
+                      Wheel Tracker
+                    </Link>
+                    <nav className="hidden md:flex gap-6">
+                      <Link href="/dashboard" className="text-sm text-gray-700 hover:text-gray-900">
+                        Dashboard
+                      </Link>
+                      <Link href="/trades" className="text-sm text-gray-700 hover:text-gray-900">
+                        Trades
+                      </Link>
+                      <Link href="/positions" className="text-sm text-gray-700 hover:text-gray-900">
+                        Positions
+                      </Link>
+                      <Link href="/help" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                        Help
+                      </Link>
+                    </nav>
+                  </div>
                   <UserMenu user={session.user} />
                 </div>
               </div>

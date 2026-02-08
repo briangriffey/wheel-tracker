@@ -1,0 +1,35 @@
+/**
+ * Screenshot Styles for Visual Regression Testing
+ *
+ * These styles ensure consistent screenshots by:
+ * - Hiding cursors and selections
+ * - Disabling animations and transitions
+ * - Ensuring consistent font rendering
+ */
+
+* {
+  /* Disable all animations and transitions */
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+
+  /* Hide cursor */
+  cursor: none !important;
+
+  /* Disable user selection highlight */
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Ensure consistent font rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide blinking cursors in inputs */
+input,
+textarea {
+  caret-color: transparent !important;
+}

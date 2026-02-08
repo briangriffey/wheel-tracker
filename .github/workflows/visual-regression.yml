@@ -1,0 +1,98 @@
+name: Visual Regression Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  visual-regression:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Setup database
+        run: |
+          docker compose up -d
+          sleep 5
+          pnpm db:push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wheeltracker
+
+      - name: Build Next.js app
+        run: pnpm build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wheeltracker
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: test-secret-for-ci
+
+      - name: Run visual regression tests
+        run: pnpm test:visual
+        env:
+          CI: true
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/wheeltracker
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: test-secret-for-ci
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload screenshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-diffs
+          path: test-results/
+          retention-days: 30
+
+      - name: Comment PR with test results
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const comment = `## 🔴 Visual Regression Tests Failed
+
+            Visual regression tests detected differences in the UI. Please review the changes:
+
+            1. Download the \`playwright-report\` artifact from this workflow run
+            2. Extract and open \`index.html\` to view detailed diff reports
+            3. If changes are intentional, update baselines locally with \`pnpm test:visual:update\`
+            4. Commit and push the updated screenshots
+
+            [View full workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

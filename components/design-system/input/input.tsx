@@ -283,3 +283,218 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 )
 
 Input.displayName = 'Input'
+
+/**
+ * InputLabel component props
+ */
+export interface InputLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+  /**
+   * Whether the field is required
+   * Adds a red asterisk to the label
+   * @default false
+   */
+  required?: boolean
+
+  /**
+   * Label text
+   */
+  children: ReactNode
+
+  /**
+   * Additional CSS classes to apply
+   */
+  className?: string
+}
+
+/**
+ * InputLabel Component
+ *
+ * A label component for form inputs with optional required indicator.
+ *
+ * @example
+ * ```tsx
+ * <InputLabel htmlFor="email">Email Address</InputLabel>
+ * <InputLabel htmlFor="password" required>Password</InputLabel>
+ * ```
+ */
+export const InputLabel = forwardRef<HTMLLabelElement, InputLabelProps>(
+  ({ required = false, children, className, ...props }, ref) => {
+    return (
+      <label
+        ref={ref}
+        className={cn(
+          'block text-sm font-medium text-neutral-700 mb-1',
+          className
+        )}
+        {...props}
+      >
+        {children}
+        {required && <span className="text-error ml-1" aria-label="required">*</span>}
+      </label>
+    )
+  }
+)
+
+InputLabel.displayName = 'InputLabel'
+
+/**
+ * InputError component props
+ */
+export interface InputErrorProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  /**
+   * Error message to display
+   */
+  children: ReactNode
+
+  /**
+   * Additional CSS classes to apply
+   */
+  className?: string
+}
+
+/**
+ * InputError Component
+ *
+ * Displays error messages for form inputs.
+ *
+ * @example
+ * ```tsx
+ * <InputError id="email-error">Email is required</InputError>
+ * ```
+ */
+export const InputError = forwardRef<HTMLParagraphElement, InputErrorProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <p
+        ref={ref}
+        className={cn('mt-1 text-sm text-error', className)}
+        role="alert"
+        {...props}
+      >
+        {children}
+      </p>
+    )
+  }
+)
+
+InputError.displayName = 'InputError'
+
+/**
+ * InputGroup component props
+ */
+export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+  /**
+   * Label text (optional)
+   */
+  label?: string
+
+  /**
+   * Whether the field is required
+   * @default false
+   */
+  required?: boolean
+
+  /**
+   * Error message to display
+   */
+  error?: string
+
+  /**
+   * Help text to display when no error is present
+   */
+  helpText?: string
+
+  /**
+   * The input element(s) to render
+   */
+  children: ReactNode
+
+  /**
+   * Additional CSS classes to apply
+   */
+  className?: string
+
+  /**
+   * ID for the input element (used for label association)
+   */
+  htmlFor?: string
+}
+
+/**
+ * InputGroup Component
+ *
+ * A wrapper component that composes label, input, error, and help text together.
+ * Provides consistent spacing and layout for form fields.
+ *
+ * @example
+ * ```tsx
+ * // With all features
+ * <InputGroup
+ *   label="Email Address"
+ *   required
+ *   error="Email is required"
+ *   htmlFor="email"
+ * >
+ *   <Input id="email" type="email" />
+ * </InputGroup>
+ *
+ * // With help text
+ * <InputGroup
+ *   label="Username"
+ *   helpText="Choose a unique username"
+ *   htmlFor="username"
+ * >
+ *   <Input id="username" />
+ * </InputGroup>
+ *
+ * // Minimal
+ * <InputGroup>
+ *   <Input placeholder="Search..." />
+ * </InputGroup>
+ * ```
+ */
+export const InputGroup = forwardRef<HTMLDivElement, InputGroupProps>(
+  (
+    {
+      label,
+      required = false,
+      error,
+      helpText,
+      children,
+      className,
+      htmlFor,
+      ...props
+    },
+    ref
+  ) => {
+    // Generate unique ID for error/help text
+    const errorId = error && htmlFor ? `${htmlFor}-error` : undefined
+    const helpTextId = helpText && htmlFor ? `${htmlFor}-help` : undefined
+
+    return (
+      <div ref={ref} className={cn('space-y-1', className)} {...props}>
+        {/* Label */}
+        {label && (
+          <InputLabel htmlFor={htmlFor} required={required}>
+            {label}
+          </InputLabel>
+        )}
+
+        {/* Input(s) */}
+        {children}
+
+        {/* Error message */}
+        {error && <InputError id={errorId}>{error}</InputError>}
+
+        {/* Help text (only shown when no error) */}
+        {!error && helpText && (
+          <p id={helpTextId} className="mt-1 text-xs text-neutral-500">
+            {helpText}
+          </p>
+        )}
+      </div>
+    )
+  }
+)
+
+InputGroup.displayName = 'InputGroup'

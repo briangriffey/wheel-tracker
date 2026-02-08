@@ -9,6 +9,15 @@ import {
 } from '@/lib/queries/dashboard'
 import { PLExportButton } from '@/components/export/pl-export-button'
 
+// Enable ISR with 60 second revalidation
+export const revalidate = 60
+
+// Add metadata for SEO
+export const metadata = {
+  title: 'Dashboard | Wheel Tracker',
+  description: 'Track your options trading performance with the wheel strategy',
+}
+
 export default async function DashboardPage() {
   const session = await auth()
 

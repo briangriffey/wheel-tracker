@@ -7,6 +7,9 @@ import {
   type TimeRange,
 } from '@/lib/queries/dashboard'
 
+// Cache for 60 seconds, revalidate in background
+export const revalidate = 60
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
@@ -26,12 +29,17 @@ export async function GET(request: NextRequest) {
       getWinRateData(timeRange),
     ])
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       metrics,
       plOverTime,
       plByTicker,
       winRateData,
     })
+
+    // Add cache headers: cache for 60s, allow stale for 300s while revalidating
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
+
+    return response
   } catch (error) {
     console.error('Error fetching dashboard data:', error)
     return NextResponse.json({ error: 'Failed to fetch dashboard data' }, { status: 500 })

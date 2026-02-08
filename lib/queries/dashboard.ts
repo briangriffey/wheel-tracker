@@ -1,18 +1,20 @@
+import { cache } from 'react'
 import { prisma } from '@/lib/db'
 import type { Prisma } from '@/lib/generated/prisma'
 
 /**
  * Get the current user ID
  * TODO: Replace with actual session-based authentication
+ * Cached to avoid duplicate queries within the same request
  */
-async function getCurrentUserId(): Promise<string> {
+const getCurrentUserId = cache(async (): Promise<string> => {
   // This is a placeholder - in production, get this from NextAuth session
   const user = await prisma.user.findFirst()
   if (!user) {
     throw new Error('No user found. Please create a user first.')
   }
   return user.id
-}
+})
 
 /**
  * Time range type for filtering dashboard data
@@ -108,8 +110,8 @@ export async function getDashboardMetrics(
     // Build date filter
     const dateFilter = dateThreshold ? { gte: dateThreshold } : undefined
 
-    // Fetch position statistics
-    const [positionStats, tradeStats, openPositions, openTrades] = await Promise.all([
+    // Fetch all data in parallel with optimized queries
+    const [positionStats, tradeStats, openPositions, openTrades, closedPositions, assignedTrades, activePositionsCount] = await Promise.all([
       // Position aggregates
       prisma.position.aggregate({
         where: {
@@ -135,7 +137,7 @@ export async function getDashboardMetrics(
           id: true,
         },
       }),
-      // Open positions for unrealized P&L
+      // Open positions for unrealized P&L (select only needed fields)
       prisma.position.findMany({
         where: {
           userId,
@@ -158,6 +160,32 @@ export async function getDashboardMetrics(
           userId,
           status: 'OPEN',
           ...(dateFilter && { openDate: dateFilter }),
+        },
+      }),
+      // Closed positions for win rate (select only needed field)
+      prisma.position.findMany({
+        where: {
+          userId,
+          status: 'CLOSED',
+          ...(dateFilter && { closedDate: dateFilter }),
+        },
+        select: {
+          realizedGainLoss: true,
+        },
+      }),
+      // Assigned trades count
+      prisma.trade.count({
+        where: {
+          userId,
+          status: 'ASSIGNED',
+          ...(dateFilter && { closeDate: dateFilter }),
+        },
+      }),
+      // Active positions count (no date filter for current state)
+      prisma.position.count({
+        where: {
+          userId,
+          status: 'OPEN',
         },
       }),
     ])
@@ -187,18 +215,7 @@ export async function getDashboardMetrics(
     // Calculate total premium collected
     const totalPremiumCollected = tradeStats._sum.premium?.toNumber() || 0
 
-    // Calculate win rate (positions that closed profitably)
-    const closedPositions = await prisma.position.findMany({
-      where: {
-        userId,
-        status: 'CLOSED',
-        ...(dateFilter && { closedDate: dateFilter }),
-      },
-      select: {
-        realizedGainLoss: true,
-      },
-    })
-
+    // Calculate win rate from already-fetched data
     const winners = closedPositions.filter(
       (p: { realizedGainLoss: Prisma.Decimal | null }) =>
         p.realizedGainLoss && p.realizedGainLoss.toNumber() > 0
@@ -206,25 +223,10 @@ export async function getDashboardMetrics(
     const totalClosedTrades = closedPositions.length
     const winRate = totalClosedTrades > 0 ? (winners / totalClosedTrades) * 100 : 0
 
-    // Calculate assignment rate
-    const assignedTrades = await prisma.trade.count({
-      where: {
-        userId,
-        status: 'ASSIGNED',
-        ...(dateFilter && { closeDate: dateFilter }),
-      },
-    })
+    // Calculate assignment rate from already-fetched data
     const totalTradesForAssignment = tradeStats._count.id
     const assignmentRate =
       totalTradesForAssignment > 0 ? (assignedTrades / totalTradesForAssignment) * 100 : 0
-
-    // Get active positions count
-    const activePositions = await prisma.position.count({
-      where: {
-        userId,
-        status: 'OPEN',
-      },
-    })
 
     return {
       totalPL,
@@ -234,7 +236,7 @@ export async function getDashboardMetrics(
       totalPremiumCollected,
       winRate,
       assignmentRate,
-      activePositions,
+      activePositions: activePositionsCount,
       openContracts: openTrades,
     }
   } catch (error) {

@@ -70,5 +70,14 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@10.6.5"
+  "packageManager": "pnpm@10.6.5",
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
 }

@@ -36,8 +36,31 @@ async function getCurrentUserId(): Promise<string> {
 /**
  * Assign a PUT trade and create a stock position
  *
- * When a PUT is assigned, the trader is obligated to buy shares at the strike price.
- * Cost basis = (strike price * shares) - premium collected
+ * When a PUT option is assigned (exercised against you), you're obligated to buy
+ * the underlying shares at the strike price. This function:
+ * 1. Marks the PUT trade as ASSIGNED
+ * 2. Creates a new position for the acquired shares
+ * 3. Calculates cost basis including the premium collected
+ *
+ * Cost Basis Calculation:
+ * - Cost per share = strike price - (premium / shares)
+ * - Total cost = cost per share * shares
+ * - The premium collected effectively reduces your purchase price
+ *
+ * @param input - Assignment data including trade ID
+ * @returns Promise resolving to both position ID and trade ID on success
+ *
+ * @throws {Error} If trade not found, not a PUT, already assigned, or unauthorized
+ *
+ * @example
+ * // Assign a PUT that was exercised
+ * await assignPut({ tradeId: 'trade_123' });
+ * // Creates position with cost basis = strike - premium/shares
+ *
+ * Edge Cases:
+ * - Only OPEN PUT trades can be assigned
+ * - Transaction ensures atomicity (both trade update and position creation succeed or fail together)
+ * - Premium is included in position cost calculation for accurate P&L tracking
  */
 export async function assignPut(
   input: AssignPutInput

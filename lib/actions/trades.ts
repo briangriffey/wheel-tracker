@@ -34,7 +34,26 @@ async function getCurrentUserId(): Promise<string> {
 }
 
 /**
- * Create a new trade
+ * Create a new trade (PUT or CALL option)
+ *
+ * Creates a new options trade record in the database. Automatically calculates
+ * shares from contracts (contracts * 100) and validates all input data.
+ *
+ * @param input - Trade data including ticker, type, strike, premium, etc.
+ * @returns Promise resolving to action result with trade ID on success
+ *
+ * @example
+ * const result = await createTrade({
+ *   ticker: 'AAPL',
+ *   type: 'PUT',
+ *   action: 'SELL_TO_OPEN',
+ *   strikePrice: 150,
+ *   premium: 250,
+ *   contracts: 1,
+ *   expirationDate: new Date('2024-03-15')
+ * });
+ *
+ * @throws {Error} If validation fails or database operation fails
  */
 export async function createTrade(
   input: CreateTradeInput
@@ -85,6 +104,14 @@ export async function createTrade(
 
 /**
  * Update an existing trade
+ *
+ * Updates trade details such as notes, status, or other mutable fields.
+ * Verifies that the trade belongs to the current user before updating.
+ *
+ * @param input - Trade update data including ID and fields to update
+ * @returns Promise resolving to action result with trade ID on success
+ *
+ * @throws {Error} If trade not found, doesn't belong to user, or update fails
  */
 export async function updateTrade(
   input: UpdateTradeInput
@@ -165,7 +192,27 @@ export async function updateTrade(
 
 /**
  * Update trade status with validation
- * Handles status transitions: OPEN → EXPIRED, OPEN → ASSIGNED, OPEN → CLOSED
+ *
+ * Handles status transitions for options trades. Validates that transitions
+ * are valid and creates positions automatically when PUTs are assigned.
+ *
+ * Valid transitions:
+ * - OPEN → EXPIRED: Option expired worthless
+ * - OPEN → ASSIGNED: Option was exercised (creates position for PUTs)
+ * - OPEN → CLOSED: Option closed early (bought back)
+ *
+ * @param input - Status update data including trade ID, new status, close date
+ * @returns Promise resolving to action result with trade ID on success
+ *
+ * @throws {Error} If trade not found, unauthorized, or invalid status transition
+ *
+ * @example
+ * // Mark a PUT as assigned (creates position automatically)
+ * await updateTradeStatus({
+ *   id: 'trade_123',
+ *   status: 'ASSIGNED',
+ *   closeDate: new Date()
+ * });
  */
 export async function updateTradeStatus(
   input: UpdateTradeStatusInput
@@ -236,7 +283,19 @@ export async function updateTradeStatus(
 
 /**
  * Delete a trade
- * Only allows deletion of OPEN trades to prevent data loss
+ *
+ * Permanently removes a trade from the database. Only OPEN trades can be deleted
+ * to prevent loss of historical data. For closed, expired, or assigned trades,
+ * they should remain in the system for accurate P&L tracking.
+ *
+ * @param id - Trade ID to delete
+ * @returns Promise resolving to action result with trade ID on success
+ *
+ * @throws {Error} If trade not found, unauthorized, or not in OPEN status
+ *
+ * @example
+ * // Delete a mistakenly entered trade
+ * await deleteTrade('trade_123');
  */
 export async function deleteTrade(id: string): Promise<ActionResult<{ id: string }>> {
   try {

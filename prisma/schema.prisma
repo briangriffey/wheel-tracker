@@ -41,11 +41,12 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  trades        Trade[]
-  positions     Position[]
-  benchmarks    Benchmark[]
-  accounts      Account[]
-  sessions      Session[]
+  trades          Trade[]
+  positions       Position[]
+  benchmarks      Benchmark[]
+  marketBenchmarks MarketBenchmark[]
+  accounts        Account[]
+  sessions        Session[]
 
   @@index([email])
 }
@@ -181,4 +182,23 @@ model Benchmark {
   @@unique([userId, date])
   @@index([userId])
   @@index([date])
+}
+
+model MarketBenchmark {
+  id              String   @id @default(cuid())
+  userId          String
+  ticker          String   // SPY, QQQ, VTI, etc.
+  initialCapital  Decimal  @db.Decimal(10, 2) // Amount initially invested
+  setupDate       DateTime // When the benchmark started
+  initialPrice    Decimal  @db.Decimal(10, 4) // Price at setup
+  shares          Decimal  @db.Decimal(10, 4) // Calculated: initialCapital / initialPrice
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ticker])
+  @@index([userId])
+  @@index([ticker])
 }

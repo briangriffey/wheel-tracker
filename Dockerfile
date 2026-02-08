@@ -43,16 +43,33 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Enable pnpm for running migrations
+RUN corepack enable && corepack prepare pnpm@10.6.5 --activate
+
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+
+# Copy package files for installing Prisma
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+
+# Install only Prisma packages (production dependencies)
+# This gives us the Prisma CLI for running migrations
+RUN pnpm add -P prisma@7.3.0 @prisma/client@7.3.0
+
+# Copy Prisma schema and migrations
+COPY --from=builder /app/prisma ./prisma
+
+# Generate Prisma Client
+RUN pnpm prisma generate
 
 # Copy the standalone output
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Copy Prisma schema for runtime
-COPY --from=builder /app/prisma ./prisma
+# Change ownership of all files to nextjs user
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 

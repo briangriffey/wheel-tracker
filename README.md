@@ -360,11 +360,118 @@ NEXTAUTH_URL
 ALPHA_VANTAGE_API_KEY
 ```
 
+### Docker Deployment
+
+The application is containerized using Docker with Next.js 15 standalone output mode for optimal performance and minimal image size.
+
+#### Prerequisites
+
+- Docker 20.0 or higher
+- Node.js 20 runtime (used in container)
+
+#### Building the Docker Image
+
+```bash
+docker build -t wheeltracker .
+```
+
+#### Running the Container
+
+```bash
+docker run -d \
+  --name wheeltracker \
+  -p 3000:3000 \
+  -e DATABASE_URL="your-database-url" \
+  -e NEXTAUTH_URL="https://your-domain.com" \
+  -e NEXTAUTH_SECRET="your-secret" \
+  -e ALPHA_VANTAGE_API_KEY="your-api-key" \
+  wheeltracker
+```
+
+#### Testing Locally
+
+```bash
+# Build the image
+docker build -t wheeltracker:test .
+
+# Run with test environment
+docker run -d --name wheeltracker-test -p 3001:3000 \
+  -e NODE_ENV=production \
+  -e DATABASE_URL="your-database-url" \
+  wheeltracker:test
+
+# Test health endpoint
+curl http://localhost:3001/api/health
+
+# View logs
+docker logs wheeltracker-test
+
+# Clean up
+docker stop wheeltracker-test && docker rm wheeltracker-test
+```
+
+### Railway Deployment
+
+The application is configured for deployment on [Railway](https://railway.app/) using the `railway.json` configuration file.
+
+#### Configuration
+
+The `railway.json` file includes:
+- Docker builder configuration
+- Health check endpoint (`/api/health`)
+- Restart policy (on-failure, max 10 retries)
+- Single replica deployment
+
+#### Required Environment Variables
+
+Set the following environment variables in your Railway project:
+
+- `DATABASE_URL` - PostgreSQL connection string
+- `NEXTAUTH_URL` - Your application URL (e.g., https://yourapp.railway.app)
+- `NEXTAUTH_SECRET` - Secret for NextAuth.js session encryption
+- `ALPHA_VANTAGE_API_KEY` - API key for stock market data
+
+#### Deployment Steps
+
+1. **Connect Repository**
+   - Link your GitHub repository to Railway
+   - Railway will automatically detect the `railway.json` configuration
+
+2. **Configure Database**
+   - Add a PostgreSQL database service in Railway
+   - Railway will automatically set the `DATABASE_URL` environment variable
+
+3. **Set Environment Variables**
+   - Add all required environment variables in the Railway dashboard
+
+4. **Deploy**
+   - Push to your main branch or manually trigger a deployment
+   - Railway will build the Docker image and deploy automatically
+   - Health checks will run against `/api/health` to ensure the app is running
+
+5. **Verify Deployment**
+   - Check the deployment logs in Railway dashboard
+   - Visit `https://your-app.railway.app/api/health` to verify health endpoint
+
+#### Health Check Endpoint
+
+The application includes a health check endpoint at `/api/health` that returns:
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-02-08T04:24:58.272Z",
+  "service": "wheeltracker",
+  "version": "0.1.0"
+}
+```
+
+This endpoint is used by Railway to monitor application health and trigger automatic restarts if needed.
+
 ### Other Platforms
 
 Wheel Tracker can be deployed to any platform that supports Next.js:
 - **Netlify**: Use Next.js runtime
-- **Railway**: PostgreSQL included
 - **Self-hosted**: Use Docker or Node.js
 
 ### Database
@@ -384,8 +491,8 @@ pnpm build
 # Start production server
 pnpm start
 
-# Or use standalone output for Docker
-# next.config.ts: output: 'standalone'
+# Standalone output for Docker (already configured in next.config.ts)
+# output: 'standalone'
 ```
 
 ## 🔐 Security

@@ -6,6 +6,8 @@ import type { PositionWithCalculations } from '@/lib/queries/positions'
 import { PositionCard } from './position-card'
 import { refreshPositionPrices, getLatestPrices, type PriceData } from '@/lib/actions/prices'
 import { useRouter } from 'next/navigation'
+import { Modal } from '@/components/ui/modal'
+import { TradeEntryForm } from '@/components/forms/trade-entry-form'
 
 interface PositionsListProps {
   initialPositions: PositionWithCalculations[]
@@ -26,6 +28,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
+  const [isTradeModalOpen, setIsTradeModalOpen] = useState(false)
 
   // Fetch price data for all positions
   const fetchPriceData = useCallback(async () => {
@@ -216,6 +219,13 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
     toast('Position details view coming soon!', { icon: 'ℹ️' })
   }
 
+  // Handle successful trade creation
+  const handleTradeSuccess = useCallback(() => {
+    setIsTradeModalOpen(false)
+    // Refresh the page to get updated positions
+    router.refresh()
+  }, [router])
+
   return (
     <div className="w-full">
       {/* Summary Stats */}
@@ -254,6 +264,29 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               />
               <span>Auto-refresh (5m)</span>
             </label>
+            {/* New Trade button */}
+            <button
+              onClick={() => setIsTradeModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              aria-label="Create new trade"
+            >
+              <svg
+                className="h-4 w-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              New Trade
+            </button>
             {/* Manual refresh button */}
             <button
               onClick={handleRefreshAll}
@@ -447,6 +480,20 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
           ))}
         </div>
       )}
+
+      {/* New Trade Modal */}
+      <Modal
+        isOpen={isTradeModalOpen}
+        onClose={() => setIsTradeModalOpen(false)}
+        title="Create New Trade"
+        description="Enter the details of your options trade"
+        size="lg"
+      >
+        <TradeEntryForm
+          onSuccess={handleTradeSuccess}
+          onCancel={() => setIsTradeModalOpen(false)}
+        />
+      </Modal>
     </div>
   )
 }

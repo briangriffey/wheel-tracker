@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, SelectHTMLAttributes } from 'react'
+import React, { forwardRef, SelectHTMLAttributes, memo } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -127,6 +127,8 @@ const stateStyles: Record<SelectState, string> = {
  * A flexible select/dropdown component with multiple sizes and states.
  * Supports error/success states and help text.
  *
+ * Optimized with React.memo to prevent unnecessary re-renders.
+ *
  * @example
  * ```tsx
  * // Basic select
@@ -153,7 +155,7 @@ const stateStyles: Record<SelectState, string> = {
  * </Select>
  * ```
  */
-export const Select = forwardRef<HTMLSelectElement, SelectProps>(
+const SelectComponent = forwardRef<HTMLSelectElement, SelectProps>(
   (
     {
       size = 'md',
@@ -220,4 +222,9 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   }
 )
 
-Select.displayName = 'Select'
+SelectComponent.displayName = 'Select'
+
+/**
+ * Memoized Select component to prevent unnecessary re-renders
+ */
+export const Select = memo(SelectComponent)

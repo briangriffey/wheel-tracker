@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, memo } from 'react'
 import { getSemanticColor } from '@/lib/design/colors'
 
 /**
@@ -131,6 +131,8 @@ function getAlertIcon(variant: AlertVariant): React.JSX.Element {
  * Supports info, success, warning, and error variants with appropriate
  * icons and colors. Can be made dismissible with a close button.
  *
+ * Optimized with React.memo to prevent unnecessary re-renders.
+ *
  * @example
  * ```tsx
  * <Alert variant="success" dismissible>
@@ -147,7 +149,7 @@ function getAlertIcon(variant: AlertVariant): React.JSX.Element {
  * </Alert>
  * ```
  */
-export function Alert({
+const AlertComponent = function Alert({
   variant = 'info',
   dismissible = false,
   onDismiss,
@@ -209,9 +211,16 @@ export function Alert({
 }
 
 /**
+ * Memoized Alert component to prevent unnecessary re-renders
+ */
+export const Alert = memo(AlertComponent)
+
+/**
  * AlertTitle Component
  *
  * Renders the title/heading of an alert. Should be used as a child of Alert.
+ *
+ * Optimized with React.memo to prevent unnecessary re-renders.
  *
  * @example
  * ```tsx
@@ -221,7 +230,7 @@ export function Alert({
  * </Alert>
  * ```
  */
-export function AlertTitle({ className = '', children }: AlertTitleProps) {
+const AlertTitleComponent = function AlertTitle({ className = '', children }: AlertTitleProps) {
   return (
     <h3 className={`text-sm font-medium ${className}`}>
       {children}
@@ -230,9 +239,16 @@ export function AlertTitle({ className = '', children }: AlertTitleProps) {
 }
 
 /**
+ * Memoized AlertTitle component to prevent unnecessary re-renders
+ */
+export const AlertTitle = memo(AlertTitleComponent)
+
+/**
  * AlertDescription Component
  *
  * Renders the description/body text of an alert. Should be used as a child of Alert.
+ *
+ * Optimized with React.memo to prevent unnecessary re-renders.
  *
  * @example
  * ```tsx
@@ -244,10 +260,15 @@ export function AlertTitle({ className = '', children }: AlertTitleProps) {
  * </Alert>
  * ```
  */
-export function AlertDescription({ className = '', children }: AlertDescriptionProps) {
+const AlertDescriptionComponent = function AlertDescription({ className = '', children }: AlertDescriptionProps) {
   return (
     <div className={`mt-2 text-sm ${className}`}>
       {children}
     </div>
   )
 }
+
+/**
+ * Memoized AlertDescription component to prevent unnecessary re-renders
+ */
+export const AlertDescription = memo(AlertDescriptionComponent)

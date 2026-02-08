@@ -1,10 +1,12 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  // Optimize for production builds
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  // Enable JIT mode for better performance (default in Tailwind CSS 3.x)
   theme: {
     extend: {
       colors: {

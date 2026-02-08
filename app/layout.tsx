@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { SessionProvider } from '@/components/session-provider'
+import { ToastProvider } from '@/components/toast-provider'
 import { UserMenu } from '@/components/user-menu'
 import './globals.css'
 
@@ -35,6 +36,7 @@ export default async function RootLayout({
           )}
           {children}
         </SessionProvider>
+        <ToastProvider />
       </body>
     </html>
   )

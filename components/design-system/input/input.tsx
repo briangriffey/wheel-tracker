@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, InputHTMLAttributes, ReactNode } from 'react'
+import React, { forwardRef, InputHTMLAttributes, ReactNode, memo } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -169,6 +169,8 @@ const suffixStyles: Record<InputSize, string> = {
  * A flexible input component with multiple sizes and states.
  * Supports error/success states, prefix/suffix content, and help text.
  *
+ * Optimized with React.memo to prevent unnecessary re-renders.
+ *
  * @example
  * ```tsx
  * // Basic input
@@ -187,7 +189,7 @@ const suffixStyles: Record<InputSize, string> = {
  * <Input size="lg" state="success" />
  * ```
  */
-export const Input = forwardRef<HTMLInputElement, InputProps>(
+const InputComponent = forwardRef<HTMLInputElement, InputProps>(
   (
     {
       size = 'md',
@@ -282,7 +284,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   }
 )
 
-Input.displayName = 'Input'
+InputComponent.displayName = 'Input'
+
+/**
+ * Memoized Input component to prevent unnecessary re-renders
+ */
+export const Input = memo(InputComponent)
 
 /**
  * InputLabel component props
@@ -311,13 +318,15 @@ export interface InputLabelProps extends React.LabelHTMLAttributes<HTMLLabelElem
  *
  * A label component for form inputs with optional required indicator.
  *
+ * Optimized with React.memo to prevent unnecessary re-renders.
+ *
  * @example
  * ```tsx
  * <InputLabel htmlFor="email">Email Address</InputLabel>
  * <InputLabel htmlFor="password" required>Password</InputLabel>
  * ```
  */
-export const InputLabel = forwardRef<HTMLLabelElement, InputLabelProps>(
+const InputLabelComponent = forwardRef<HTMLLabelElement, InputLabelProps>(
   ({ required = false, children, className, ...props }, ref) => {
     return (
       <label
@@ -335,7 +344,12 @@ export const InputLabel = forwardRef<HTMLLabelElement, InputLabelProps>(
   }
 )
 
-InputLabel.displayName = 'InputLabel'
+InputLabelComponent.displayName = 'InputLabel'
+
+/**
+ * Memoized InputLabel component to prevent unnecessary re-renders
+ */
+export const InputLabel = memo(InputLabelComponent)
 
 /**
  * InputError component props
@@ -357,12 +371,14 @@ export interface InputErrorProps extends React.HTMLAttributes<HTMLParagraphEleme
  *
  * Displays error messages for form inputs.
  *
+ * Optimized with React.memo to prevent unnecessary re-renders.
+ *
  * @example
  * ```tsx
  * <InputError id="email-error">Email is required</InputError>
  * ```
  */
-export const InputError = forwardRef<HTMLParagraphElement, InputErrorProps>(
+const InputErrorComponent = forwardRef<HTMLParagraphElement, InputErrorProps>(
   ({ children, className, ...props }, ref) => {
     return (
       <p
@@ -377,7 +393,12 @@ export const InputError = forwardRef<HTMLParagraphElement, InputErrorProps>(
   }
 )
 
-InputError.displayName = 'InputError'
+InputErrorComponent.displayName = 'InputError'
+
+/**
+ * Memoized InputError component to prevent unnecessary re-renders
+ */
+export const InputError = memo(InputErrorComponent)
 
 /**
  * InputGroup component props
@@ -426,6 +447,8 @@ export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
  * A wrapper component that composes label, input, error, and help text together.
  * Provides consistent spacing and layout for form fields.
  *
+ * Optimized with React.memo to prevent unnecessary re-renders.
+ *
  * @example
  * ```tsx
  * // With all features
@@ -453,7 +476,7 @@ export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
  * </InputGroup>
  * ```
  */
-export const InputGroup = forwardRef<HTMLDivElement, InputGroupProps>(
+const InputGroupComponent = forwardRef<HTMLDivElement, InputGroupProps>(
   (
     {
       label,
@@ -497,4 +520,9 @@ export const InputGroup = forwardRef<HTMLDivElement, InputGroupProps>(
   }
 )
 
-InputGroup.displayName = 'InputGroup'
+InputGroupComponent.displayName = 'InputGroup'
+
+/**
+ * Memoized InputGroup component to prevent unnecessary re-renders
+ */
+export const InputGroup = memo(InputGroupComponent)

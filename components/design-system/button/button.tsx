@@ -1,6 +1,6 @@
 'use client'
 
-import React, { forwardRef, ButtonHTMLAttributes, ReactNode } from 'react'
+import React, { forwardRef, ButtonHTMLAttributes, ReactNode, memo } from 'react'
 import { cn } from '@/lib/utils/cn'
 import { Spinner } from '@/components/ui/spinner'
 
@@ -166,6 +166,8 @@ const iconSizeStyles: Record<ButtonSize, string> = {
  * A flexible button component with multiple variants, sizes, and states.
  * Supports loading state, disabled state, and icon placement.
  *
+ * Optimized with React.memo to prevent unnecessary re-renders.
+ *
  * @example
  * ```tsx
  * // Primary button
@@ -188,7 +190,7 @@ const iconSizeStyles: Record<ButtonSize, string> = {
  * </Button>
  * ```
  */
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+const ButtonComponent = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       variant = 'primary',
@@ -251,4 +253,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   }
 )
 
-Button.displayName = 'Button'
+ButtonComponent.displayName = 'Button'
+
+/**
+ * Memoized Button component to prevent unnecessary re-renders
+ */
+export const Button = memo(ButtonComponent)

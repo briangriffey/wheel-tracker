@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -106,6 +106,8 @@ const iconSizeClasses: Record<BadgeSize, string> = {
  * A compact UI element used to display status, labels, counts, or tags.
  * Supports multiple visual variants, sizes, and optional dismiss functionality.
  *
+ * Optimized with React.memo to prevent unnecessary re-renders.
+ *
  * @example
  * Basic usage:
  * ```tsx
@@ -133,7 +135,7 @@ const iconSizeClasses: Record<BadgeSize, string> = {
  * </Badge>
  * ```
  */
-export function Badge({
+const BadgeComponent = function Badge({
   children,
   variant = 'default',
   size = 'md',
@@ -169,3 +171,8 @@ export function Badge({
     </span>
   )
 }
+
+/**
+ * Memoized Badge component to prevent unnecessary re-renders
+ */
+export const Badge = memo(BadgeComponent)

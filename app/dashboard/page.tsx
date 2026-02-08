@@ -8,6 +8,8 @@ import {
   getWinRateData,
 } from '@/lib/queries/dashboard'
 import { PLExportButton } from '@/components/export/pl-export-button'
+import { UpcomingExpirationsWidget } from '@/components/dashboard/upcoming-expirations-widget'
+import { getNextExpirations } from '@/lib/queries/expirations'
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -17,11 +19,12 @@ export default async function DashboardPage() {
   }
 
   // Fetch initial dashboard data for 'All' time range
-  const [metrics, plOverTime, plByTicker, winRateData] = await Promise.all([
+  const [metrics, plOverTime, plByTicker, winRateData, upcomingExpirations] = await Promise.all([
     getDashboardMetrics('All'),
     getPLOverTime('All'),
     getPLByTicker('All'),
     getWinRateData('All'),
+    getNextExpirations(5),
   ])
 
   return (
@@ -30,6 +33,12 @@ export default async function DashboardPage() {
         <div className="mb-6">
           <PLExportButton />
         </div>
+
+        {/* Upcoming Expirations Widget */}
+        <div className="mb-6">
+          <UpcomingExpirationsWidget expirations={upcomingExpirations} />
+        </div>
+
         <PLDashboard
           initialMetrics={metrics}
           initialPLOverTime={plOverTime}

@@ -67,12 +67,12 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
       <Card variant="elevated">
         <CardContent className="p-6">
           <div className="animate-pulse">
-            <div className="h-6 bg-gray-200 rounded w-1/3 mb-6"></div>
+            <div className="h-6 bg-neutral-200 rounded w-1/3 mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div className="h-32 bg-gray-200 rounded"></div>
-              <div className="h-32 bg-gray-200 rounded"></div>
+              <div className="h-32 bg-neutral-200 rounded"></div>
+              <div className="h-32 bg-neutral-200 rounded"></div>
             </div>
-            <div className="h-80 bg-gray-200 rounded"></div>
+            <div className="h-80 bg-neutral-200 rounded"></div>
           </div>
         </CardContent>
       </Card>
@@ -86,9 +86,9 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
           <CardTitle>Benchmark Comparison</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center h-80 text-gray-500">
+          <div className="flex flex-col items-center justify-center h-80 text-neutral-500">
             <svg
-              className="w-12 h-12 mb-4 text-gray-400"
+              className="w-12 h-12 mb-4 text-neutral-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -123,7 +123,7 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
         {/* Header with Benchmark Selector and Info Button */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-900">Benchmark Comparison</h3>
+            <h3 className="text-lg font-semibold text-neutral-900">Benchmark Comparison</h3>
             <Button
               variant="ghost"
               size="sm"
@@ -182,24 +182,24 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Wheel Strategy Metrics */}
           <Card variant="default">
-            <CardContent className="p-4 bg-gray-50">
-              <h4 className="text-sm font-medium text-gray-700 mb-3">Wheel Strategy</h4>
+            <CardContent className="p-4 bg-neutral-50">
+              <h4 className="text-sm font-medium text-neutral-700 mb-3">Wheel Strategy</h4>
               <div className="space-y-2">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-gray-600">Total P&L:</span>
+                  <span className="text-sm text-neutral-600">Total P&L:</span>
                   <span className={`text-lg font-bold ${getPnLColorClass(wheelStrategy.totalPnL)}`}>
                     {formatCurrency(wheelStrategy.totalPnL)}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-gray-600">Return:</span>
+                  <span className="text-sm text-neutral-600">Return:</span>
                   <span className={`text-lg font-bold ${getPnLColorClass(wheelStrategy.returnPercent)}`}>
                     {wheelStrategy.returnPercent.toFixed(2)}%
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-gray-600">Capital Deployed:</span>
-                  <span className="text-sm text-gray-900">
+                  <span className="text-sm text-neutral-600">Capital Deployed:</span>
+                  <span className="text-sm text-neutral-900">
                     {formatCurrency(wheelStrategy.capitalDeployed)}
                   </span>
                 </div>
@@ -209,26 +209,26 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
 
           {/* Benchmark Metrics */}
           <Card variant="default">
-            <CardContent className="p-4 bg-gray-50">
-              <h4 className="text-sm font-medium text-gray-700 mb-3">
+            <CardContent className="p-4 bg-neutral-50">
+              <h4 className="text-sm font-medium text-neutral-700 mb-3">
                 {selectedBenchmark} Benchmark
               </h4>
               <div className="space-y-2">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-gray-600">Total P&L:</span>
+                  <span className="text-sm text-neutral-600">Total P&L:</span>
                   <span className={`text-lg font-bold ${getPnLColorClass(benchmark.gainLoss)}`}>
                     {formatCurrency(benchmark.gainLoss)}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-gray-600">Return:</span>
+                  <span className="text-sm text-neutral-600">Return:</span>
                   <span className={`text-lg font-bold ${getPnLColorClass(benchmark.returnPercent)}`}>
                     {benchmark.returnPercent.toFixed(2)}%
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="text-sm text-gray-600">Initial Capital:</span>
-                  <span className="text-sm text-gray-900">
+                  <span className="text-sm text-neutral-600">Initial Capital:</span>
+                  <span className="text-sm text-neutral-900">
                     {formatCurrency(benchmark.initialCapital)}
                   </span>
                 </div>
@@ -239,22 +239,22 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
 
         {/* Difference Metrics */}
         <Card variant="default" className="mb-6 border-l-4 border-blue-500">
-          <CardContent className="p-4 bg-gradient-to-r from-gray-50 to-gray-100">
+          <CardContent className="p-4 bg-gradient-to-r from-neutral-50 to-neutral-100">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-1">Performance Difference</h4>
-                <p className="text-xs text-gray-600">Wheel Strategy vs {selectedBenchmark}</p>
+                <h4 className="text-sm font-medium text-neutral-700 mb-1">Performance Difference</h4>
+                <p className="text-xs text-neutral-600">Wheel Strategy vs {selectedBenchmark}</p>
               </div>
               <div className="flex gap-6">
                 <div>
-                  <p className="text-xs text-gray-600 mb-1">P&L Difference</p>
+                  <p className="text-xs text-neutral-600 mb-1">P&L Difference</p>
                   <p className={`text-lg font-bold ${getPnLColorClass(difference.pnlDifference)}`}>
                     {difference.pnlDifference >= 0 ? '+' : ''}
                     {formatCurrency(difference.pnlDifference)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-600 mb-1">Return Difference</p>
+                  <p className="text-xs text-neutral-600 mb-1">Return Difference</p>
                   <p className={`text-lg font-bold ${getPnLColorClass(difference.returnDifference)}`}>
                     {difference.returnDifference >= 0 ? '+' : ''}
                     {difference.returnDifference.toFixed(2)}%

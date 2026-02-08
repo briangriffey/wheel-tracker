@@ -14,16 +14,16 @@ interface GlossaryTermProps {
 
 function GlossaryTerm({ term, definition }: GlossaryTermProps) {
   return (
-    <div className="border-b border-gray-200 pb-4 mb-4">
-      <dt className="font-bold text-lg text-gray-900 mb-2">{term}</dt>
-      <dd className="text-gray-700 leading-relaxed pl-4">{definition}</dd>
+    <div className="border-b border-neutral-200 pb-4 mb-4">
+      <dt className="font-bold text-lg text-neutral-900 mb-2">{term}</dt>
+      <dd className="text-neutral-700 leading-relaxed pl-4">{definition}</dd>
     </div>
   )
 }
 
 export default function GlossaryPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-neutral-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -33,17 +33,17 @@ export default function GlossaryPage() {
           >
             ← Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-neutral-900 mb-2">
             Options Trading Glossary
           </h1>
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             Key terms and definitions for options trading and the wheel strategy.
           </p>
         </div>
 
         {/* Categories */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="font-semibold text-gray-900 mb-3">Categories</h2>
+          <h2 className="font-semibold text-neutral-900 mb-3">Categories</h2>
           <div className="flex flex-wrap gap-2">
             <a
               href="#basics"
@@ -80,7 +80,7 @@ export default function GlossaryPage() {
 
         {/* Basics */}
         <section id="basics" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 border-b-2 border-blue-500 pb-2">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4 border-b-2 border-blue-500 pb-2">
             Basics
           </h2>
           <dl>
@@ -117,7 +117,7 @@ export default function GlossaryPage() {
 
         {/* Options */}
         <section id="options" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 border-b-2 border-green-500 pb-2">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4 border-b-2 border-green-500 pb-2">
             Options Trading
           </h2>
           <dl>
@@ -174,7 +174,7 @@ export default function GlossaryPage() {
 
         {/* Wheel Strategy */}
         <section id="wheel" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 border-b-2 border-purple-500 pb-2">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4 border-b-2 border-purple-500 pb-2">
             Wheel Strategy Terms
           </h2>
           <dl>
@@ -211,7 +211,7 @@ export default function GlossaryPage() {
 
         {/* Metrics */}
         <section id="metrics" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 border-b-2 border-orange-500 pb-2">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4 border-b-2 border-orange-500 pb-2">
             Performance Metrics
           </h2>
           <dl>
@@ -252,7 +252,7 @@ export default function GlossaryPage() {
 
         {/* Advanced */}
         <section id="advanced" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 border-b-2 border-pink-500 pb-2">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4 border-b-2 border-pink-500 pb-2">
             Advanced Concepts
           </h2>
           <dl>
@@ -305,10 +305,10 @@ export default function GlossaryPage() {
 
         {/* Additional Resources */}
         <div className="bg-blue-50 rounded-lg p-6 mt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">
+          <h2 className="text-xl font-bold text-neutral-900 mb-3">
             Learn More
           </h2>
-          <p className="text-gray-700 mb-4">
+          <p className="text-neutral-700 mb-4">
             Now that you know the terminology, put it into practice:
           </p>
           <div className="space-y-2">
@@ -335,30 +335,30 @@ export default function GlossaryPage() {
 
         {/* Quick Reference Card */}
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 mt-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">
+          <h2 className="text-xl font-bold text-neutral-900 mb-3">
             Quick Reference: The Wheel in 3 Steps
           </h2>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg">
               <div className="text-2xl mb-2">1️⃣</div>
-              <h3 className="font-bold text-gray-900 mb-1">Sell PUT</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-bold text-neutral-900 mb-1">Sell PUT</h3>
+              <p className="text-sm text-neutral-600">
                 Collect premium. If expired: keep premium. If assigned: buy
                 stock at strike.
               </p>
             </div>
             <div className="bg-white p-4 rounded-lg">
               <div className="text-2xl mb-2">2️⃣</div>
-              <h3 className="font-bold text-gray-900 mb-1">Own Shares</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-bold text-neutral-900 mb-1">Own Shares</h3>
+              <p className="text-sm text-neutral-600">
                 Your cost basis is the strike price. Premium collected reduces
                 break-even.
               </p>
             </div>
             <div className="bg-white p-4 rounded-lg">
               <div className="text-2xl mb-2">3️⃣</div>
-              <h3 className="font-bold text-gray-900 mb-1">Sell CALL</h3>
-              <p className="text-sm text-gray-600">
+              <h3 className="font-bold text-neutral-900 mb-1">Sell CALL</h3>
+              <p className="text-sm text-neutral-600">
                 Collect more premium. Repeat until assigned, then restart the
                 wheel.
               </p>

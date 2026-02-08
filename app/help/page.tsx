@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function HelpPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-neutral-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -18,8 +18,8 @@ export default function HelpPage() {
           >
             ← Back to Dashboard
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Help Center</h1>
-          <p className="text-xl text-gray-600">
+          <h1 className="text-4xl font-bold text-neutral-900 mb-2">Help Center</h1>
+          <p className="text-xl text-neutral-600">
             Everything you need to master Wheel Tracker and the wheel strategy
           </p>
         </div>
@@ -37,10 +37,10 @@ export default function HelpPage() {
                 </div>
               </div>
               <div className="ml-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                <h2 className="text-xl font-bold text-neutral-900 mb-2">
                   Frequently Asked Questions
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-neutral-600">
                   Find quick answers to common questions about trading, strategy,
                   and using the app.
                 </p>
@@ -59,10 +59,10 @@ export default function HelpPage() {
                 </div>
               </div>
               <div className="ml-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                <h2 className="text-xl font-bold text-neutral-900 mb-2">
                   Trading Glossary
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-neutral-600">
                   Learn options trading terminology and wheel strategy concepts.
                 </p>
               </div>
@@ -79,10 +79,10 @@ export default function HelpPage() {
               </div>
             </div>
             <div className="ml-6 flex-grow">
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              <h2 className="text-2xl font-bold text-neutral-900 mb-3">
                 Complete User Guide
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-neutral-600 mb-4">
                 Comprehensive documentation covering everything from getting
                 started to advanced strategies. Learn how to enter trades, handle
                 assignments, read your dashboard, and optimize your wheel trading.
@@ -101,14 +101,14 @@ export default function HelpPage() {
 
         {/* Getting Started */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4">
             Getting Started
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             <div>
               <div className="text-3xl mb-2">1️⃣</div>
-              <h3 className="font-bold text-gray-900 mb-2">Learn the Basics</h3>
-              <p className="text-sm text-gray-700 mb-3">
+              <h3 className="font-bold text-neutral-900 mb-2">Learn the Basics</h3>
+              <p className="text-sm text-neutral-700 mb-3">
                 Start with the glossary to understand key terms, then read about
                 the wheel strategy.
               </p>
@@ -121,8 +121,8 @@ export default function HelpPage() {
             </div>
             <div>
               <div className="text-3xl mb-2">2️⃣</div>
-              <h3 className="font-bold text-gray-900 mb-2">Enter Your First Trade</h3>
-              <p className="text-sm text-gray-700 mb-3">
+              <h3 className="font-bold text-neutral-900 mb-2">Enter Your First Trade</h3>
+              <p className="text-sm text-neutral-700 mb-3">
                 Follow the step-by-step guide to enter your first PUT option
                 trade.
               </p>
@@ -135,8 +135,8 @@ export default function HelpPage() {
             </div>
             <div>
               <div className="text-3xl mb-2">3️⃣</div>
-              <h3 className="font-bold text-gray-900 mb-2">Track Performance</h3>
-              <p className="text-sm text-gray-700 mb-3">
+              <h3 className="font-bold text-neutral-900 mb-2">Track Performance</h3>
+              <p className="text-sm text-neutral-700 mb-3">
                 Set up benchmarks and learn to read your dashboard metrics.
               </p>
               <Link
@@ -151,15 +151,15 @@ export default function HelpPage() {
 
         {/* Common Tasks */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-6">
             Common Tasks
           </h2>
           <div className="space-y-4">
-            <div className="flex items-start pb-4 border-b border-gray-200">
+            <div className="flex items-start pb-4 border-b border-neutral-200">
               <span className="text-2xl mr-4">💰</span>
               <div className="flex-grow">
-                <h3 className="font-bold text-gray-900">Selling a PUT</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <h3 className="font-bold text-neutral-900">Selling a PUT</h3>
+                <p className="text-sm text-neutral-600 mt-1">
                   Trades → New Trade → Select PUT → Enter details → Submit
                 </p>
               </div>
@@ -171,11 +171,11 @@ export default function HelpPage() {
               </Link>
             </div>
 
-            <div className="flex items-start pb-4 border-b border-gray-200">
+            <div className="flex items-start pb-4 border-b border-neutral-200">
               <span className="text-2xl mr-4">📦</span>
               <div className="flex-grow">
-                <h3 className="font-bold text-gray-900">Handling Assignment</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <h3 className="font-bold text-neutral-900">Handling Assignment</h3>
+                <p className="text-sm text-neutral-600 mt-1">
                   Click &quot;Assign&quot; on a trade to create a position and start
                   selling covered calls
                 </p>
@@ -188,11 +188,11 @@ export default function HelpPage() {
               </Link>
             </div>
 
-            <div className="flex items-start pb-4 border-b border-gray-200">
+            <div className="flex items-start pb-4 border-b border-neutral-200">
               <span className="text-2xl mr-4">📊</span>
               <div className="flex-grow">
-                <h3 className="font-bold text-gray-900">Reading Your Dashboard</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <h3 className="font-bold text-neutral-900">Reading Your Dashboard</h3>
+                <p className="text-sm text-neutral-600 mt-1">
                   View total P&L, active positions, upcoming expirations, and
                   performance charts
                 </p>
@@ -205,11 +205,11 @@ export default function HelpPage() {
               </Link>
             </div>
 
-            <div className="flex items-start pb-4 border-b border-gray-200">
+            <div className="flex items-start pb-4 border-b border-neutral-200">
               <span className="text-2xl mr-4">📈</span>
               <div className="flex-grow">
-                <h3 className="font-bold text-gray-900">Setting Up Benchmarks</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <h3 className="font-bold text-neutral-900">Setting Up Benchmarks</h3>
+                <p className="text-sm text-neutral-600 mt-1">
                   Compare your performance to market indices like SPY or QQQ
                 </p>
               </div>
@@ -224,8 +224,8 @@ export default function HelpPage() {
             <div className="flex items-start">
               <span className="text-2xl mr-4">📥</span>
               <div className="flex-grow">
-                <h3 className="font-bold text-gray-900">Exporting for Taxes</h3>
-                <p className="text-sm text-gray-600 mt-1">
+                <h3 className="font-bold text-neutral-900">Exporting for Taxes</h3>
+                <p className="text-sm text-neutral-600 mt-1">
                   Export trades and positions to CSV for tax preparation
                 </p>
               </div>
@@ -241,10 +241,10 @@ export default function HelpPage() {
 
         {/* Best Practices */}
         <div className="bg-green-50 rounded-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4">
             💡 Pro Tips
           </h2>
-          <ul className="space-y-3 text-gray-700">
+          <ul className="space-y-3 text-neutral-700">
             <li className="flex items-start">
               <span className="text-green-600 mr-2">✓</span>
               <span>
@@ -283,10 +283,10 @@ export default function HelpPage() {
 
         {/* Contact Support */}
         <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-3">
             Still Need Help?
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-neutral-600 mb-6">
             Can&apos;t find what you&apos;re looking for? Our support team is here to help.
           </p>
           <a

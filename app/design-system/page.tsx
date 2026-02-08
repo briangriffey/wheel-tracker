@@ -33,14 +33,14 @@ export default function DesignSystemPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-neutral-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+      <header className="bg-white border-b border-neutral-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-neutral-900">
             Wheel Tracker Design System
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-neutral-600">
             Interactive component gallery and documentation
           </p>
         </div>
@@ -50,11 +50,11 @@ export default function DesignSystemPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Introduction */}
         <section className="mb-16">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8">
+            <h2 className="text-2xl font-bold text-neutral-900 mb-4">
               Welcome to the Design System
             </h2>
-            <p className="text-gray-700 mb-4">
+            <p className="text-neutral-700 mb-4">
               This design system provides a consistent, reusable set of components
               built with accessibility, performance, and developer experience in mind.
             </p>
@@ -77,11 +77,11 @@ export default function DesignSystemPage() {
 
         {/* Color Palette */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Color Palette</h2>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-6">Color Palette</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8">
             {/* Primary Green */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              <h3 className="text-lg font-semibold text-neutral-800 mb-4">
                 Primary Green
               </h3>
               <div className="grid grid-cols-5 gap-2">
@@ -94,13 +94,13 @@ export default function DesignSystemPage() {
                 ].map((item) => (
                   <div key={item.shade} className="text-center">
                     <div
-                      className="h-20 rounded-lg shadow-sm border border-gray-200 mb-2"
+                      className="h-20 rounded-lg shadow-sm border border-neutral-200 mb-2"
                       style={{ backgroundColor: item.color }}
                     />
-                    <div className="text-xs font-medium text-gray-700">
+                    <div className="text-xs font-medium text-neutral-700">
                       {item.shade}
                     </div>
-                    <div className="text-xs text-gray-500 font-mono">
+                    <div className="text-xs text-neutral-500 font-mono">
                       {item.color}
                     </div>
                   </div>
@@ -116,16 +116,16 @@ export default function DesignSystemPage() {
                 ].map((item) => (
                   <div key={item.shade} className="text-center">
                     <div
-                      className="h-20 rounded-lg shadow-sm border border-gray-200 mb-2"
+                      className="h-20 rounded-lg shadow-sm border border-neutral-200 mb-2"
                       style={{ backgroundColor: item.color }}
                     />
-                    <div className="text-xs font-medium text-gray-700">
+                    <div className="text-xs font-medium text-neutral-700">
                       {item.shade}
                       {item.label && (
                         <span className="ml-1 text-green-600">★</span>
                       )}
                     </div>
-                    <div className="text-xs text-gray-500 font-mono">
+                    <div className="text-xs text-neutral-500 font-mono">
                       {item.color}
                     </div>
                   </div>
@@ -135,7 +135,7 @@ export default function DesignSystemPage() {
 
             {/* Semantic Colors */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              <h3 className="text-lg font-semibold text-neutral-800 mb-4">
                 Semantic Colors
               </h3>
               <div className="grid grid-cols-4 gap-4">
@@ -147,10 +147,10 @@ export default function DesignSystemPage() {
                 ].map((item) => (
                   <div key={item.name} className="text-center">
                     <div className={`h-20 rounded-lg shadow-sm mb-2 ${item.class}`} />
-                    <div className="text-sm font-medium text-gray-700">
+                    <div className="text-sm font-medium text-neutral-700">
                       {item.name}
                     </div>
-                    <div className="text-xs text-gray-500 font-mono">
+                    <div className="text-xs text-neutral-500 font-mono">
                       {item.color}
                     </div>
                   </div>
@@ -168,7 +168,7 @@ export default function DesignSystemPage() {
         >
           {/* Variants */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Variants
             </h4>
             <div className="flex flex-wrap gap-3">
@@ -192,7 +192,7 @@ export default function DesignSystemPage() {
 
           {/* Sizes */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Sizes
             </h4>
             <div className="flex flex-wrap items-center gap-3">
@@ -212,7 +212,7 @@ export default function DesignSystemPage() {
 
           {/* States */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               States
             </h4>
             <div className="flex flex-wrap gap-3">
@@ -237,7 +237,7 @@ export default function DesignSystemPage() {
         >
           {/* Variants */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Variants
             </h4>
             <div className="flex flex-wrap items-center gap-3">
@@ -263,7 +263,7 @@ export default function DesignSystemPage() {
 
           {/* Sizes */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Sizes
             </h4>
             <div className="flex flex-wrap items-center gap-3">
@@ -283,7 +283,7 @@ export default function DesignSystemPage() {
 
           {/* Removable */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Removable
             </h4>
             <div className="flex flex-wrap items-center gap-3">
@@ -310,7 +310,7 @@ export default function DesignSystemPage() {
         >
           {/* Variants */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Variants
             </h4>
             <div className="space-y-4">
@@ -354,7 +354,7 @@ export default function DesignSystemPage() {
 
           {/* Dismissible */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Dismissible
             </h4>
             <Alert variant="success" dismissible onDismiss={() => console.log('Dismissed')}>
@@ -385,7 +385,7 @@ export default function DesignSystemPage() {
         >
           {/* Sizes */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Sizes
             </h4>
             <div className="space-y-3">
@@ -405,7 +405,7 @@ export default function DesignSystemPage() {
 
           {/* States */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               States
             </h4>
             <div className="space-y-3">
@@ -427,19 +427,19 @@ export default function DesignSystemPage() {
 
           {/* With Prefix/Suffix */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Prefix & Suffix
             </h4>
             <div className="space-y-3">
               <Input
                 type="number"
                 placeholder="0.00"
-                prefix={<span className="text-gray-500">$</span>}
+                prefix={<span className="text-neutral-500">$</span>}
               />
               <Input
                 type="text"
                 placeholder="Enter percentage"
-                suffix={<span className="text-gray-500">%</span>}
+                suffix={<span className="text-neutral-500">%</span>}
               />
               <Input
                 placeholder="With help text"
@@ -449,11 +449,11 @@ export default function DesignSystemPage() {
             <CodeBlock
               code={`<Input
   type="number"
-  prefix={<span className="text-gray-500">$</span>}
+  prefix={<span className="text-neutral-500">$</span>}
   placeholder="0.00"
 />
 <Input
-  suffix={<span className="text-gray-500">%</span>}
+  suffix={<span className="text-neutral-500">%</span>}
   placeholder="Percentage"
 />
 <Input helpText="Helper text below input" />`}
@@ -472,7 +472,7 @@ export default function DesignSystemPage() {
         >
           {/* Sizes */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Sizes
             </h4>
             <div className="space-y-3">
@@ -505,7 +505,7 @@ export default function DesignSystemPage() {
 
           {/* States */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               States
             </h4>
             <div className="space-y-3">
@@ -547,21 +547,21 @@ export default function DesignSystemPage() {
         >
           {/* Sizes */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Sizes
             </h4>
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <Spinner size="sm" />
-                <p className="text-xs text-gray-500 mt-2">Small</p>
+                <p className="text-xs text-neutral-500 mt-2">Small</p>
               </div>
               <div className="text-center">
                 <Spinner size="md" />
-                <p className="text-xs text-gray-500 mt-2">Medium</p>
+                <p className="text-xs text-neutral-500 mt-2">Medium</p>
               </div>
               <div className="text-center">
                 <Spinner size="lg" />
-                <p className="text-xs text-gray-500 mt-2">Large</p>
+                <p className="text-xs text-neutral-500 mt-2">Large</p>
               </div>
             </div>
             <CodeBlock
@@ -576,7 +576,7 @@ export default function DesignSystemPage() {
 
           {/* Overlay */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Spinner Overlay
             </h4>
             <Button onClick={() => {
@@ -603,7 +603,7 @@ export default function DesignSystemPage() {
         >
           {/* Basic Skeleton */}
           <div className="mb-8">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Basic Skeleton
             </h4>
             <div className="space-y-2">
@@ -623,7 +623,7 @@ export default function DesignSystemPage() {
 
           {/* Skeleton Variants */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+            <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
               Preset Variants
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -658,7 +658,7 @@ export default function DesignSystemPage() {
               title="Example Dialog"
               maxWidth="lg"
             >
-              <p className="text-gray-600">
+              <p className="text-neutral-600">
                 This is a dialog component with automatic focus management,
                 keyboard navigation (ESC to close), and click-outside-to-close functionality.
               </p>
@@ -713,7 +713,7 @@ export default function DesignSystemPage() {
               description="This is an optional description"
               size="lg"
             >
-              <p className="text-gray-600">
+              <p className="text-neutral-600">
                 Modal component with support for title, optional description,
                 and configurable sizes (sm, md, lg, xl).
               </p>
@@ -758,10 +758,10 @@ export default function DesignSystemPage() {
           <div className="space-y-8">
             {/* Basic Empty State */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
                 Basic
               </h4>
-              <div className="border border-gray-200 rounded-lg">
+              <div className="border border-neutral-200 rounded-lg">
                 <EmptyState
                   title="No trades found"
                   description="You haven't created any trades yet. Get started by opening your first position."
@@ -780,10 +780,10 @@ export default function DesignSystemPage() {
 
             {/* With Action */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
                 With Action Button
               </h4>
-              <div className="border border-gray-200 rounded-lg">
+              <div className="border border-neutral-200 rounded-lg">
                 <EmptyState
                   title="No positions"
                   description="Start tracking your wheel strategy positions."
@@ -849,16 +849,16 @@ export default function DesignSystemPage() {
           <div className="space-y-8">
             {/* Help Icon */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
                 Help Icon
               </h4>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">Strike Price</span>
+                  <span className="text-sm text-neutral-700">Strike Price</span>
                   <HelpIcon tooltip="The price at which the option can be exercised" />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">Premium</span>
+                  <span className="text-sm text-neutral-700">Premium</span>
                   <HelpIcon
                     tooltip="Amount received for selling the option"
                     helpLink="#"
@@ -879,7 +879,7 @@ export default function DesignSystemPage() {
 
             {/* Help Tooltip */}
             <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              <h4 className="text-sm font-semibold text-neutral-700 mb-3 uppercase tracking-wide">
                 Help Tooltip
               </h4>
               <div className="flex gap-4">
@@ -908,9 +908,9 @@ export default function DesignSystemPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
+      <footer className="bg-white border-t border-neutral-200 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <p className="text-center text-gray-600">
+          <p className="text-center text-neutral-600">
             Wheel Tracker Design System • Built with Next.js, React, TypeScript, and Tailwind CSS
           </p>
         </div>
@@ -933,10 +933,10 @@ function ComponentSection({ title, description, id, children }: ComponentSection
   return (
     <section id={id} className="mb-16 scroll-mt-20">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
-        <p className="text-gray-600">{description}</p>
+        <h2 className="text-2xl font-bold text-neutral-900 mb-2">{title}</h2>
+        <p className="text-neutral-600">{description}</p>
       </div>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-8">
         {children}
       </div>
     </section>
@@ -956,12 +956,12 @@ interface CodeBlockProps {
 function CodeBlock({ code, id, copiedCode, onCopy }: CodeBlockProps) {
   return (
     <div className="mt-4 relative">
-      <pre className="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm">
+      <pre className="bg-neutral-900 text-neutral-100 rounded-lg p-4 overflow-x-auto text-sm">
         <code>{code}</code>
       </pre>
       <button
         onClick={() => onCopy(code, id)}
-        className="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition-colors"
+        className="absolute top-2 right-2 bg-neutral-700 hover:bg-neutral-600 text-white px-3 py-1 rounded text-xs transition-colors"
       >
         {copiedCode === id ? '✓ Copied!' : 'Copy'}
       </button>

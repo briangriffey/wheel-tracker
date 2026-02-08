@@ -57,7 +57,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'l
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        className="fixed inset-0 bg-neutral-500 bg-opacity-75 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -75,18 +75,18 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'l
               <div>
                 <h3
                   id="modal-title"
-                  className="text-lg font-semibold leading-6 text-gray-900"
+                  className="text-lg font-semibold leading-6 text-neutral-900"
                 >
                   {title}
                 </h3>
                 {description && (
-                  <p className="mt-1 text-sm text-gray-500">{description}</p>
+                  <p className="mt-1 text-sm text-neutral-500">{description}</p>
                 )}
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="rounded-md bg-white text-neutral-400 hover:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 aria-label="Close modal"
               >
                 <span className="sr-only">Close</span>

@@ -225,19 +225,19 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600 font-medium">Total Positions</div>
-          <div className="text-3xl font-bold text-gray-900 mt-2">{stats.totalPositions}</div>
+          <div className="text-sm text-neutral-600 font-medium">Total Positions</div>
+          <div className="text-3xl font-bold text-neutral-900 mt-2">{stats.totalPositions}</div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600 font-medium">Total P&L</div>
+          <div className="text-sm text-neutral-600 font-medium">Total P&L</div>
           <div className={`text-3xl font-bold mt-2 ${getPnLColorClass(stats.totalPL)}`}>
             {stats.totalPL >= 0 ? '+' : ''}
             {formatCurrency(stats.totalPL)}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600 font-medium">Capital Deployed</div>
-          <div className="text-3xl font-bold text-gray-900 mt-2">
+          <div className="text-sm text-neutral-600 font-medium">Capital Deployed</div>
+          <div className="text-3xl font-bold text-neutral-900 mt-2">
             {formatCurrency(stats.totalCapital)}
           </div>
         </div>
@@ -246,15 +246,15 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
       {/* Filters and Sorting */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Filters & Sorting</h3>
+          <h3 className="text-lg font-semibold text-neutral-900">Filters & Sorting</h3>
           <div className="flex items-center gap-3">
             {/* Auto-refresh toggle */}
-            <label className="flex items-center gap-2 text-sm text-gray-700">
+            <label className="flex items-center gap-2 text-sm text-neutral-700">
               <input
                 type="checkbox"
                 checked={autoRefreshEnabled}
                 onChange={(e) => setAutoRefreshEnabled(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
               />
               <span>Auto-refresh (5m)</span>
             </label>
@@ -285,7 +285,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
             <button
               onClick={handleRefreshAll}
               disabled={isRefreshing}
-              className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-2 border border-neutral-300 rounded-md shadow-sm text-sm font-medium text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               aria-label="Refresh all prices"
             >
               <svg
@@ -318,7 +318,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Ticker Filter */}
           <div>
-            <label htmlFor="ticker-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="ticker-filter" className="block text-sm font-medium text-neutral-700 mb-1">
               Ticker
             </label>
             <input
@@ -327,20 +327,20 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               value={tickerFilter}
               onChange={(e) => setTickerFilter(e.target.value)}
               placeholder="e.g., AAPL"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* P&L Filter */}
           <div>
-            <label htmlFor="pl-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="pl-filter" className="block text-sm font-medium text-neutral-700 mb-1">
               Profit/Loss
             </label>
             <select
               id="pl-filter"
               value={plFilter}
               onChange={(e) => setPLFilter(e.target.value as PLFilter)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">All Positions</option>
               <option value="PROFIT">Profit Only</option>
@@ -351,14 +351,14 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
 
           {/* Sort Field */}
           <div>
-            <label htmlFor="sort-field" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="sort-field" className="block text-sm font-medium text-neutral-700 mb-1">
               Sort By
             </label>
             <select
               id="sort-field"
               value={sortField}
               onChange={(e) => handleSort(e.target.value as SortField)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ticker">Ticker</option>
               <option value="unrealizedPL">P&L</option>
@@ -368,14 +368,14 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
 
           {/* Sort Direction */}
           <div>
-            <label htmlFor="sort-direction" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="sort-direction" className="block text-sm font-medium text-neutral-700 mb-1">
               Direction
             </label>
             <select
               id="sort-direction"
               value={sortDirection}
               onChange={(e) => setSortDirection(e.target.value as SortDirection)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
@@ -398,7 +398,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
       </div>
 
       {/* Results Count */}
-      <div className="text-sm text-gray-600 mb-4">
+      <div className="text-sm text-neutral-600 mb-4">
         Showing {filteredPositions.length} of {positions.length} positions
       </div>
 
@@ -406,7 +406,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
       {filteredPositions.length === 0 && (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-neutral-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -418,8 +418,8 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
             />
           </svg>
-          <h3 className="mt-2 text-lg font-medium text-gray-900">No positions found</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-lg font-medium text-neutral-900">No positions found</h3>
+          <p className="mt-1 text-sm text-neutral-500">
             {positions.length === 0
               ? 'You don\'t have any stock positions yet. Positions are created when PUT options are assigned.'
               : 'Try adjusting your filters to find what you\'re looking for.'}

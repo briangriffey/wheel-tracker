@@ -21,7 +21,7 @@ const BENCHMARKS: { value: BenchmarkTicker; label: string; description: string }
 export function BenchmarkSelector({ selected, onChange }: BenchmarkSelectorProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-      <label htmlFor="benchmark-select" className="text-sm font-medium text-gray-700">
+      <label htmlFor="benchmark-select" className="text-sm font-medium text-neutral-700">
         Compare to:
       </label>
       <Select

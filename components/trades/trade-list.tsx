@@ -170,11 +170,11 @@ export function TradeList({ initialTrades }: TradeListProps) {
     <div className="w-full">
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
+        <h3 className="text-lg font-semibold text-neutral-900 mb-4">Filters</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Ticker Filter */}
           <div>
-            <label htmlFor="ticker-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="ticker-filter" className="block text-sm font-medium text-neutral-700 mb-1">
               Ticker
             </label>
             <input
@@ -183,20 +183,20 @@ export function TradeList({ initialTrades }: TradeListProps) {
               value={tickerFilter}
               onChange={(e) => setTickerFilter(e.target.value)}
               placeholder="e.g., AAPL"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Status Filter */}
           <div>
-            <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="status-filter" className="block text-sm font-medium text-neutral-700 mb-1">
               Status
             </label>
             <select
               id="status-filter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as TradeStatus | 'ALL')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">All Statuses</option>
               <option value="OPEN">Open</option>
@@ -208,14 +208,14 @@ export function TradeList({ initialTrades }: TradeListProps) {
 
           {/* Type Filter */}
           <div>
-            <label htmlFor="type-filter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="type-filter" className="block text-sm font-medium text-neutral-700 mb-1">
               Type
             </label>
             <select
               id="type-filter"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as TradeType | 'ALL')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">All Types</option>
               <option value="PUT">PUT</option>
@@ -225,7 +225,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
 
           {/* Date Range Start */}
           <div>
-            <label htmlFor="date-start" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="date-start" className="block text-sm font-medium text-neutral-700 mb-1">
               Exp. Date From
             </label>
             <input
@@ -233,13 +233,13 @@ export function TradeList({ initialTrades }: TradeListProps) {
               type="date"
               value={dateRangeStart}
               onChange={(e) => setDateRangeStart(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Date Range End */}
           <div>
-            <label htmlFor="date-end" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="date-end" className="block text-sm font-medium text-neutral-700 mb-1">
               Exp. Date To
             </label>
             <input
@@ -247,7 +247,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               type="date"
               value={dateRangeEnd}
               onChange={(e) => setDateRangeEnd(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -270,7 +270,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
       </div>
 
       {/* Results Count */}
-      <div className="text-sm text-gray-600 mb-4">
+      <div className="text-sm text-neutral-600 mb-4">
         Showing {filteredTrades.length} of {trades.length} trades
       </div>
 
@@ -278,7 +278,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
       {filteredTrades.length === 0 && (
         <div className="bg-white rounded-lg shadow p-12 text-center">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-neutral-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -290,8 +290,8 @@ export function TradeList({ initialTrades }: TradeListProps) {
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <h3 className="mt-2 text-lg font-medium text-gray-900">No trades found</h3>
-          <p className="mt-1 text-sm text-gray-500">
+          <h3 className="mt-2 text-lg font-medium text-neutral-900">No trades found</h3>
+          <p className="mt-1 text-sm text-neutral-500">
             {trades.length === 0
               ? 'Get started by creating your first trade.'
               : 'Try adjusting your filters to find what you\'re looking for.'}
@@ -302,12 +302,12 @@ export function TradeList({ initialTrades }: TradeListProps) {
       {/* Desktop Table View */}
       {filteredTrades.length > 0 && (
         <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-neutral-200">
+            <thead className="bg-neutral-50">
               <tr>
                 <th
                   onClick={() => handleSort('ticker')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100"
                 >
                   <div className="flex items-center gap-1">
                     Ticker
@@ -318,15 +318,15 @@ export function TradeList({ initialTrades }: TradeListProps) {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                   Strike
                 </th>
                 <th
                   onClick={() => handleSort('premium')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100"
                 >
                   <div className="flex items-center gap-1">
                     Premium
@@ -339,7 +339,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                 </th>
                 <th
                   onClick={() => handleSort('expirationDate')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100"
                 >
                   <div className="flex items-center gap-1">
                     Expiration
@@ -350,18 +350,18 @@ export function TradeList({ initialTrades }: TradeListProps) {
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-neutral-200">
               {filteredTrades.map((trade) => (
-                <tr key={trade.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr key={trade.id} className="hover:bg-neutral-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">
                     {trade.ticker}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -369,13 +369,13 @@ export function TradeList({ initialTrades }: TradeListProps) {
                       {trade.type}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
                     {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
                     {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">
                     {formatDate(trade.expirationDate)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -447,7 +447,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
+                  <h3 className="text-lg font-semibold text-neutral-900">{trade.ticker}</h3>
                   <div className="flex gap-2 mt-1">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
                       {trade.type}
@@ -462,26 +462,26 @@ export function TradeList({ initialTrades }: TradeListProps) {
               {/* Details */}
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Strike Price:</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="text-neutral-500">Strike Price:</span>
+                  <span className="font-medium text-neutral-900">
                     {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Premium:</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="text-neutral-500">Premium:</span>
+                  <span className="font-medium text-neutral-900">
                     {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Expiration:</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="text-neutral-500">Expiration:</span>
+                  <span className="font-medium text-neutral-900">
                     {formatDate(trade.expirationDate)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Contracts:</span>
-                  <span className="font-medium text-gray-900">{trade.contracts}</span>
+                  <span className="text-neutral-500">Contracts:</span>
+                  <span className="font-medium text-neutral-900">{trade.contracts}</span>
                 </div>
               </div>
 

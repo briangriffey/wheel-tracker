@@ -66,7 +66,7 @@ export function PLExportButton() {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <h2 className="text-xl font-semibold text-neutral-900 mb-4">
         Export P&L Report
       </h2>
 
@@ -76,7 +76,7 @@ export function PLExportButton() {
           <div>
             <label
               htmlFor="startDate"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-neutral-700 mb-1"
             >
               Start Date
             </label>
@@ -85,7 +85,7 @@ export function PLExportButton() {
               id="startDate"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={isExporting}
             />
           </div>
@@ -93,7 +93,7 @@ export function PLExportButton() {
           <div>
             <label
               htmlFor="endDate"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-neutral-700 mb-1"
             >
               End Date
             </label>
@@ -102,7 +102,7 @@ export function PLExportButton() {
               id="endDate"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={isExporting}
             />
           </div>
@@ -141,7 +141,7 @@ export function PLExportButton() {
           {isExporting ? 'Exporting...' : 'Export CSV'}
         </Button>
 
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-neutral-500">
           Export includes all trades with premium, P&L, and summary statistics.
           {startDate || endDate
             ? ' Filtered by selected date range.'

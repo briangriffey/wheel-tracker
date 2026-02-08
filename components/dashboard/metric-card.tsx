@@ -36,7 +36,7 @@ export function MetricCard({
   }
 
   const getColorClass = (val: number | null): string => {
-    if (!colorize || val === null) return 'text-gray-900'
+    if (!colorize || val === null) return 'text-neutral-900'
     return getPnLColorClass(val)
   }
 
@@ -45,8 +45,8 @@ export function MetricCard({
       <Card variant="elevated">
         <CardContent className="p-6">
           <div className="animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-            <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+            <div className="h-4 bg-neutral-200 rounded w-1/2 mb-4"></div>
+            <div className="h-8 bg-neutral-200 rounded w-3/4"></div>
           </div>
         </CardContent>
       </Card>
@@ -56,9 +56,9 @@ export function MetricCard({
   return (
     <Card variant="elevated">
       <CardContent className="p-6">
-        <h3 className="text-sm font-medium text-gray-500 mb-2">{title}</h3>
+        <h3 className="text-sm font-medium text-neutral-500 mb-2">{title}</h3>
         <p className={`text-3xl font-bold ${getColorClass(value)}`}>{formatValue(value)}</p>
-        {subtitle && <p className="text-sm text-gray-500 mt-2">{subtitle}</p>}
+        {subtitle && <p className="text-sm text-neutral-500 mt-2">{subtitle}</p>}
       </CardContent>
     </Card>
   )

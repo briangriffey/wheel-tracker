@@ -22,8 +22,8 @@ export function WinRateChart({ data, loading = false }: WinRateChartProps) {
       <Card variant="elevated">
         <CardContent className="p-6">
           <div className="animate-pulse">
-            <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-            <div className="h-64 bg-gray-200 rounded"></div>
+            <div className="h-6 bg-neutral-200 rounded w-1/3 mb-4"></div>
+            <div className="h-64 bg-neutral-200 rounded"></div>
           </div>
         </CardContent>
       </Card>
@@ -37,7 +37,7 @@ export function WinRateChart({ data, loading = false }: WinRateChartProps) {
           <CardTitle>Win Rate</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center h-64 text-gray-500">
+          <div className="flex items-center justify-center h-64 text-neutral-500">
             No closed trades available for the selected time range
           </div>
         </CardContent>
@@ -58,8 +58,8 @@ export function WinRateChart({ data, loading = false }: WinRateChartProps) {
       </CardHeader>
       <CardContent>
         <div className="text-center mb-4">
-          <p className="text-4xl font-bold text-gray-900">{data.winRate.toFixed(1)}%</p>
-          <p className="text-sm text-gray-500">
+          <p className="text-4xl font-bold text-neutral-900">{data.winRate.toFixed(1)}%</p>
+          <p className="text-sm text-neutral-500">
             {data.winners} winners out of {data.totalTrades} closed trades
           </p>
         </div>

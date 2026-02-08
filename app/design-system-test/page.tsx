@@ -15,26 +15,26 @@ export default function DesignSystemTestPage() {
   const [loading, setLoading] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-neutral-50 p-8">
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-neutral-900 mb-2">
             Design System Component Testing
           </h1>
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             Comprehensive testing of all design system components across variants, sizes, and states.
           </p>
         </div>
 
         {/* Button Component Tests */}
         <section className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Button Component</h2>
+          <h2 className="text-2xl font-semibold text-neutral-900 mb-6">Button Component</h2>
 
           <div className="space-y-8">
             {/* Variants */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Variants</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Variants</h3>
               <div className="flex flex-wrap gap-4">
                 <Button variant="primary">Primary</Button>
                 <Button variant="secondary">Secondary</Button>
@@ -46,7 +46,7 @@ export default function DesignSystemTestPage() {
 
             {/* Sizes */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Sizes</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Sizes</h3>
               <div className="flex flex-wrap items-center gap-4">
                 <Button size="sm">Small</Button>
                 <Button size="md">Medium</Button>
@@ -56,7 +56,7 @@ export default function DesignSystemTestPage() {
 
             {/* States */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">States</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">States</h3>
               <div className="flex flex-wrap gap-4">
                 <Button>Normal</Button>
                 <Button loading>Loading</Button>
@@ -72,7 +72,7 @@ export default function DesignSystemTestPage() {
 
             {/* With Icons */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">With Icons</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">With Icons</h3>
               <div className="flex flex-wrap gap-4">
                 <Button
                   leftIcon={
@@ -111,7 +111,7 @@ export default function DesignSystemTestPage() {
 
             {/* Combinations */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Variant + Size Combinations</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Variant + Size Combinations</h3>
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-4 items-center">
                   <Button variant="primary" size="sm">Primary Small</Button>
@@ -130,12 +130,12 @@ export default function DesignSystemTestPage() {
 
         {/* Badge Component Tests */}
         <section className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Badge Component</h2>
+          <h2 className="text-2xl font-semibold text-neutral-900 mb-6">Badge Component</h2>
 
           <div className="space-y-8">
             {/* Variants */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Variants</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Variants</h3>
               <div className="flex flex-wrap gap-4">
                 <Badge variant="default">Default</Badge>
                 <Badge variant="success">Success</Badge>
@@ -148,7 +148,7 @@ export default function DesignSystemTestPage() {
 
             {/* Sizes */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Sizes</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Sizes</h3>
               <div className="flex flex-wrap items-center gap-4">
                 <Badge size="sm">Small</Badge>
                 <Badge size="md">Medium</Badge>
@@ -158,7 +158,7 @@ export default function DesignSystemTestPage() {
 
             {/* Removable */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Removable</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Removable</h3>
               <div className="flex flex-wrap gap-4">
                 <Badge variant="info" removable onRemove={() => alert('Badge removed!')}>
                   Removable Info
@@ -174,7 +174,7 @@ export default function DesignSystemTestPage() {
 
             {/* Combinations */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Variant + Size Combinations</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Variant + Size Combinations</h3>
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-4 items-center">
                   <Badge variant="success" size="sm">Success Small</Badge>
@@ -193,12 +193,12 @@ export default function DesignSystemTestPage() {
 
         {/* Alert Component Tests */}
         <section className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Alert Component</h2>
+          <h2 className="text-2xl font-semibold text-neutral-900 mb-6">Alert Component</h2>
 
           <div className="space-y-6">
             {/* Variants */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Variants</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Variants</h3>
               <div className="space-y-4">
                 <Alert variant="info">
                   <AlertTitle>Information</AlertTitle>
@@ -232,7 +232,7 @@ export default function DesignSystemTestPage() {
 
             {/* Dismissible */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Dismissible Alerts</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Dismissible Alerts</h3>
               <div className="space-y-4">
                 <Alert variant="info" dismissible onDismiss={() => alert('Alert dismissed!')}>
                   <AlertTitle>Dismissible Info</AlertTitle>
@@ -252,7 +252,7 @@ export default function DesignSystemTestPage() {
 
             {/* Title Only */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Title Only</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Title Only</h3>
               <div className="space-y-4">
                 <Alert variant="success">
                   <AlertTitle>Success! Changes saved.</AlertTitle>
@@ -266,7 +266,7 @@ export default function DesignSystemTestPage() {
 
             {/* Description Only */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Description Only</h3>
+              <h3 className="text-lg font-medium text-neutral-900 mb-4">Description Only</h3>
               <div className="space-y-4">
                 <Alert variant="info">
                   <AlertDescription>
@@ -280,8 +280,8 @@ export default function DesignSystemTestPage() {
 
         {/* Responsive Testing */}
         <section className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Responsive Testing</h2>
-          <p className="text-gray-600 mb-4">
+          <h2 className="text-2xl font-semibold text-neutral-900 mb-6">Responsive Testing</h2>
+          <p className="text-neutral-600 mb-4">
             Resize your browser window to test responsive behavior (mobile, tablet, desktop).
           </p>
 
@@ -312,8 +312,8 @@ export default function DesignSystemTestPage() {
 
         {/* Accessibility Testing */}
         <section className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">Accessibility Testing</h2>
-          <p className="text-gray-600 mb-4">
+          <h2 className="text-2xl font-semibold text-neutral-900 mb-6">Accessibility Testing</h2>
+          <p className="text-neutral-600 mb-4">
             Test keyboard navigation: Tab through elements, Enter/Space to activate buttons,
             Escape on dismissible alerts.
           </p>

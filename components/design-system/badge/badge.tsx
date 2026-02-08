@@ -74,12 +74,12 @@ export interface BadgeProps {
  * Variant-specific color classes
  */
 const variantClasses: Record<BadgeVariant, string> = {
-  default: 'bg-gray-100 text-gray-800 border-gray-200',
+  default: 'bg-neutral-100 text-neutral-800 border-neutral-200',
   success: 'bg-green-50 text-green-800 border-green-200',
   error: 'bg-red-50 text-red-800 border-red-200',
   warning: 'bg-yellow-50 text-yellow-800 border-yellow-200',
   info: 'bg-blue-50 text-blue-800 border-blue-200',
-  outline: 'bg-transparent text-gray-700 border-gray-300',
+  outline: 'bg-transparent text-neutral-700 border-neutral-300',
 }
 
 /**
@@ -160,7 +160,7 @@ const BadgeComponent = function Badge({
           type="button"
           onClick={onRemove}
           className={cn(
-            'inline-flex items-center justify-center rounded-full hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400 transition-colors',
+            'inline-flex items-center justify-center rounded-full hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-neutral-400 transition-colors',
             size === 'sm' ? 'p-0.5' : size === 'md' ? 'p-1' : 'p-1.5'
           )}
           aria-label="Remove badge"

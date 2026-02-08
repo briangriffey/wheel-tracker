@@ -141,16 +141,16 @@ export function PositionCard({
     : 0
 
   // Determine P&L color classes
-  const pnlColorClass = unrealizedPnL !== null ? getPnLColorClass(unrealizedPnL) : 'text-gray-600'
-  const pnlBgClass = unrealizedPnL !== null ? getPnLBackgroundClass(unrealizedPnL) : 'bg-gray-50'
+  const pnlColorClass = unrealizedPnL !== null ? getPnLColorClass(unrealizedPnL) : 'text-neutral-600'
+  const pnlBgClass = unrealizedPnL !== null ? getPnLBackgroundClass(unrealizedPnL) : 'bg-neutral-50'
 
   return (
-    <div className={`rounded-lg border border-gray-200 shadow-sm ${pnlBgClass} overflow-hidden`}>
+    <div className={`rounded-lg border border-neutral-200 shadow-sm ${pnlBgClass} overflow-hidden`}>
       {/* Header */}
-      <div className="px-4 py-3 sm:px-6 bg-white border-b border-gray-200">
+      <div className="px-4 py-3 sm:px-6 bg-white border-b border-neutral-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold text-gray-900">{position.ticker}</h3>
+            <h3 className="text-lg font-semibold text-neutral-900">{position.ticker}</h3>
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(position.status).bg} ${getStatusColor(position.status).text}`}
             >
@@ -163,7 +163,7 @@ export function PositionCard({
               <button
                 onClick={handleRefreshPrice}
                 disabled={isRefreshing || isLoadingPrice}
-                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-1.5 text-neutral-600 hover:text-blue-600 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 aria-label="Refresh price"
                 title="Refresh current price"
               >
@@ -196,7 +196,7 @@ export function PositionCard({
         </div>
         {/* Price Last Updated */}
         {priceData && !priceError && !refreshError && (
-          <div className="mt-2 text-xs text-gray-500">
+          <div className="mt-2 text-xs text-neutral-500">
             Last updated: {new Date(priceData.date).toLocaleString()}
             {priceData.isStale && (
               <span className="ml-2 text-orange-600 font-medium">
@@ -277,30 +277,30 @@ export function PositionCard({
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {/* Shares */}
           <div>
-            <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Shares</dt>
-            <dd className="mt-1 text-sm font-semibold text-gray-900">{position.shares}</dd>
+            <dt className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Shares</dt>
+            <dd className="mt-1 text-sm font-semibold text-neutral-900">{position.shares}</dd>
           </div>
 
           {/* Cost Basis */}
           <div>
-            <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <dt className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
               Cost Basis
             </dt>
-            <dd className="mt-1 text-sm font-semibold text-gray-900">
+            <dd className="mt-1 text-sm font-semibold text-neutral-900">
               {formatCurrency(position.costBasis)}
             </dd>
           </div>
 
           {/* Current Price */}
           <div>
-            <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <dt className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
               Current Price
             </dt>
-            <dd className="mt-1 text-sm font-semibold text-gray-900">
+            <dd className="mt-1 text-sm font-semibold text-neutral-900">
               {isLoadingPrice ? (
                 <span className="inline-flex items-center gap-1">
                   <svg
-                    className="animate-spin h-4 w-4 text-gray-400"
+                    className="animate-spin h-4 w-4 text-neutral-400"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -320,62 +320,62 @@ export function PositionCard({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     />
                   </svg>
-                  <span className="text-gray-400">Loading...</span>
+                  <span className="text-neutral-400">Loading...</span>
                 </span>
               ) : currentPrice !== null ? (
                 formatCurrency(currentPrice)
               ) : (
-                <span className="text-gray-400">N/A</span>
+                <span className="text-neutral-400">N/A</span>
               )}
             </dd>
           </div>
 
           {/* Total Cost */}
           <div>
-            <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Cost</dt>
-            <dd className="mt-1 text-sm font-semibold text-gray-900">
+            <dt className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Total Cost</dt>
+            <dd className="mt-1 text-sm font-semibold text-neutral-900">
               {formatCurrency(position.totalCost)}
             </dd>
           </div>
 
           {/* Current Value */}
           <div>
-            <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            <dt className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
               Current Value
             </dt>
-            <dd className="mt-1 text-sm font-semibold text-gray-900">
+            <dd className="mt-1 text-sm font-semibold text-neutral-900">
               {isLoadingPrice ? (
-                <span className="text-gray-400">Loading...</span>
+                <span className="text-neutral-400">Loading...</span>
               ) : position.currentValue !== null ? (
                 formatCurrency(position.currentValue)
               ) : (
-                <span className="text-gray-400">N/A</span>
+                <span className="text-neutral-400">N/A</span>
               )}
             </dd>
           </div>
 
           {/* Days Held */}
           <div>
-            <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Days Held</dt>
-            <dd className="mt-1 text-sm font-semibold text-gray-900">{daysHeld}</dd>
+            <dt className="text-xs font-medium text-neutral-500 uppercase tracking-wide">Days Held</dt>
+            <dd className="mt-1 text-sm font-semibold text-neutral-900">{daysHeld}</dd>
           </div>
         </div>
 
         {/* Unrealized P&L - Prominent Display */}
-        <div className={`rounded-md p-4 ${pnlBgClass} border-2 ${unrealizedPnL && unrealizedPnL > 0 ? 'border-green-200' : unrealizedPnL && unrealizedPnL < 0 ? 'border-red-200' : 'border-gray-200'}`}>
-          <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        <div className={`rounded-md p-4 ${pnlBgClass} border-2 ${unrealizedPnL && unrealizedPnL > 0 ? 'border-green-200' : unrealizedPnL && unrealizedPnL < 0 ? 'border-red-200' : 'border-neutral-200'}`}>
+          <dt className="text-xs font-medium text-neutral-500 uppercase tracking-wide">
             Unrealized P&L
           </dt>
           <dd className={`mt-1 text-2xl font-bold ${pnlColorClass}`}>
             {isLoadingPrice ? (
-              <span className="text-gray-400 text-base">Loading...</span>
+              <span className="text-neutral-400 text-base">Loading...</span>
             ) : unrealizedPnL !== null && unrealizedPnLPercent !== null ? (
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
                 <span>{formatCurrency(unrealizedPnL)}</span>
                 <span className="text-base font-medium">{formatPercentage(unrealizedPnLPercent)}</span>
               </div>
             ) : (
-              <span className="text-gray-400 text-base">N/A</span>
+              <span className="text-neutral-400 text-base">N/A</span>
             )}
           </dd>
         </div>
@@ -403,32 +403,32 @@ export function PositionCard({
 
         {/* Expanded Details */}
         {isExpanded && (
-          <div className="pt-4 border-t border-gray-200 space-y-3">
+          <div className="pt-4 border-t border-neutral-200 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div>
-                <span className="font-medium text-gray-700">Acquired Date:</span>{' '}
-                <span className="text-gray-900">
+                <span className="font-medium text-neutral-700">Acquired Date:</span>{' '}
+                <span className="text-neutral-900">
                   {new Date(position.acquiredDate).toLocaleDateString()}
                 </span>
               </div>
               {position.closedDate && (
                 <div>
-                  <span className="font-medium text-gray-700">Closed Date:</span>{' '}
-                  <span className="text-gray-900">
+                  <span className="font-medium text-neutral-700">Closed Date:</span>{' '}
+                  <span className="text-neutral-900">
                     {new Date(position.closedDate).toLocaleDateString()}
                   </span>
                 </div>
               )}
               <div>
-                <span className="font-medium text-gray-700">Position ID:</span>{' '}
-                <span className="text-gray-600 font-mono text-xs">{position.id}</span>
+                <span className="font-medium text-neutral-700">Position ID:</span>{' '}
+                <span className="text-neutral-600 font-mono text-xs">{position.id}</span>
               </div>
             </div>
 
             {/* Covered Calls Section */}
             {position.coveredCalls && position.coveredCalls.length > 0 && (
-              <div className="pt-3 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide mb-3">
+              <div className="pt-3 border-t border-neutral-200">
+                <h4 className="text-sm font-medium text-neutral-700 uppercase tracking-wide mb-3">
                   Covered Calls
                 </h4>
                 <div className="space-y-2">
@@ -449,11 +449,11 @@ export function PositionCard({
                             >
                               {call.status}
                             </span>
-                            <span className="text-sm font-semibold text-gray-900">
+                            <span className="text-sm font-semibold text-neutral-900">
                               Strike: {formatCurrency(strikePrice)}
                             </span>
                           </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                          <div className="grid grid-cols-2 gap-2 text-xs text-neutral-600">
                             <div>
                               <span>Premium:</span>{' '}
                               <span className="font-medium text-green-600">
@@ -462,7 +462,7 @@ export function PositionCard({
                             </div>
                             <div>
                               <span>Expires:</span>{' '}
-                              <span className="font-medium text-gray-900">
+                              <span className="font-medium text-neutral-900">
                                 {new Date(call.expirationDate).toLocaleDateString()}
                               </span>
                             </div>
@@ -500,7 +500,7 @@ export function PositionCard({
             {onViewDetails && (
               <button
                 onClick={() => onViewDetails(position.id)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="flex-1 px-4 py-2 border border-neutral-300 rounded-md shadow-sm text-sm font-medium text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 View Details
               </button>

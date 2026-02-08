@@ -36,15 +36,15 @@ export function BenchmarkComparisonChart({
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-        <div className="h-80 bg-gray-200 rounded"></div>
+        <div className="h-6 bg-neutral-200 rounded w-1/3 mb-4"></div>
+        <div className="h-80 bg-neutral-200 rounded"></div>
       </div>
     )
   }
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-80 text-gray-500">
+      <div className="flex items-center justify-center h-80 text-neutral-500">
         <div className="text-center">
           <p className="mb-2">No comparison data available</p>
           <p className="text-sm">Set up a benchmark to see performance comparison</p>
@@ -69,7 +69,7 @@ export function BenchmarkComparisonChart({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Performance Comparison</h3>
+        <h3 className="text-lg font-semibold text-neutral-900">Performance Comparison</h3>
         <div className="flex items-center gap-2">
           <span
             className={`text-sm font-medium ${

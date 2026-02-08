@@ -30,8 +30,8 @@ export function StatCard({ label, value, formatAs = 'number', loading = false }:
       <Card variant="elevated">
         <CardContent className="p-4">
           <div className="animate-pulse">
-            <div className="h-3 bg-gray-200 rounded w-2/3 mb-3"></div>
-            <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-3 bg-neutral-200 rounded w-2/3 mb-3"></div>
+            <div className="h-6 bg-neutral-200 rounded w-1/2"></div>
           </div>
         </CardContent>
       </Card>
@@ -41,8 +41,8 @@ export function StatCard({ label, value, formatAs = 'number', loading = false }:
   return (
     <Card variant="elevated">
       <CardContent className="p-4">
-        <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
-        <p className="text-xl font-bold text-gray-900">{formatValue(value)}</p>
+        <p className="text-xs font-medium text-neutral-500 mb-1">{label}</p>
+        <p className="text-xl font-bold text-neutral-900">{formatValue(value)}</p>
       </CardContent>
     </Card>
   )

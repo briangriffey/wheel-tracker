@@ -41,11 +41,11 @@ export function HelpIcon({ tooltip, helpLink, className = '' }: HelpIconProps) {
       )}
       {tooltip && showTooltip && (
         <span
-          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-gray-900 rounded-lg whitespace-nowrap z-50 shadow-lg"
+          className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 text-xs text-white bg-neutral-900 rounded-lg whitespace-nowrap z-50 shadow-lg"
           role="tooltip"
         >
           {tooltip}
-          <span className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900" />
+          <span className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900" />
         </span>
       )}
     </span>
@@ -82,12 +82,12 @@ export function HelpTooltip({
   }
 
   const arrowClasses = {
-    top: 'top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900',
+    top: 'top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-neutral-900',
     bottom:
-      'bottom-full left-1/2 transform -translate-x-1/2 -mb-1 border-4 border-transparent border-b-gray-900',
-    left: 'left-full top-1/2 transform -translate-y-1/2 -ml-1 border-4 border-transparent border-l-gray-900',
+      'bottom-full left-1/2 transform -translate-x-1/2 -mb-1 border-4 border-transparent border-b-neutral-900',
+    left: 'left-full top-1/2 transform -translate-y-1/2 -ml-1 border-4 border-transparent border-l-neutral-900',
     right:
-      'right-full top-1/2 transform -translate-y-1/2 -mr-1 border-4 border-transparent border-r-gray-900',
+      'right-full top-1/2 transform -translate-y-1/2 -mr-1 border-4 border-transparent border-r-neutral-900',
   }
 
   return (
@@ -99,7 +99,7 @@ export function HelpTooltip({
       {children}
       {showTooltip && (
         <span
-          className={`absolute ${positionClasses[position]} px-3 py-2 text-xs text-white bg-gray-900 rounded-lg whitespace-nowrap z-50 shadow-lg max-w-xs`}
+          className={`absolute ${positionClasses[position]} px-3 py-2 text-xs text-white bg-neutral-900 rounded-lg whitespace-nowrap z-50 shadow-lg max-w-xs`}
           role="tooltip"
         >
           {content}

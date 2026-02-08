@@ -14,21 +14,21 @@ interface FAQItemProps {
 
 function FAQItem({ question, answer }: FAQItemProps) {
   return (
-    <details className="group border-b border-gray-200 pb-4 mb-4">
-      <summary className="font-semibold text-gray-900 cursor-pointer list-none flex items-center justify-between py-2 hover:text-blue-600 transition-colors">
+    <details className="group border-b border-neutral-200 pb-4 mb-4">
+      <summary className="font-semibold text-neutral-900 cursor-pointer list-none flex items-center justify-between py-2 hover:text-blue-600 transition-colors">
         {question}
-        <span className="ml-2 text-gray-500 group-open:rotate-180 transition-transform">
+        <span className="ml-2 text-neutral-500 group-open:rotate-180 transition-transform">
           ▼
         </span>
       </summary>
-      <div className="mt-3 text-gray-700 leading-relaxed pl-4">{answer}</div>
+      <div className="mt-3 text-neutral-700 leading-relaxed pl-4">{answer}</div>
     </details>
   )
 }
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-neutral-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -38,10 +38,10 @@ export default function FAQPage() {
           >
             ← Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-neutral-900 mb-2">
             Frequently Asked Questions
           </h1>
-          <p className="text-gray-600">
+          <p className="text-neutral-600">
             Find answers to common questions about Wheel Tracker and the wheel
             strategy.
           </p>
@@ -49,7 +49,7 @@ export default function FAQPage() {
 
         {/* Quick Links */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h2 className="font-semibold text-gray-900 mb-3">Quick Links</h2>
+          <h2 className="font-semibold text-neutral-900 mb-3">Quick Links</h2>
           <div className="flex flex-wrap gap-2">
             <a
               href="#getting-started"
@@ -86,7 +86,7 @@ export default function FAQPage() {
 
         {/* Getting Started */}
         <section id="getting-started" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4">
             Getting Started
           </h2>
 
@@ -127,7 +127,7 @@ export default function FAQPage() {
 
         {/* Trading Questions */}
         <section id="trading" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Trading</h2>
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4">Trading</h2>
 
           <FAQItem
             question="How do I enter my first trade?"
@@ -193,7 +193,7 @@ export default function FAQPage() {
 
         {/* Strategy Questions */}
         <section id="strategy" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4">
             Strategy & Best Practices
           </h2>
 
@@ -268,7 +268,7 @@ export default function FAQPage() {
 
         {/* Technical Questions */}
         <section id="technical" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4">
             Technical Questions
           </h2>
 
@@ -340,7 +340,7 @@ export default function FAQPage() {
 
         {/* Account Questions */}
         <section id="account" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-4">
             Account & Security
           </h2>
 
@@ -367,10 +367,10 @@ export default function FAQPage() {
 
         {/* Still Need Help */}
         <div className="bg-blue-50 rounded-lg p-6 mt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">
+          <h2 className="text-xl font-bold text-neutral-900 mb-3">
             Still need help?
           </h2>
-          <p className="text-gray-700 mb-4">
+          <p className="text-neutral-700 mb-4">
             Check out these additional resources:
           </p>
           <div className="space-y-2">

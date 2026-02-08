@@ -83,15 +83,15 @@ export function AssignCallDialog({
           aria-labelledby="dialog-title"
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-6 py-4 border-b border-neutral-200">
             <div className="flex items-center justify-between">
-              <h2 id="dialog-title" className="text-xl font-semibold text-gray-900">
+              <h2 id="dialog-title" className="text-xl font-semibold text-neutral-900">
                 Mark Covered Call as Assigned
               </h2>
               <button
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-neutral-400 hover:text-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Close dialog"
               >
                 <svg
@@ -143,26 +143,26 @@ export function AssignCallDialog({
             {/* Position Details */}
             <div className="space-y-3">
               <div>
-                <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-medium text-neutral-700 uppercase tracking-wide mb-2">
                   Position Details
                 </h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-gray-600">Ticker:</span>
-                    <span className="ml-2 font-semibold text-gray-900">{ticker}</span>
+                    <span className="text-neutral-600">Ticker:</span>
+                    <span className="ml-2 font-semibold text-neutral-900">{ticker}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Shares:</span>
-                    <span className="ml-2 font-semibold text-gray-900">{shares}</span>
+                    <span className="text-neutral-600">Shares:</span>
+                    <span className="ml-2 font-semibold text-neutral-900">{shares}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Total Cost:</span>
-                    <span className="ml-2 font-semibold text-gray-900">
+                    <span className="text-neutral-600">Total Cost:</span>
+                    <span className="ml-2 font-semibold text-neutral-900">
                       {formatCurrency(totalCost)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-600">PUT Premium:</span>
+                    <span className="text-neutral-600">PUT Premium:</span>
                     <span className="ml-2 font-semibold text-green-600">
                       {formatCurrency(putPremium)}
                     </span>
@@ -172,25 +172,25 @@ export function AssignCallDialog({
 
               {/* Covered Call Details */}
               <div>
-                <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide mb-2">
+                <h3 className="text-sm font-medium text-neutral-700 uppercase tracking-wide mb-2">
                   Covered Call Details
                 </h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-gray-600">Strike Price:</span>
-                    <span className="ml-2 font-semibold text-gray-900">
+                    <span className="text-neutral-600">Strike Price:</span>
+                    <span className="ml-2 font-semibold text-neutral-900">
                       {formatCurrency(coveredCall.strikePrice)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-600">CALL Premium:</span>
+                    <span className="text-neutral-600">CALL Premium:</span>
                     <span className="ml-2 font-semibold text-green-600">
                       {formatCurrency(coveredCall.premium)}
                     </span>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-gray-600">Expiration:</span>
-                    <span className="ml-2 font-semibold text-gray-900">
+                    <span className="text-neutral-600">Expiration:</span>
+                    <span className="ml-2 font-semibold text-neutral-900">
                       {new Date(coveredCall.expirationDate).toLocaleDateString()}
                     </span>
                   </div>
@@ -198,31 +198,31 @@ export function AssignCallDialog({
               </div>
 
               {/* P&L Calculation */}
-              <div className="rounded-md bg-gray-50 p-4 border border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide mb-3">
+              <div className="rounded-md bg-neutral-50 p-4 border border-neutral-200">
+                <h3 className="text-sm font-medium text-neutral-700 uppercase tracking-wide mb-3">
                   Estimated P&L Breakdown
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Sale Proceeds:</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-neutral-600">Sale Proceeds:</span>
+                    <span className="font-medium text-neutral-900">
                       {formatCurrency(saleProceeds)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Total Premiums:</span>
+                    <span className="text-neutral-600">Total Premiums:</span>
                     <span className="font-medium text-green-600">
                       +{formatCurrency(totalPremiums)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Total Cost:</span>
+                    <span className="text-neutral-600">Total Cost:</span>
                     <span className="font-medium text-red-600">
                       -{formatCurrency(totalCost)}
                     </span>
                   </div>
-                  <div className="pt-2 border-t border-gray-300 flex justify-between items-baseline">
-                    <span className="font-semibold text-gray-700">Realized P&L:</span>
+                  <div className="pt-2 border-t border-neutral-300 flex justify-between items-baseline">
+                    <span className="font-semibold text-neutral-700">Realized P&L:</span>
                     <div className="flex flex-col items-end">
                       <span
                         className={`text-lg font-bold ${
@@ -248,11 +248,11 @@ export function AssignCallDialog({
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-200 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
             <button
               onClick={onClose}
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full sm:w-auto px-4 py-2 border border-neutral-300 rounded-md shadow-sm text-sm font-medium text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Cancel
             </button>

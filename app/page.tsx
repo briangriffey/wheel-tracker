@@ -5,10 +5,10 @@ export default async function Home() {
   const session = await auth()
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50">
+    <main className="min-h-screen flex items-center justify-center bg-neutral-50">
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Wheel Tracker</h1>
-        <p className="text-lg text-gray-600 mb-8">
+        <h1 className="text-4xl font-bold text-neutral-900 mb-4">Wheel Tracker</h1>
+        <p className="text-lg text-neutral-600 mb-8">
           Track your options trading using the wheel strategy
         </p>
         {!session ? (
@@ -21,7 +21,7 @@ export default async function Home() {
             </Link>
             <Link
               href="/login"
-              className="inline-block px-6 py-3 bg-gray-200 text-gray-900 font-medium rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="inline-block px-6 py-3 bg-neutral-200 text-neutral-900 font-medium rounded-lg hover:bg-neutral-300 focus:outline-none focus:ring-2 focus:ring-neutral-500"
             >
               Sign In
             </Link>

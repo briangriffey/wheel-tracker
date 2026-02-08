@@ -17,7 +17,7 @@ import { BenchmarkComparisonSection } from './benchmark-comparison-section'
 // Import Card for loading states
 const LoadingCard = ({ height = 'h-96' }: { height?: string }) => (
   <div className={`${height} animate-pulse`}>
-    <div className="h-full bg-gray-200 rounded-lg"></div>
+    <div className="h-full bg-neutral-200 rounded-lg"></div>
   </div>
 )
 
@@ -86,7 +86,7 @@ export function PLDashboard({
     <div className="space-y-6">
       {/* Header with Time Range Selector */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold text-gray-900">P&L Dashboard</h1>
+        <h1 className="text-3xl font-bold text-neutral-900">P&L Dashboard</h1>
         <TimeRangeSelector selected={timeRange} onChange={setTimeRange} />
       </div>
 

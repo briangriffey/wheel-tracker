@@ -4,6 +4,15 @@ import React, { useState } from 'react'
 import { Button } from '@/components/design-system/button/button'
 import { Badge } from '@/components/design-system/badge/badge'
 import { Alert, AlertTitle, AlertDescription } from '@/components/design-system/alert/alert'
+import { Input } from '@/components/design-system/input/input'
+import { Select } from '@/components/design-system/select/select'
+import { Spinner, SpinnerOverlay } from '@/components/ui/spinner'
+import { Skeleton, SkeletonCard, SkeletonTable, SkeletonChart } from '@/components/ui/skeleton'
+import { Dialog } from '@/components/ui/dialog'
+import { Modal } from '@/components/ui/modal'
+import { EmptyState } from '@/components/ui/empty-state'
+import { ErrorMessage } from '@/components/ui/error-message'
+import { HelpIcon, HelpTooltip } from '@/components/ui/help-icon'
 
 /**
  * Design System Gallery
@@ -13,6 +22,9 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/design-system/
  */
 export default function DesignSystemPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showSpinnerOverlay, setShowSpinnerOverlay] = useState(false)
 
   const copyCode = (code: string, id: string) => {
     navigator.clipboard.writeText(code)
@@ -48,11 +60,11 @@ export default function DesignSystemPage() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="text-2xl font-bold text-green-700 mb-1">3</div>
+                <div className="text-2xl font-bold text-green-700 mb-1">12</div>
                 <div className="text-sm text-green-600">Components</div>
               </div>
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="text-2xl font-bold text-blue-700 mb-1">20+</div>
+                <div className="text-2xl font-bold text-blue-700 mb-1">50+</div>
                 <div className="text-sm text-blue-600">Variants</div>
               </div>
               <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
@@ -362,6 +374,535 @@ export default function DesignSystemPage() {
               copiedCode={copiedCode}
               onCopy={copyCode}
             />
+          </div>
+        </ComponentSection>
+
+        {/* Input Component */}
+        <ComponentSection
+          title="Input"
+          description="Form input component with validation states, sizes, and prefix/suffix support."
+          id="input"
+        >
+          {/* Sizes */}
+          <div className="mb-8">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              Sizes
+            </h4>
+            <div className="space-y-3">
+              <Input size="sm" placeholder="Small input" />
+              <Input size="md" placeholder="Medium input (default)" />
+              <Input size="lg" placeholder="Large input" />
+            </div>
+            <CodeBlock
+              code={`<Input size="sm" placeholder="Small input" />
+<Input size="md" placeholder="Medium input" />
+<Input size="lg" placeholder="Large input" />`}
+              id="input-sizes"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+
+          {/* States */}
+          <div className="mb-8">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              States
+            </h4>
+            <div className="space-y-3">
+              <Input placeholder="Default state" />
+              <Input state="error" error="This field is required" placeholder="Error state" />
+              <Input state="success" placeholder="Success state" />
+              <Input disabled placeholder="Disabled state" />
+            </div>
+            <CodeBlock
+              code={`<Input placeholder="Default state" />
+<Input state="error" error="This field is required" />
+<Input state="success" placeholder="Valid input" />
+<Input disabled placeholder="Disabled" />`}
+              id="input-states"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+
+          {/* With Prefix/Suffix */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              Prefix & Suffix
+            </h4>
+            <div className="space-y-3">
+              <Input
+                type="number"
+                placeholder="0.00"
+                prefix={<span className="text-gray-500">$</span>}
+              />
+              <Input
+                type="text"
+                placeholder="Enter percentage"
+                suffix={<span className="text-gray-500">%</span>}
+              />
+              <Input
+                placeholder="With help text"
+                helpText="Enter a value between 0 and 100"
+              />
+            </div>
+            <CodeBlock
+              code={`<Input
+  type="number"
+  prefix={<span className="text-gray-500">$</span>}
+  placeholder="0.00"
+/>
+<Input
+  suffix={<span className="text-gray-500">%</span>}
+  placeholder="Percentage"
+/>
+<Input helpText="Helper text below input" />`}
+              id="input-prefix-suffix"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+        </ComponentSection>
+
+        {/* Select Component */}
+        <ComponentSection
+          title="Select"
+          description="Dropdown select component with validation states and sizes."
+          id="select"
+        >
+          {/* Sizes */}
+          <div className="mb-8">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              Sizes
+            </h4>
+            <div className="space-y-3">
+              <Select size="sm">
+                <option value="">Small select</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+              </Select>
+              <Select size="md">
+                <option value="">Medium select (default)</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+              </Select>
+              <Select size="lg">
+                <option value="">Large select</option>
+                <option value="1">Option 1</option>
+                <option value="2">Option 2</option>
+              </Select>
+            </div>
+            <CodeBlock
+              code={`<Select size="sm">
+  <option value="">Choose...</option>
+  <option value="1">Option 1</option>
+</Select>`}
+              id="select-sizes"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+
+          {/* States */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              States
+            </h4>
+            <div className="space-y-3">
+              <Select>
+                <option value="">Default state</option>
+                <option value="1">Option 1</option>
+              </Select>
+              <Select state="error" error="Please select an option">
+                <option value="">Error state</option>
+                <option value="1">Option 1</option>
+              </Select>
+              <Select state="success">
+                <option value="1">Success state</option>
+                <option value="2">Option 2</option>
+              </Select>
+              <Select disabled>
+                <option value="">Disabled state</option>
+              </Select>
+            </div>
+            <CodeBlock
+              code={`<Select state="error" error="Required field">
+  <option value="">Choose...</option>
+</Select>
+<Select state="success">
+  <option value="1">Valid selection</option>
+</Select>`}
+              id="select-states"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+        </ComponentSection>
+
+        {/* Spinner Component */}
+        <ComponentSection
+          title="Spinner"
+          description="Loading indicator with multiple sizes and overlay variant."
+          id="spinner"
+        >
+          {/* Sizes */}
+          <div className="mb-8">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              Sizes
+            </h4>
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <Spinner size="sm" />
+                <p className="text-xs text-gray-500 mt-2">Small</p>
+              </div>
+              <div className="text-center">
+                <Spinner size="md" />
+                <p className="text-xs text-gray-500 mt-2">Medium</p>
+              </div>
+              <div className="text-center">
+                <Spinner size="lg" />
+                <p className="text-xs text-gray-500 mt-2">Large</p>
+              </div>
+            </div>
+            <CodeBlock
+              code={`<Spinner size="sm" />
+<Spinner size="md" />
+<Spinner size="lg" />`}
+              id="spinner-sizes"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+
+          {/* Overlay */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              Spinner Overlay
+            </h4>
+            <Button onClick={() => {
+              setShowSpinnerOverlay(true)
+              setTimeout(() => setShowSpinnerOverlay(false), 2000)
+            }}>
+              Show Spinner Overlay (2s)
+            </Button>
+            {showSpinnerOverlay && <SpinnerOverlay />}
+            <CodeBlock
+              code={`{isLoading && <SpinnerOverlay />}`}
+              id="spinner-overlay"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+        </ComponentSection>
+
+        {/* Skeleton Component */}
+        <ComponentSection
+          title="Skeleton"
+          description="Loading placeholders for content that is still loading."
+          id="skeleton"
+        >
+          {/* Basic Skeleton */}
+          <div className="mb-8">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              Basic Skeleton
+            </h4>
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+            <CodeBlock
+              code={`<Skeleton className="h-4 w-full" />
+<Skeleton className="h-4 w-3/4" />
+<Skeleton className="h-4 w-1/2" />`}
+              id="skeleton-basic"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+
+          {/* Skeleton Variants */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+              Preset Variants
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SkeletonCard />
+              <SkeletonChart />
+            </div>
+            <div className="mt-4">
+              <SkeletonTable rows={3} />
+            </div>
+            <CodeBlock
+              code={`<SkeletonCard />
+<SkeletonChart />
+<SkeletonTable rows={5} />`}
+              id="skeleton-variants"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+        </ComponentSection>
+
+        {/* Dialog Component */}
+        <ComponentSection
+          title="Dialog"
+          description="Accessible modal dialog with backdrop and focus management."
+          id="dialog"
+        >
+          <div>
+            <Button onClick={() => setIsDialogOpen(true)}>Open Dialog</Button>
+            <Dialog
+              isOpen={isDialogOpen}
+              onClose={() => setIsDialogOpen(false)}
+              title="Example Dialog"
+              maxWidth="lg"
+            >
+              <p className="text-gray-600">
+                This is a dialog component with automatic focus management,
+                keyboard navigation (ESC to close), and click-outside-to-close functionality.
+              </p>
+              <div className="mt-6 flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => setIsDialogOpen(false)}>
+                  Confirm
+                </Button>
+              </div>
+            </Dialog>
+            <CodeBlock
+              code={`const [isOpen, setIsOpen] = useState(false)
+
+<Button onClick={() => setIsOpen(true)}>
+  Open Dialog
+</Button>
+
+<Dialog
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="Dialog Title"
+  maxWidth="lg"
+>
+  <p>Dialog content goes here...</p>
+  <div className="mt-4 flex justify-end gap-2">
+    <Button onClick={() => setIsOpen(false)}>
+      Close
+    </Button>
+  </div>
+</Dialog>`}
+              id="dialog-example"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+        </ComponentSection>
+
+        {/* Modal Component */}
+        <ComponentSection
+          title="Modal"
+          description="Alternative modal component with description and multiple size options."
+          id="modal"
+        >
+          <div>
+            <Button onClick={() => setIsModalOpen(true)}>Open Modal</Button>
+            <Modal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              title="Example Modal"
+              description="This is an optional description"
+              size="lg"
+            >
+              <p className="text-gray-600">
+                Modal component with support for title, optional description,
+                and configurable sizes (sm, md, lg, xl).
+              </p>
+              <div className="mt-6 flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => setIsModalOpen(false)}>
+                  Save Changes
+                </Button>
+              </div>
+            </Modal>
+            <CodeBlock
+              code={`const [isOpen, setIsOpen] = useState(false)
+
+<Button onClick={() => setIsOpen(true)}>
+  Open Modal
+</Button>
+
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="Modal Title"
+  description="Optional description"
+  size="lg"
+>
+  <p>Modal content...</p>
+</Modal>`}
+              id="modal-example"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+        </ComponentSection>
+
+        {/* Empty State Component */}
+        <ComponentSection
+          title="Empty State"
+          description="Display helpful messages when no data is available."
+          id="empty-state"
+        >
+          <div className="space-y-8">
+            {/* Basic Empty State */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                Basic
+              </h4>
+              <div className="border border-gray-200 rounded-lg">
+                <EmptyState
+                  title="No trades found"
+                  description="You haven't created any trades yet. Get started by opening your first position."
+                />
+              </div>
+              <CodeBlock
+                code={`<EmptyState
+  title="No trades found"
+  description="You haven't created any trades yet."
+/>`}
+                id="empty-state-basic"
+                copiedCode={copiedCode}
+                onCopy={copyCode}
+              />
+            </div>
+
+            {/* With Action */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                With Action Button
+              </h4>
+              <div className="border border-gray-200 rounded-lg">
+                <EmptyState
+                  title="No positions"
+                  description="Start tracking your wheel strategy positions."
+                  actionLabel="Create Position"
+                  actionHref="#"
+                />
+              </div>
+              <CodeBlock
+                code={`<EmptyState
+  title="No positions"
+  description="Start tracking your positions."
+  actionLabel="Create Position"
+  actionHref="/positions/new"
+/>`}
+                id="empty-state-action"
+                copiedCode={copiedCode}
+                onCopy={copyCode}
+              />
+            </div>
+          </div>
+        </ComponentSection>
+
+        {/* Error Message Component */}
+        <ComponentSection
+          title="Error Message"
+          description="Display error messages with optional retry functionality."
+          id="error-message"
+        >
+          <div className="space-y-4">
+            <ErrorMessage
+              title="Error"
+              message="Something went wrong while loading your data."
+            />
+            <ErrorMessage
+              title="Validation Error"
+              message="Please check your input and try again."
+              onRetry={() => alert('Retrying...')}
+            />
+            <CodeBlock
+              code={`<ErrorMessage
+  title="Error"
+  message="Something went wrong."
+/>
+
+<ErrorMessage
+  title="Network Error"
+  message="Failed to connect to server."
+  onRetry={() => handleRetry()}
+/>`}
+              id="error-message-example"
+              copiedCode={copiedCode}
+              onCopy={copyCode}
+            />
+          </div>
+        </ComponentSection>
+
+        {/* Help Icon Component */}
+        <ComponentSection
+          title="Help Icon"
+          description="Contextual help tooltips and icons for user guidance."
+          id="help-icon"
+        >
+          <div className="space-y-8">
+            {/* Help Icon */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                Help Icon
+              </h4>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700">Strike Price</span>
+                  <HelpIcon tooltip="The price at which the option can be exercised" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700">Premium</span>
+                  <HelpIcon
+                    tooltip="Amount received for selling the option"
+                    helpLink="#"
+                  />
+                </div>
+              </div>
+              <CodeBlock
+                code={`<HelpIcon tooltip="Helpful information" />
+<HelpIcon
+  tooltip="More details"
+  helpLink="/docs/help"
+/>`}
+                id="help-icon-example"
+                copiedCode={copiedCode}
+                onCopy={copyCode}
+              />
+            </div>
+
+            {/* Help Tooltip */}
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                Help Tooltip
+              </h4>
+              <div className="flex gap-4">
+                <HelpTooltip content="Hover for help" position="top">
+                  <span className="text-sm font-medium text-blue-600 border-b border-dashed border-blue-600 cursor-help">
+                    Hover me (top)
+                  </span>
+                </HelpTooltip>
+                <HelpTooltip content="Bottom tooltip" position="bottom">
+                  <span className="text-sm font-medium text-blue-600 border-b border-dashed border-blue-600 cursor-help">
+                    Hover me (bottom)
+                  </span>
+                </HelpTooltip>
+              </div>
+              <CodeBlock
+                code={`<HelpTooltip content="Helpful info" position="top">
+  <span>Hover me</span>
+</HelpTooltip>`}
+                id="help-tooltip-example"
+                copiedCode={copiedCode}
+                onCopy={copyCode}
+              />
+            </div>
           </div>
         </ComponentSection>
       </main>

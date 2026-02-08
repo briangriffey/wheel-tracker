@@ -10,6 +10,6 @@
     "restartPolicyMaxRetries": 10,
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 100,
-    "startCommand": null
+    "startCommand": "pnpm deploy"
   }
 }

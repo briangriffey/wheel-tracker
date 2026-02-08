@@ -14,19 +14,26 @@ import { StatCard } from './stat-card'
 import { TimeRangeSelector } from './time-range-selector'
 import { BenchmarkComparisonSection } from './benchmark-comparison-section'
 
+// Import Card for loading states
+const LoadingCard = ({ height = 'h-96' }: { height?: string }) => (
+  <div className={`${height} animate-pulse`}>
+    <div className="h-full bg-gray-200 rounded-lg"></div>
+  </div>
+)
+
 // Dynamically import chart components to reduce initial bundle size
 const PLOverTimeChart = dynamic(() => import('./pl-over-time-chart').then(mod => ({ default: mod.PLOverTimeChart })), {
-  loading: () => <div className="bg-white rounded-lg shadow p-6 h-96 animate-pulse"><div className="h-full bg-gray-200 rounded"></div></div>,
+  loading: () => <LoadingCard height="h-96" />,
   ssr: false,
 })
 
 const PLByTickerChart = dynamic(() => import('./pl-by-ticker-chart').then(mod => ({ default: mod.PLByTickerChart })), {
-  loading: () => <div className="bg-white rounded-lg shadow p-6 h-96 animate-pulse"><div className="h-full bg-gray-200 rounded"></div></div>,
+  loading: () => <LoadingCard height="h-96" />,
   ssr: false,
 })
 
 const WinRateChart = dynamic(() => import('./win-rate-chart').then(mod => ({ default: mod.WinRateChart })), {
-  loading: () => <div className="bg-white rounded-lg shadow p-6 h-64 animate-pulse"><div className="h-full bg-gray-200 rounded"></div></div>,
+  loading: () => <LoadingCard height="h-64" />,
   ssr: false,
 })
 

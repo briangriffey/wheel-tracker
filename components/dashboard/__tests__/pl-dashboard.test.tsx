@@ -89,7 +89,8 @@ describe('PLDashboard', () => {
     )
 
     const allButton = screen.getByRole('button', { name: 'All' })
-    expect(allButton).toHaveClass('bg-blue-600')
+    // Check that "All" button has primary variant styles (design system)
+    expect(allButton).toHaveClass('bg-primary-500')
   })
 
   it('fetches new data when time range changes', async () => {

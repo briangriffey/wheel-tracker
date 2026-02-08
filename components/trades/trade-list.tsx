@@ -187,7 +187,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               value={tickerFilter}
               onChange={(e) => setTickerFilter(e.target.value)}
               placeholder="e.g., AAPL"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -200,7 +200,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               id="status-filter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as TradeStatus | 'ALL')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">All Statuses</option>
               <option value="OPEN">Open</option>
@@ -219,7 +219,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               id="type-filter"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as TradeType | 'ALL')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">All Types</option>
               <option value="PUT">PUT</option>
@@ -237,7 +237,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               type="date"
               value={dateRangeStart}
               onChange={(e) => setDateRangeStart(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -251,7 +251,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               type="date"
               value={dateRangeEnd}
               onChange={(e) => setDateRangeEnd(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -266,7 +266,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               setDateRangeStart('')
               setDateRangeEnd('')
             }}
-            className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+            className="mt-4 min-h-[44px] px-4 py-2 text-sm text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md transition-colors"
           >
             Clear all filters
           </button>
@@ -494,7 +494,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                 <button
                   onClick={() => alert('Edit functionality coming soon')}
                   disabled={loadingAction === trade.id}
-                  className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 disabled:opacity-50"
+                  className="flex-1 min-h-[44px] px-4 py-3 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 disabled:opacity-50 transition-colors"
                 >
                   Edit
                 </button>
@@ -504,21 +504,21 @@ export function TradeList({ initialTrades }: TradeListProps) {
                     <button
                       onClick={() => handleStatusUpdate(trade.id, 'EXPIRED')}
                       disabled={loadingAction === trade.id}
-                      className="flex-1 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded hover:bg-indigo-100 disabled:opacity-50"
+                      className="flex-1 min-h-[44px] px-4 py-3 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-md hover:bg-indigo-100 disabled:opacity-50 transition-colors"
                     >
                       Expired
                     </button>
                     <button
                       onClick={() => handleStatusUpdate(trade.id, 'ASSIGNED')}
                       disabled={loadingAction === trade.id}
-                      className="flex-1 px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 rounded hover:bg-purple-100 disabled:opacity-50"
+                      className="flex-1 min-h-[44px] px-4 py-3 text-sm font-medium text-purple-600 bg-purple-50 rounded-md hover:bg-purple-100 disabled:opacity-50 transition-colors"
                     >
                       Assigned
                     </button>
                     <button
                       onClick={() => handleDelete(trade.id)}
                       disabled={loadingAction === trade.id}
-                      className="flex-1 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 disabled:opacity-50"
+                      className="flex-1 min-h-[44px] px-4 py-3 text-sm font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 disabled:opacity-50 transition-colors"
                     >
                       Delete
                     </button>

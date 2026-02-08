@@ -288,7 +288,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               value={tickerFilter}
               onChange={(e) => setTickerFilter(e.target.value)}
               placeholder="e.g., AAPL"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -301,7 +301,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               id="pl-filter"
               value={plFilter}
               onChange={(e) => setPLFilter(e.target.value as PLFilter)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ALL">All Positions</option>
               <option value="PROFIT">Profit Only</option>
@@ -319,7 +319,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               id="sort-field"
               value={sortField}
               onChange={(e) => handleSort(e.target.value as SortField)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="ticker">Ticker</option>
               <option value="unrealizedPL">P&L</option>
@@ -336,7 +336,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               id="sort-direction"
               value={sortDirection}
               onChange={(e) => setSortDirection(e.target.value as SortDirection)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
@@ -351,7 +351,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               setTickerFilter('')
               setPLFilter('ALL')
             }}
-            className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+            className="mt-4 min-h-[44px] px-4 py-2 text-sm text-blue-600 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md transition-colors"
           >
             Clear all filters
           </button>

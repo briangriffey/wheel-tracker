@@ -87,7 +87,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             id="ticker"
             type="text"
             maxLength={5}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm uppercase"
+            className="mt-1 block w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm uppercase"
             {...register('ticker')}
             aria-invalid={errors.ticker ? 'true' : 'false'}
             aria-describedby={errors.ticker ? 'ticker-error' : undefined}
@@ -106,7 +106,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
           </label>
           <select
             id="type"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="mt-1 block w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             {...register('type')}
             aria-invalid={errors.type ? 'true' : 'false'}
             aria-describedby={errors.type ? 'type-error' : undefined}
@@ -129,7 +129,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
           </label>
           <select
             id="action"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="mt-1 block w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             {...register('action')}
             aria-invalid={errors.action ? 'true' : 'false'}
             aria-describedby={errors.action ? 'action-error' : undefined}
@@ -158,7 +158,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
               type="number"
               step="0.01"
               min="0"
-              className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full min-h-[44px] pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               {...register('strikePrice', { valueAsNumber: true })}
               aria-invalid={errors.strikePrice ? 'true' : 'false'}
               aria-describedby={errors.strikePrice ? 'strikePrice-error' : undefined}
@@ -185,7 +185,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
               type="number"
               step="0.01"
               min="0"
-              className="block w-full pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full min-h-[44px] pl-7 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               {...register('premium', { valueAsNumber: true })}
               aria-invalid={errors.premium ? 'true' : 'false'}
               aria-describedby={errors.premium ? 'premium-error' : undefined}
@@ -208,7 +208,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             type="number"
             min="1"
             step="1"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="mt-1 block w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             {...register('contracts', { valueAsNumber: true })}
             aria-invalid={errors.contracts ? 'true' : 'false'}
             aria-describedby={errors.contracts ? 'contracts-error' : undefined}
@@ -229,7 +229,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
           <input
             id="openDate"
             type="date"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="mt-1 block w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             {...register('openDate')}
             aria-invalid={errors.openDate ? 'true' : 'false'}
             aria-describedby={errors.openDate ? 'openDate-error' : undefined}
@@ -249,7 +249,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
           <input
             id="expirationDate"
             type="date"
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="mt-1 block w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             {...register('expirationDate')}
             aria-invalid={errors.expirationDate ? 'true' : 'false'}
             aria-describedby={errors.expirationDate ? 'expirationDate-error' : undefined}
@@ -270,7 +270,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         <textarea
           id="notes"
           rows={3}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="mt-1 block w-full min-h-[44px] px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           {...register('notes')}
           aria-describedby="notes-description"
         />
@@ -286,7 +286,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto min-h-[44px] px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Cancel
           </button>
@@ -294,7 +294,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full sm:w-auto px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto min-h-[44px] px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isSubmitting ? 'Creating Trade...' : 'Create Trade'}
         </button>

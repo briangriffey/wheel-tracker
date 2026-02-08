@@ -125,7 +125,7 @@ export function PositionCard({
               <button
                 onClick={handleRefreshPrice}
                 disabled={isRefreshing || isLoadingPrice}
-                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 aria-label="Refresh price"
                 title="Refresh current price"
               >
@@ -148,7 +148,7 @@ export function PositionCard({
             )}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
+              className="text-sm min-h-[44px] text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-3 py-2"
               aria-expanded={isExpanded}
               aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
             >
@@ -395,7 +395,8 @@ export function PositionCard({
             {onSellCall && (
               <button
                 onClick={() => onSellCall(position.id)}
-                className="flex-1 px-4 py-2 border border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="flex-1 min-h-[44px] px-4 py-2 border border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                aria-label={`Sell covered call for ${position.ticker}`}
               >
                 Sell Covered Call
               </button>
@@ -403,7 +404,8 @@ export function PositionCard({
             {onViewDetails && (
               <button
                 onClick={() => onViewDetails(position.id)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="flex-1 min-h-[44px] px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                aria-label={`View details for ${position.ticker} position`}
               >
                 View Details
               </button>

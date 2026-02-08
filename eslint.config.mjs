@@ -14,6 +14,30 @@ const eslintConfig = [
   {
     ignores: ["lib/generated/**/*"],
   },
+  {
+    rules: {
+      // Warn about deprecated pattern usage
+      "no-restricted-imports": [
+        "warn",
+        {
+          paths: [
+            {
+              name: "@/lib/utils/position-calculations",
+              message:
+                "This module contains deprecated utilities. Use @/lib/calculations/position for position calculations, @/lib/design/colors for color utilities, and create @/lib/utils/format for formatting functions.",
+            },
+          ],
+          patterns: [
+            {
+              group: ["**/lib/utils/position-calculations"],
+              message:
+                "Deprecated: Use @/lib/calculations/position for calculations and @/lib/design/colors for color utilities instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];
 
 export default eslintConfig;

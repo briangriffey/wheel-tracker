@@ -25,6 +25,8 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "migrate:check": "tsx scripts/find-deprecated-usage.ts",
+    "migrate:check:fix": "tsx scripts/find-deprecated-usage.ts --fix",
     "deploy": "pnpm db:migrate:deploy && node server.js"
   },
   "dependencies": {

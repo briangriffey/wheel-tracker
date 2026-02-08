@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { CreateTradeSchema, type CreateTradeInput } from '@/lib/validations/trade'
@@ -26,6 +26,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
     reset,
@@ -80,35 +81,51 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
 
         {/* Trade Type */}
         <div>
-          <label htmlFor="type" className="block text-sm font-medium text-neutral-700">
+          <label htmlFor="type" className="block text-sm font-medium text-neutral-700" id="type-label">
             Trade Type <span className="text-error">*</span>
           </label>
-          <Select
-            id="type"
-            wrapperClassName="mt-1"
-            error={errors.type?.message}
-            {...register('type')}
-          >
-            <option value="">Select type</option>
-            <option value="PUT">PUT</option>
-            <option value="CALL">CALL</option>
-          </Select>
+          <Controller
+            name="type"
+            control={control}
+            render={({ field }) => (
+              <Select
+                id="type"
+                wrapperClassName="mt-1"
+                error={errors.type?.message}
+                placeholder="Select type"
+                options={[
+                  { value: 'PUT', label: 'PUT' },
+                  { value: 'CALL', label: 'CALL' },
+                ]}
+                value={field.value}
+                onChange={(value) => field.onChange(value)}
+              />
+            )}
+          />
         </div>
 
         {/* Trade Action */}
         <div>
-          <label htmlFor="action" className="block text-sm font-medium text-neutral-700">
+          <label htmlFor="action" className="block text-sm font-medium text-neutral-700" id="action-label">
             Trade Action <span className="text-error">*</span>
           </label>
-          <Select
-            id="action"
-            wrapperClassName="mt-1"
-            error={errors.action?.message}
-            {...register('action')}
-          >
-            <option value="SELL_TO_OPEN">Sell to Open</option>
-            <option value="BUY_TO_CLOSE">Buy to Close</option>
-          </Select>
+          <Controller
+            name="action"
+            control={control}
+            render={({ field }) => (
+              <Select
+                id="action"
+                wrapperClassName="mt-1"
+                error={errors.action?.message}
+                options={[
+                  { value: 'SELL_TO_OPEN', label: 'Sell to Open' },
+                  { value: 'BUY_TO_CLOSE', label: 'Buy to Close' },
+                ]}
+                value={field.value}
+                onChange={(value) => field.onChange(value)}
+              />
+            )}
+          />
         </div>
 
         {/* Strike Price */}

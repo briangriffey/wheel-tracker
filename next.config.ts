@@ -19,9 +19,6 @@ const nextConfig: NextConfig = {
 
   // Enable compression
   compress: true,
-
-  // Optimize fonts
-  optimizeFonts: true,
 }
 
 export default withBundleAnalyzer(nextConfig)

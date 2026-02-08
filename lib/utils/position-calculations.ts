@@ -70,27 +70,9 @@ export function calculateTotalCoveredCallPremium(
   return coveredCalls.reduce((sum, call) => sum + call.premium, 0)
 }
 
-/**
- * Get P&L color class based on value
- * @param pnl Profit/loss value
- * @returns Tailwind color class
- */
-export function getPnLColorClass(pnl: number): string {
-  if (pnl > 0) return 'text-green-600'
-  if (pnl < 0) return 'text-red-600'
-  return 'text-gray-600'
-}
-
-/**
- * Get P&L background color class based on value
- * @param pnl Profit/loss value
- * @returns Tailwind background color class
- */
-export function getPnLBackgroundClass(pnl: number): string {
-  if (pnl > 0) return 'bg-green-50'
-  if (pnl < 0) return 'bg-red-50'
-  return 'bg-gray-50'
-}
+// Color functions have been moved to @/lib/design/colors
+// Re-export for backward compatibility
+export { getPnLColorClass, getPnLBackgroundClass } from '@/lib/design/colors'
 
 /**
  * Format currency value

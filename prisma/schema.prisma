@@ -28,6 +28,7 @@ enum TradeStatus {
 enum PositionStatus {
   OPEN             // Currently holding shares
   CLOSED           // Position closed/sold
+  EXPIRED          // Position expired (shares held, options expired worthless)
 }
 
 // Models

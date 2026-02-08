@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import toast from 'react-hot-toast'
 import {
   calculateUnrealizedPnL,
   calculateUnrealizedPnLPercentage,
@@ -13,6 +14,8 @@ import {
   formatPercentage,
 } from '@/lib/utils/position-calculations'
 import { refreshSinglePositionPrice, type PriceData } from '@/lib/actions/prices'
+import { expirePosition } from '@/lib/actions/positions'
+import { useRouter } from 'next/navigation'
 
 /**
  * Position data type with related trades
@@ -24,7 +27,7 @@ export interface PositionCardData {
   costBasis: number
   totalCost: number
   currentValue: number | null
-  status: 'OPEN' | 'CLOSED'
+  status: 'OPEN' | 'CLOSED' | 'EXPIRED'
   acquiredDate: Date
   closedDate: Date | null
   coveredCalls?: Array<{
@@ -53,9 +56,11 @@ export function PositionCard({
   priceData = null,
   onPriceRefresh,
 }: PositionCardProps) {
+  const router = useRouter()
   const [isExpanded, setIsExpanded] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
+  const [isExpiring, setIsExpiring] = useState(false)
 
   // Handle manual price refresh
   const handleRefreshPrice = async () => {
@@ -78,6 +83,46 @@ export function PositionCard({
       setRefreshError('Failed to refresh price')
     } finally {
       setIsRefreshing(false)
+    }
+  }
+
+  // Handle expire position
+  const handleExpirePosition = async () => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to mark this position as expired?\n\n` +
+        `Ticker: ${position.ticker}\n` +
+        `This will:\n` +
+        `- Mark the position as EXPIRED\n` +
+        `- Mark any open covered calls as EXPIRED\n` +
+        `- Calculate final P&L based on premiums collected\n` +
+        `- Remove from active positions list\n\n` +
+        `This action cannot be undone.`
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setIsExpiring(true)
+
+    try {
+      const result = await expirePosition({ positionId: position.id })
+
+      if (result.success) {
+        toast.success(
+          `Position expired successfully! Realized P&L: ${formatCurrency(result.data.realizedGainLoss)}`
+        )
+        // Refresh the page to update the positions list
+        router.refresh()
+      } else {
+        toast.error(`Failed to expire position: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error expiring position:', error)
+      toast.error('Failed to expire position')
+    } finally {
+      setIsExpiring(false)
     }
   }
 
@@ -113,7 +158,9 @@ export function PositionCard({
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 position.status === 'OPEN'
                   ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800'
+                  : position.status === 'EXPIRED'
+                    ? 'bg-orange-100 text-orange-800'
+                    : 'bg-gray-100 text-gray-800'
               }`}
             >
               {position.status}
@@ -391,23 +438,32 @@ export function PositionCard({
 
         {/* Action Buttons */}
         {position.status === 'OPEN' && (
-          <div className="flex flex-col sm:flex-row gap-2 pt-2">
-            {onSellCall && (
-              <button
-                onClick={() => onSellCall(position.id)}
-                className="flex-1 px-4 py-2 border border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
-                Sell Covered Call
-              </button>
-            )}
-            {onViewDetails && (
-              <button
-                onClick={() => onViewDetails(position.id)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
-                View Details
-              </button>
-            )}
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              {onSellCall && (
+                <button
+                  onClick={() => onSellCall(position.id)}
+                  className="flex-1 px-4 py-2 border border-blue-600 rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  Sell Covered Call
+                </button>
+              )}
+              {onViewDetails && (
+                <button
+                  onClick={() => onViewDetails(position.id)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  View Details
+                </button>
+              )}
+            </div>
+            <button
+              onClick={handleExpirePosition}
+              disabled={isExpiring}
+              className="w-full px-4 py-2 border border-orange-600 rounded-md shadow-sm text-sm font-medium text-orange-600 bg-white hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isExpiring ? 'Expiring...' : 'Mark as Expired'}
+            </button>
           </div>
         )}
       </div>

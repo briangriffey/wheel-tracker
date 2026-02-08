@@ -1,7 +1,19 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import { prisma } from '@/lib/db'
-import { assignPut, assignCall, getPositions, getActivePositions, getPosition } from './positions'
+import {
+  assignPut,
+  assignCall,
+  expirePosition,
+  getPositions,
+  getActivePositions,
+  getPosition,
+} from './positions'
 import { Prisma } from '@/lib/generated/prisma'
+
+// Mock Next.js revalidatePath
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+}))
 
 // Test data IDs (will be set during test setup)
 let testUserId: string
@@ -569,6 +581,181 @@ describe('Position Assignment Integration Tests', () => {
       expect(result.success).toBe(false)
       if (result.success) return
       expect(result.error).toBe('Position not found')
+    })
+  })
+
+  describe('expirePosition', () => {
+    it('should expire a position and calculate P&L from premiums', async () => {
+      // Create a PUT trade and assign it to create a position
+      const putTrade = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'PUT',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(150),
+          premium: new Prisma.Decimal(250), // $250 premium
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-02-15'),
+        },
+      })
+
+      const assignResult = await assignPut({ tradeId: putTrade.id })
+      expect(assignResult.success).toBe(true)
+      if (!assignResult.success) return
+
+      const positionId = assignResult.data.positionId
+
+      // Create covered calls
+      const call1 = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'CALL',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(155),
+          premium: new Prisma.Decimal(150), // $150 premium
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-03-15'),
+          positionId,
+        },
+      })
+
+      const call2 = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'CALL',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(160),
+          premium: new Prisma.Decimal(100), // $100 premium
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-04-15'),
+          positionId,
+        },
+      })
+
+      // Expire the position
+      const result = await expirePosition({ positionId })
+
+      // Verify success
+      expect(result.success).toBe(true)
+      if (!result.success) return
+
+      expect(result.data.positionId).toBe(positionId)
+      // Total premiums: $250 (PUT) + $150 (CALL1) + $100 (CALL2) = $500
+      expect(result.data.realizedGainLoss).toBe(500)
+
+      // Verify position was updated to EXPIRED
+      const updatedPosition = await prisma.position.findUnique({
+        where: { id: positionId },
+      })
+      expect(updatedPosition?.status).toBe('EXPIRED')
+      expect(updatedPosition?.closedDate).toBeDefined()
+      expect(Number(updatedPosition?.realizedGainLoss)).toBe(500)
+
+      // Verify OPEN covered calls were marked as EXPIRED
+      const updatedCall1 = await prisma.trade.findUnique({
+        where: { id: call1.id },
+      })
+      expect(updatedCall1?.status).toBe('EXPIRED')
+      expect(updatedCall1?.closeDate).toBeDefined()
+
+      const updatedCall2 = await prisma.trade.findUnique({
+        where: { id: call2.id },
+      })
+      expect(updatedCall2?.status).toBe('EXPIRED')
+      expect(updatedCall2?.closeDate).toBeDefined()
+    })
+
+    it('should reject expiring a non-OPEN position', async () => {
+      // Create a PUT trade and assign it
+      const putTrade = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'PUT',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(150),
+          premium: new Prisma.Decimal(250),
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-02-15'),
+        },
+      })
+
+      const assignResult = await assignPut({ tradeId: putTrade.id })
+      expect(assignResult.success).toBe(true)
+      if (!assignResult.success) return
+
+      const positionId = assignResult.data.positionId
+
+      // Expire the position first time
+      const firstExpire = await expirePosition({ positionId })
+      expect(firstExpire.success).toBe(true)
+
+      // Try to expire it again
+      const result = await expirePosition({ positionId })
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.error).toContain('expired')
+    })
+
+    it('should return error for non-existent position', async () => {
+      const result = await expirePosition({ positionId: 'clxyz_nonexistent' })
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.error).toBe('Position not found')
+    })
+
+    it('should handle positions with no covered calls', async () => {
+      // Create a PUT trade and assign it to create a position
+      const putTrade = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'TSLA',
+          type: 'PUT',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(200),
+          premium: new Prisma.Decimal(300), // $300 premium
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-02-15'),
+        },
+      })
+
+      const assignResult = await assignPut({ tradeId: putTrade.id })
+      expect(assignResult.success).toBe(true)
+      if (!assignResult.success) return
+
+      const positionId = assignResult.data.positionId
+
+      // Expire the position without any covered calls
+      const result = await expirePosition({ positionId })
+
+      // Verify success
+      expect(result.success).toBe(true)
+      if (!result.success) return
+
+      // P&L should only be the PUT premium
+      expect(result.data.realizedGainLoss).toBe(300)
+
+      // Verify position was updated
+      const updatedPosition = await prisma.position.findUnique({
+        where: { id: positionId },
+      })
+      expect(updatedPosition?.status).toBe('EXPIRED')
+      expect(Number(updatedPosition?.realizedGainLoss)).toBe(300)
     })
   })
 })

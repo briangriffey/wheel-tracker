@@ -275,7 +275,7 @@ export async function getPositionStats() {
   try {
     const userId = await getCurrentUserId()
 
-    const [totalPositions, openPositions, closedPositions, totals, openWithValues] =
+    const [totalPositions, openPositions, closedPositions, expiredPositions, totals, openWithValues] =
       await Promise.all([
         // Total positions
         prisma.position.count({ where: { userId } }),
@@ -283,6 +283,8 @@ export async function getPositionStats() {
         prisma.position.count({ where: { userId, status: 'OPEN' } }),
         // Closed positions
         prisma.position.count({ where: { userId, status: 'CLOSED' } }),
+        // Expired positions
+        prisma.position.count({ where: { userId, status: 'EXPIRED' } }),
         // Aggregated totals
         prisma.position.aggregate({
           where: { userId },
@@ -331,6 +333,7 @@ export async function getPositionStats() {
       totalPositions,
       openPositions,
       closedPositions,
+      expiredPositions,
       totalCapitalDeployed,
       totalUnrealizedPL,
       totalRealizedPL: totals._sum.realizedGainLoss?.toNumber() || 0,

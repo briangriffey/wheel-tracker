@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 // Enums matching Prisma schema
-export const PositionStatusSchema = z.enum(['OPEN', 'CLOSED'])
+export const PositionStatusSchema = z.enum(['OPEN', 'CLOSED', 'EXPIRED'])
 
 /**
  * Schema for assigning a PUT trade (creates a position)
@@ -15,6 +15,13 @@ export const AssignPutSchema = z.object({
  */
 export const AssignCallSchema = z.object({
   tradeId: z.string().cuid('Invalid trade ID'),
+})
+
+/**
+ * Schema for expiring a position (marks position as expired)
+ */
+export const ExpirePositionSchema = z.object({
+  positionId: z.string().cuid('Invalid position ID'),
 })
 
 /**
@@ -33,5 +40,6 @@ export const UpdatePositionSchema = z.object({
 // Type exports for use in components and actions
 export type AssignPutInput = z.infer<typeof AssignPutSchema>
 export type AssignCallInput = z.infer<typeof AssignCallSchema>
+export type ExpirePositionInput = z.infer<typeof ExpirePositionSchema>
 export type UpdatePositionInput = z.infer<typeof UpdatePositionSchema>
 export type PositionStatus = z.infer<typeof PositionStatusSchema>

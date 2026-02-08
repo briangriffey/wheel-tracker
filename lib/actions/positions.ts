@@ -5,9 +5,11 @@ import { prisma } from '@/lib/db'
 import {
   AssignPutSchema,
   AssignCallSchema,
+  ExpirePositionSchema,
   UpdatePositionSchema,
   type AssignPutInput,
   type AssignCallInput,
+  type ExpirePositionInput,
   type UpdatePositionInput,
 } from '@/lib/validations/position'
 import { Prisma } from '@/lib/generated/prisma'
@@ -311,6 +313,143 @@ export async function assignCall(
     }
 
     return { success: false, error: 'Failed to assign CALL' }
+  }
+}
+
+/**
+ * Expire a position (mark as expired when options expire worthless)
+ *
+ * When a position is expired, it means:
+ * - All covered calls have expired worthless or been closed
+ * - The user is keeping the shares or has sold them outside the app
+ * - Realized P&L = total premiums collected (PUT + covered calls)
+ *
+ * @param input - Position ID to expire
+ * @returns Promise resolving to position ID and realized gain/loss on success
+ *
+ * @throws {Error} If position not found, not OPEN, or unauthorized
+ *
+ * @example
+ * // Expire a position after all options expire worthless
+ * await expirePosition({ positionId: 'position_123' });
+ * // Calculates P&L as total premiums collected
+ *
+ * Edge Cases:
+ * - Only OPEN positions can be expired
+ * - Transaction ensures atomicity (position update and trade updates succeed or fail together)
+ * - Any OPEN covered calls are also marked as EXPIRED
+ */
+export async function expirePosition(
+  input: ExpirePositionInput
+): Promise<ActionResult<{ positionId: string; realizedGainLoss: number }>> {
+  try {
+    // Validate input
+    const validated = ExpirePositionSchema.parse(input)
+    const { positionId } = validated
+
+    // Get current user
+    const userId = await getCurrentUserId()
+
+    // Verify position exists and get details with related trades
+    const position = await prisma.position.findUnique({
+      where: { id: positionId },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        assignmentTrade: {
+          select: {
+            premium: true,
+          },
+        },
+        coveredCalls: {
+          select: {
+            id: true,
+            premium: true,
+            status: true,
+          },
+        },
+      },
+    })
+
+    if (!position) {
+      return { success: false, error: 'Position not found' }
+    }
+
+    if (position.userId !== userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    if (position.status !== 'OPEN') {
+      return {
+        success: false,
+        error: `Position is already ${position.status.toLowerCase()}`,
+      }
+    }
+
+    // Calculate realized gain/loss
+    // Total premiums = PUT premium + all covered call premiums
+    const putPremium = Number(position.assignmentTrade.premium)
+    const coveredCallPremiums = position.coveredCalls.reduce(
+      (sum, call) => sum + Number(call.premium),
+      0
+    )
+    const totalPremiums = putPremium + coveredCallPremiums
+    const realizedGainLoss = totalPremiums
+
+    // Get IDs of OPEN covered calls to update
+    const openCoveredCallIds = position.coveredCalls
+      .filter((call) => call.status === 'OPEN')
+      .map((call) => call.id)
+
+    // Expire position and update OPEN covered calls in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Update any OPEN covered calls to EXPIRED
+      if (openCoveredCallIds.length > 0) {
+        await tx.trade.updateMany({
+          where: {
+            id: { in: openCoveredCallIds },
+          },
+          data: {
+            status: 'EXPIRED',
+            closeDate: new Date(),
+          },
+        })
+      }
+
+      // Update position status to EXPIRED with realized gain/loss
+      const updatedPosition = await tx.position.update({
+        where: { id: positionId },
+        data: {
+          status: 'EXPIRED',
+          closedDate: new Date(),
+          realizedGainLoss: new Prisma.Decimal(realizedGainLoss),
+        },
+      })
+
+      return { position: updatedPosition }
+    })
+
+    // Revalidate relevant paths
+    revalidatePath('/positions')
+    revalidatePath(`/positions/${positionId}`)
+    revalidatePath('/dashboard')
+
+    return {
+      success: true,
+      data: {
+        positionId: result.position.id,
+        realizedGainLoss,
+      },
+    }
+  } catch (error) {
+    console.error('Error expiring position:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to expire position' }
   }
 }
 

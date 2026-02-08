@@ -121,6 +121,9 @@ model Trade {
   @@index([status])
   @@index([expirationDate])
   @@index([userId, status])
+  @@index([openDate])
+  @@index([closeDate])
+  @@index([userId, openDate])
 }
 
 model Position {
@@ -152,6 +155,10 @@ model Position {
   @@index([ticker])
   @@index([status])
   @@index([userId, status])
+  @@index([acquiredDate])
+  @@index([closedDate])
+  @@index([userId, acquiredDate])
+  @@index([userId, status, acquiredDate])
 }
 
 model StockPrice {

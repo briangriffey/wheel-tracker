@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import type {
   TimeRange,
   DashboardMetrics,
@@ -10,11 +11,24 @@ import type {
 } from '@/lib/queries/dashboard'
 import { MetricCard } from './metric-card'
 import { StatCard } from './stat-card'
-import { PLOverTimeChart } from './pl-over-time-chart'
-import { PLByTickerChart } from './pl-by-ticker-chart'
-import { WinRateChart } from './win-rate-chart'
 import { TimeRangeSelector } from './time-range-selector'
 import { BenchmarkComparisonSection } from './benchmark-comparison-section'
+
+// Dynamically import chart components to reduce initial bundle size
+const PLOverTimeChart = dynamic(() => import('./pl-over-time-chart').then(mod => ({ default: mod.PLOverTimeChart })), {
+  loading: () => <div className="bg-white rounded-lg shadow p-6 h-96 animate-pulse"><div className="h-full bg-gray-200 rounded"></div></div>,
+  ssr: false,
+})
+
+const PLByTickerChart = dynamic(() => import('./pl-by-ticker-chart').then(mod => ({ default: mod.PLByTickerChart })), {
+  loading: () => <div className="bg-white rounded-lg shadow p-6 h-96 animate-pulse"><div className="h-full bg-gray-200 rounded"></div></div>,
+  ssr: false,
+})
+
+const WinRateChart = dynamic(() => import('./win-rate-chart').then(mod => ({ default: mod.WinRateChart })), {
+  loading: () => <div className="bg-white rounded-lg shadow p-6 h-64 animate-pulse"><div className="h-full bg-gray-200 rounded"></div></div>,
+  ssr: false,
+})
 
 interface PLDashboardProps {
   initialMetrics: DashboardMetrics

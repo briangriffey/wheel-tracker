@@ -14,6 +14,7 @@ import { PLOverTimeChart } from './pl-over-time-chart'
 import { PLByTickerChart } from './pl-by-ticker-chart'
 import { WinRateChart } from './win-rate-chart'
 import { TimeRangeSelector } from './time-range-selector'
+import { BenchmarkComparisonSection } from './benchmark-comparison-section'
 
 interface PLDashboardProps {
   initialMetrics: DashboardMetrics
@@ -132,6 +133,9 @@ export function PLDashboard({
         <PLByTickerChart data={plByTicker} loading={loading} />
         <WinRateChart data={winRateData} loading={loading} />
       </div>
+
+      {/* Benchmark Comparison */}
+      <BenchmarkComparisonSection timeRange={timeRange} />
     </div>
   )
 }

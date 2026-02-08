@@ -6,9 +6,11 @@ import {
   AssignPutSchema,
   AssignCallSchema,
   UpdatePositionSchema,
+  ClosePositionSchema,
   type AssignPutInput,
   type AssignCallInput,
   type UpdatePositionInput,
+  type ClosePositionInput,
 } from '@/lib/validations/position'
 import { Prisma } from '@/lib/generated/prisma'
 
@@ -561,6 +563,122 @@ export async function getPosition(id: string): Promise<
     }
 
     return { success: false, error: 'Failed to fetch position' }
+  }
+}
+
+/**
+ * Manually close a position at a specified price
+ *
+ * This allows users to close a position by selling shares at current market price.
+ * Realized P&L = (closing price * shares) + total premiums - total cost
+ *
+ * @param input - Position ID and closing price per share
+ * @returns Promise resolving to position ID and realized gain/loss
+ *
+ * @throws {Error} If position not found, not open, or unauthorized
+ *
+ * @example
+ * await closePosition({
+ *   positionId: 'pos_123',
+ *   closingPrice: 105.50
+ * });
+ */
+export async function closePosition(
+  input: ClosePositionInput
+): Promise<ActionResult<{ positionId: string; realizedGainLoss: number }>> {
+  try {
+    // Validate input
+    const validated = ClosePositionSchema.parse(input)
+    const { positionId, closingPrice } = validated
+
+    // Get current user
+    const userId = await getCurrentUserId()
+
+    // Fetch position with related trades
+    const position = await prisma.position.findUnique({
+      where: { id: positionId },
+      select: {
+        id: true,
+        userId: true,
+        ticker: true,
+        shares: true,
+        totalCost: true,
+        status: true,
+        assignmentTrade: {
+          select: {
+            premium: true,
+          },
+        },
+        coveredCalls: {
+          select: {
+            premium: true,
+          },
+        },
+      },
+    })
+
+    if (!position) {
+      return { success: false, error: 'Position not found' }
+    }
+
+    if (position.userId !== userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    if (position.status !== 'OPEN') {
+      return {
+        success: false,
+        error: `Position is already ${position.status.toLowerCase()}`,
+      }
+    }
+
+    // Calculate realized gain/loss
+    // Sale proceeds = closing price * shares
+    // Total premiums = PUT premium + sum of all CALL premiums
+    // Realized P&L = sale proceeds + total premiums - total cost
+    const shares = position.shares
+    const totalCost = Number(position.totalCost)
+    const putPremium = Number(position.assignmentTrade.premium)
+    const coveredCallPremiums = position.coveredCalls.reduce(
+      (sum, call) => sum + Number(call.premium),
+      0
+    )
+
+    const saleProceeds = closingPrice * shares
+    const totalPremiums = putPremium + coveredCallPremiums
+    const realizedGainLoss = saleProceeds + totalPremiums - totalCost
+
+    // Close position
+    const updatedPosition = await prisma.position.update({
+      where: { id: positionId },
+      data: {
+        status: 'CLOSED',
+        closedDate: new Date(),
+        realizedGainLoss: new Prisma.Decimal(realizedGainLoss),
+        currentValue: new Prisma.Decimal(closingPrice * shares),
+      },
+    })
+
+    // Revalidate relevant paths
+    revalidatePath('/positions')
+    revalidatePath(`/positions/${positionId}`)
+    revalidatePath('/dashboard')
+
+    return {
+      success: true,
+      data: {
+        positionId: updatedPosition.id,
+        realizedGainLoss,
+      },
+    }
+  } catch (error) {
+    console.error('Error closing position:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to close position' }
   }
 }
 

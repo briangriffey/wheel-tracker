@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { prisma } from '@/lib/db'
-import { assignPut, assignCall, getPositions, getActivePositions, getPosition } from './positions'
+import {
+  assignPut,
+  assignCall,
+  closePosition,
+  getPositions,
+  getActivePositions,
+  getPosition,
+} from './positions'
 import { Prisma } from '@/lib/generated/prisma'
 
 // Test data IDs (will be set during test setup)
@@ -569,6 +576,258 @@ describe('Position Assignment Integration Tests', () => {
       expect(result.success).toBe(false)
       if (result.success) return
       expect(result.error).toBe('Position not found')
+    })
+  })
+
+  describe('closePosition', () => {
+    it('should manually close an open position at specified price', async () => {
+      // Create and assign a PUT to get a position
+      const putTrade = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'PUT',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(150),
+          premium: new Prisma.Decimal(250), // $2.50/share premium
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-02-15'),
+        },
+      })
+
+      const putResult = await assignPut({ tradeId: putTrade.id })
+      expect(putResult.success).toBe(true)
+      if (!putResult.success) return
+
+      const positionId = putResult.data.positionId
+
+      // Close position at $155/share
+      const closeResult = await closePosition({
+        positionId,
+        closingPrice: 155,
+      })
+
+      expect(closeResult.success).toBe(true)
+      if (!closeResult.success) return
+
+      expect(closeResult.data.positionId).toBe(positionId)
+
+      // Verify realized P&L calculation:
+      // Cost basis: $14,750 (from PUT assignment)
+      // Sale proceeds: $155 * 100 = $15,500
+      // Total premiums: $250 (PUT)
+      // Realized P&L: $15,500 + $250 - $14,750 = $1,000
+      expect(closeResult.data.realizedGainLoss).toBeCloseTo(1000, 2)
+
+      // Verify position was closed
+      const position = await prisma.position.findUnique({
+        where: { id: positionId },
+      })
+      expect(position?.status).toBe('CLOSED')
+      expect(position?.closedDate).toBeDefined()
+      expect(Number(position?.realizedGainLoss)).toBeCloseTo(1000, 2)
+      expect(Number(position?.currentValue)).toBeCloseTo(15500, 2)
+    })
+
+    it('should include covered call premiums in P&L calculation', async () => {
+      // Create and assign a PUT
+      const putTrade = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'PUT',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(150),
+          premium: new Prisma.Decimal(250),
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-02-15'),
+        },
+      })
+
+      const putResult = await assignPut({ tradeId: putTrade.id })
+      expect(putResult.success).toBe(true)
+      if (!putResult.success) return
+
+      // Create multiple covered calls
+      await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'CALL',
+          action: 'SELL_TO_OPEN',
+          status: 'EXPIRED',
+          strikePrice: new Prisma.Decimal(155),
+          premium: new Prisma.Decimal(200), // $2/share
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-03-15'),
+          positionId: putResult.data.positionId,
+        },
+      })
+
+      await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'CALL',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(157),
+          premium: new Prisma.Decimal(150), // $1.50/share
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-04-15'),
+          positionId: putResult.data.positionId,
+        },
+      })
+
+      // Close position at $160/share
+      const closeResult = await closePosition({
+        positionId: putResult.data.positionId,
+        closingPrice: 160,
+      })
+
+      expect(closeResult.success).toBe(true)
+      if (!closeResult.success) return
+
+      // Verify realized P&L calculation:
+      // Cost basis: $14,750
+      // Sale proceeds: $160 * 100 = $16,000
+      // Total premiums: $250 (PUT) + $200 (CALL 1) + $150 (CALL 2) = $600
+      // Realized P&L: $16,000 + $600 - $14,750 = $1,850
+      expect(closeResult.data.realizedGainLoss).toBeCloseTo(1850, 2)
+    })
+
+    it('should calculate loss correctly when closing below cost basis', async () => {
+      // Create and assign a PUT
+      const putTrade = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'PUT',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(150),
+          premium: new Prisma.Decimal(250),
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-02-15'),
+        },
+      })
+
+      const putResult = await assignPut({ tradeId: putTrade.id })
+      expect(putResult.success).toBe(true)
+      if (!putResult.success) return
+
+      // Close position at $140/share (below cost basis)
+      const closeResult = await closePosition({
+        positionId: putResult.data.positionId,
+        closingPrice: 140,
+      })
+
+      expect(closeResult.success).toBe(true)
+      if (!closeResult.success) return
+
+      // Verify realized P&L calculation:
+      // Cost basis: $14,750
+      // Sale proceeds: $140 * 100 = $14,000
+      // Total premiums: $250 (PUT)
+      // Realized P&L: $14,000 + $250 - $14,750 = -$500 (loss)
+      expect(closeResult.data.realizedGainLoss).toBeCloseTo(-500, 2)
+
+      const position = await prisma.position.findUnique({
+        where: { id: putResult.data.positionId },
+      })
+      expect(Number(position?.realizedGainLoss)).toBeCloseTo(-500, 2)
+    })
+
+    it('should reject closing non-existent position', async () => {
+      const result = await closePosition({
+        positionId: 'clxyz_nonexistent',
+        closingPrice: 100,
+      })
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.error).toBe('Position not found')
+    })
+
+    it('should reject closing already closed position', async () => {
+      // Create, assign, and close a position
+      const putTrade = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'PUT',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(150),
+          premium: new Prisma.Decimal(250),
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-02-15'),
+        },
+      })
+
+      const putResult = await assignPut({ tradeId: putTrade.id })
+      expect(putResult.success).toBe(true)
+      if (!putResult.success) return
+
+      // Close the position
+      const closeResult1 = await closePosition({
+        positionId: putResult.data.positionId,
+        closingPrice: 155,
+      })
+      expect(closeResult1.success).toBe(true)
+
+      // Try to close again
+      const closeResult2 = await closePosition({
+        positionId: putResult.data.positionId,
+        closingPrice: 160,
+      })
+
+      expect(closeResult2.success).toBe(false)
+      if (closeResult2.success) return
+      expect(closeResult2.error).toContain('closed')
+    })
+
+    it('should reject invalid closing price', async () => {
+      // Create and assign a PUT
+      const putTrade = await prisma.trade.create({
+        data: {
+          userId: testUserId,
+          ticker: 'AAPL',
+          type: 'PUT',
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(150),
+          premium: new Prisma.Decimal(250),
+          contracts: 1,
+          shares: 100,
+          expirationDate: new Date('2026-02-15'),
+        },
+      })
+
+      const putResult = await assignPut({ tradeId: putTrade.id })
+      expect(putResult.success).toBe(true)
+      if (!putResult.success) return
+
+      // Try to close with invalid prices
+      const result1 = await closePosition({
+        positionId: putResult.data.positionId,
+        closingPrice: 0,
+      })
+      expect(result1.success).toBe(false)
+
+      const result2 = await closePosition({
+        positionId: putResult.data.positionId,
+        closingPrice: -10,
+      })
+      expect(result2.success).toBe(false)
     })
   })
 })

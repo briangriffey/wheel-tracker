@@ -30,8 +30,20 @@ export const UpdatePositionSchema = z.object({
     .optional(),
 })
 
+/**
+ * Schema for manually closing a position
+ */
+export const ClosePositionSchema = z.object({
+  positionId: z.string().cuid('Invalid position ID'),
+  closingPrice: z
+    .number()
+    .positive('Closing price must be positive')
+    .finite('Closing price must be finite'),
+})
+
 // Type exports for use in components and actions
 export type AssignPutInput = z.infer<typeof AssignPutSchema>
 export type AssignCallInput = z.infer<typeof AssignCallSchema>
 export type UpdatePositionInput = z.infer<typeof UpdatePositionSchema>
+export type ClosePositionInput = z.infer<typeof ClosePositionSchema>
 export type PositionStatus = z.infer<typeof PositionStatusSchema>

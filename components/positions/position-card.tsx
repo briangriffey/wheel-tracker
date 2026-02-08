@@ -13,6 +13,9 @@ import {
   formatPercentage,
 } from '@/lib/utils/position-calculations'
 import { refreshSinglePositionPrice, type PriceData } from '@/lib/actions/prices'
+import { ClosePositionDialog } from './close-position-dialog'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 /**
  * Position data type with related trades
@@ -27,6 +30,9 @@ export interface PositionCardData {
   status: 'OPEN' | 'CLOSED'
   acquiredDate: Date
   closedDate: Date | null
+  assignmentTrade?: {
+    premium: number
+  }
   coveredCalls?: Array<{
     id: string
     premium: number
@@ -53,9 +59,11 @@ export function PositionCard({
   priceData = null,
   onPriceRefresh,
 }: PositionCardProps) {
+  const router = useRouter()
   const [isExpanded, setIsExpanded] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false)
 
   // Handle manual price refresh
   const handleRefreshPrice = async () => {
@@ -79,6 +87,12 @@ export function PositionCard({
     } finally {
       setIsRefreshing(false)
     }
+  }
+
+  // Handle close position success
+  const handleCloseSuccess = () => {
+    toast.success(`Position ${position.ticker} closed successfully`)
+    router.refresh()
   }
 
   // Calculate derived values
@@ -392,6 +406,12 @@ export function PositionCard({
         {/* Action Buttons */}
         {position.status === 'OPEN' && (
           <div className="flex flex-col sm:flex-row gap-2 pt-2">
+            <button
+              onClick={() => setIsCloseDialogOpen(true)}
+              className="flex-1 px-4 py-2 border border-red-600 rounded-md shadow-sm text-sm font-medium text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+            >
+              Close Position
+            </button>
             {onSellCall && (
               <button
                 onClick={() => onSellCall(position.id)}
@@ -411,6 +431,25 @@ export function PositionCard({
           </div>
         )}
       </div>
+
+      {/* Close Position Dialog */}
+      {position.assignmentTrade && (
+        <ClosePositionDialog
+          position={{
+            id: position.id,
+            ticker: position.ticker,
+            shares: position.shares,
+            costBasis: position.costBasis,
+            totalCost: position.totalCost,
+            currentValue: position.currentValue,
+            coveredCalls: position.coveredCalls,
+          }}
+          putPremium={position.assignmentTrade.premium}
+          isOpen={isCloseDialogOpen}
+          onClose={() => setIsCloseDialogOpen(false)}
+          onSuccess={handleCloseSuccess}
+        />
+      )}
     </div>
   )
 }

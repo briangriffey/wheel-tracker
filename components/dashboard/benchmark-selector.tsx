@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Select } from '@/components/design-system'
 
 export type BenchmarkTicker = 'SPY' | 'QQQ' | 'VTI' | 'DIA' | 'IWM'
 
@@ -23,11 +24,12 @@ export function BenchmarkSelector({ selected, onChange }: BenchmarkSelectorProps
       <label htmlFor="benchmark-select" className="text-sm font-medium text-gray-700">
         Compare to:
       </label>
-      <select
+      <Select
         id="benchmark-select"
         value={selected}
         onChange={(e) => onChange(e.target.value as BenchmarkTicker)}
-        className="block w-full sm:w-auto px-4 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        size="sm"
+        wrapperClassName="w-full sm:w-auto"
         aria-label="Select benchmark to compare against"
       >
         {BENCHMARKS.map((benchmark) => (
@@ -35,7 +37,7 @@ export function BenchmarkSelector({ selected, onChange }: BenchmarkSelectorProps
             {benchmark.label} - {benchmark.description}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   )
 }

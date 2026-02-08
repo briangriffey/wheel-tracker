@@ -44,3 +44,22 @@ export type {
 // Select Component
 export { Select } from './select'
 export type { SelectProps, SelectSize, SelectState } from './select'
+
+// Card Component
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from './card'
+export type {
+  CardProps,
+  CardVariant,
+  CardHeaderProps,
+  CardTitleProps,
+  CardDescriptionProps,
+  CardContentProps,
+  CardFooterProps,
+} from './card'

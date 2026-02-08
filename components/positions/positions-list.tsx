@@ -8,6 +8,7 @@ import { refreshPositionPrices, getLatestPrices, type PriceData } from '@/lib/ac
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/modal'
 import { TradeEntryForm } from '@/components/forms/trade-entry-form'
+import { getPnLColorClass } from '@/lib/design/colors'
 
 interface PositionsListProps {
   initialPositions: PositionWithCalculations[]
@@ -199,13 +200,6 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
     return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
-  // Get P&L color class
-  const getPLColorClass = (pl: number) => {
-    if (pl > 0) return 'text-green-600'
-    if (pl < 0) return 'text-red-600'
-    return 'text-gray-600'
-  }
-
   // Handle quick actions
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSellCall = (_positionId: string) => {
@@ -236,7 +230,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
         </div>
         <div className="bg-white rounded-lg shadow p-6">
           <div className="text-sm text-gray-600 font-medium">Total P&L</div>
-          <div className={`text-3xl font-bold mt-2 ${getPLColorClass(stats.totalPL)}`}>
+          <div className={`text-3xl font-bold mt-2 ${getPnLColorClass(stats.totalPL)}`}>
             {stats.totalPL >= 0 ? '+' : ''}
             {formatCurrency(stats.totalPL)}
           </div>

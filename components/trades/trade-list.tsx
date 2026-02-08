@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
 import { deleteTrade, updateTradeStatus } from '@/lib/actions/trades'
+import { getStatusColor } from '@/lib/design/colors'
 
 interface TradeListProps {
   initialTrades: Trade[]
@@ -158,22 +159,6 @@ export function TradeList({ initialTrades }: TradeListProps) {
       day: 'numeric',
       year: 'numeric',
     })
-  }
-
-  // Get status badge color
-  const getStatusColor = (status: TradeStatus) => {
-    switch (status) {
-      case 'OPEN':
-        return 'bg-green-100 text-green-800'
-      case 'CLOSED':
-        return 'bg-gray-100 text-gray-800'
-      case 'EXPIRED':
-        return 'bg-blue-100 text-blue-800'
-      case 'ASSIGNED':
-        return 'bg-purple-100 text-purple-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
-    }
   }
 
   // Get type badge color
@@ -394,7 +379,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                     {formatDate(trade.expirationDate)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status)}`}>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
                       {trade.status}
                     </span>
                   </td>
@@ -467,7 +452,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
                       {trade.type}
                     </span>
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status)}`}>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
                       {trade.status}
                     </span>
                   </div>

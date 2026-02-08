@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import toast from 'react-hot-toast'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
@@ -64,8 +64,8 @@ export function TradeList({ initialTrades }: TradeListProps) {
           bValue = b.ticker
           break
         case 'premium':
-          aValue = (a.premium as Prisma.Decimal).toNumber()
-          bValue = (b.premium as Prisma.Decimal).toNumber()
+          aValue = toDecimalNumber(a.premium as unknown as Prisma.Decimal | string | number)
+          bValue = toDecimalNumber(b.premium as unknown as Prisma.Decimal | string | number)
           break
         case 'expirationDate':
         default:
@@ -138,9 +138,17 @@ export function TradeList({ initialTrades }: TradeListProps) {
     }
   }
 
+  // Helper to safely convert Prisma Decimal (or serialized string/number) to number
+  const toDecimalNumber = (value: Prisma.Decimal | number | string): number => {
+    if (value && typeof value === 'object' && 'toNumber' in value) {
+      return (value as Prisma.Decimal).toNumber()
+    }
+    return Number(value)
+  }
+
   // Format currency
-  const formatCurrency = (value: Prisma.Decimal) => {
-    return `$${value.toNumber().toFixed(2)}`
+  const formatCurrency = (value: Prisma.Decimal | number | string) => {
+    return `$${toDecimalNumber(value).toFixed(2)}`
   }
 
   // Format date
@@ -377,10 +385,10 @@ export function TradeList({ initialTrades }: TradeListProps) {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(trade.strikePrice as Prisma.Decimal)}
+                    {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(trade.premium as Prisma.Decimal)}
+                    {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {formatDate(trade.expirationDate)}
@@ -471,13 +479,13 @@ export function TradeList({ initialTrades }: TradeListProps) {
                 <div className="flex justify-between">
                   <span className="text-gray-500">Strike Price:</span>
                   <span className="font-medium text-gray-900">
-                    {formatCurrency(trade.strikePrice as Prisma.Decimal)}
+                    {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Premium:</span>
                   <span className="font-medium text-gray-900">
-                    {formatCurrency(trade.premium as Prisma.Decimal)}
+                    {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
                   </span>
                 </div>
                 <div className="flex justify-between">

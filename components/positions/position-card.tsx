@@ -7,11 +7,10 @@ import {
   calculateCurrentPrice,
   calculateDaysHeld,
   calculateTotalCoveredCallPremium,
-  getPnLColorClass,
-  getPnLBackgroundClass,
   formatCurrency,
   formatPercentage,
 } from '@/lib/utils/position-calculations'
+import { getPnLColorClass, getPnLBackgroundClass, getStatusColor } from '@/lib/design/colors'
 import { refreshSinglePositionPrice, type PriceData } from '@/lib/actions/prices'
 import { AssignCallDialog } from './assign-call-dialog'
 import type { PositionWithCalculations } from '@/lib/queries/positions'
@@ -153,11 +152,7 @@ export function PositionCard({
           <div className="flex items-center gap-3">
             <h3 className="text-lg font-semibold text-gray-900">{position.ticker}</h3>
             <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                position.status === 'OPEN'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800'
-              }`}
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(position.status).bg} ${getStatusColor(position.status).text}`}
             >
               {position.status}
             </span>
@@ -440,6 +435,7 @@ export function PositionCard({
                   {position.coveredCalls.map((call) => {
                     const strikePrice = typeof call.strikePrice === 'number' ? call.strikePrice : call.strikePrice.toNumber()
                     const premium = typeof call.premium === 'number' ? call.premium : call.premium.toNumber()
+                    const statusColors = getStatusColor(call.status as 'OPEN' | 'CLOSED' | 'EXPIRED' | 'ASSIGNED')
 
                     return (
                       <div
@@ -449,15 +445,7 @@ export function PositionCard({
                         <div className="flex-1 space-y-1">
                           <div className="flex items-center gap-2">
                             <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                                call.status === 'OPEN'
-                                  ? 'bg-green-100 text-green-800'
-                                  : call.status === 'ASSIGNED'
-                                    ? 'bg-purple-100 text-purple-800'
-                                    : call.status === 'CLOSED'
-                                      ? 'bg-gray-100 text-gray-800'
-                                      : 'bg-yellow-100 text-yellow-800'
-                              }`}
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${statusColors.bg} ${statusColors.text}`}
                             >
                               {call.status}
                             </span>

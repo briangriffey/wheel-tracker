@@ -89,6 +89,7 @@ export async function createTrade(
     // Revalidate relevant paths
     revalidatePath('/trades')
     revalidatePath('/dashboard')
+    revalidatePath('/positions')
 
     return { success: true, data: { id: trade.id } }
   } catch (error) {

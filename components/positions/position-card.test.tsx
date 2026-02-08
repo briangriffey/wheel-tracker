@@ -14,9 +14,24 @@ const mockOpenPosition: PositionCardData = {
   status: 'OPEN',
   acquiredDate: new Date('2024-01-01'),
   closedDate: null,
+  assignmentTrade: {
+    premium: 500,
+  },
   coveredCalls: [
-    { id: 'call-1', premium: 250, status: 'OPEN' },
-    { id: 'call-2', premium: 300, status: 'CLOSED' },
+    {
+      id: 'call-1',
+      premium: 250,
+      strikePrice: 160,
+      expirationDate: new Date('2024-02-16'),
+      status: 'OPEN'
+    },
+    {
+      id: 'call-2',
+      premium: 300,
+      strikePrice: 165,
+      expirationDate: new Date('2024-03-15'),
+      status: 'CLOSED'
+    },
   ],
 }
 
@@ -333,7 +348,15 @@ describe('PositionCard', () => {
     it('should handle single covered call correctly', () => {
       const positionWithOneCall: PositionCardData = {
         ...mockOpenPosition,
-        coveredCalls: [{ id: 'call-1', premium: 250, status: 'OPEN' }],
+        coveredCalls: [
+          {
+            id: 'call-1',
+            premium: 250,
+            strikePrice: 160,
+            expirationDate: new Date('2024-02-16'),
+            status: 'OPEN'
+          }
+        ],
       }
       render(<PositionCard position={positionWithOneCall} />)
 

@@ -13,6 +13,9 @@ import {
   formatPercentage,
 } from '@/lib/utils/position-calculations'
 import { refreshSinglePositionPrice, type PriceData } from '@/lib/actions/prices'
+import { AssignCallDialog } from './assign-call-dialog'
+import type { PositionWithCalculations } from '@/lib/queries/positions'
+import type { Prisma } from '@/lib/generated/prisma'
 
 /**
  * Position data type with related trades
@@ -21,21 +24,26 @@ export interface PositionCardData {
   id: string
   ticker: string
   shares: number
-  costBasis: number
-  totalCost: number
-  currentValue: number | null
+  costBasis: number | Prisma.Decimal
+  totalCost: number | Prisma.Decimal
+  currentValue: number | Prisma.Decimal | null
   status: 'OPEN' | 'CLOSED'
   acquiredDate: Date
   closedDate: Date | null
+  assignmentTrade?: {
+    premium: number | Prisma.Decimal
+  }
   coveredCalls?: Array<{
     id: string
-    premium: number
+    premium: number | Prisma.Decimal
+    strikePrice: number | Prisma.Decimal
+    expirationDate: Date
     status: string
   }>
 }
 
 interface PositionCardProps {
-  position: PositionCardData
+  position: PositionCardData | PositionWithCalculations
   onSellCall?: (positionId: string) => void
   onViewDetails?: (positionId: string) => void
   isLoadingPrice?: boolean
@@ -56,6 +64,14 @@ export function PositionCard({
   const [isExpanded, setIsExpanded] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false)
+  const [selectedCall, setSelectedCall] = useState<{
+    id: string
+    strikePrice: number
+    premium: number
+    expirationDate: Date
+    status: string
+  } | null>(null)
 
   // Handle manual price refresh
   const handleRefreshPrice = async () => {
@@ -78,6 +94,33 @@ export function PositionCard({
       setRefreshError('Failed to refresh price')
     } finally {
       setIsRefreshing(false)
+    }
+  }
+
+  // Handle opening assignment dialog
+  const handleOpenAssignDialog = (call: {
+    id: string
+    strikePrice: number | Prisma.Decimal
+    premium: number | Prisma.Decimal
+    expirationDate: Date
+    status: string
+  }) => {
+    // Convert Decimals to numbers for the dialog
+    setSelectedCall({
+      id: call.id,
+      strikePrice: typeof call.strikePrice === 'number' ? call.strikePrice : call.strikePrice.toNumber(),
+      premium: typeof call.premium === 'number' ? call.premium : call.premium.toNumber(),
+      expirationDate: call.expirationDate,
+      status: call.status,
+    })
+    setAssignDialogOpen(true)
+  }
+
+  // Handle successful assignment
+  const handleAssignSuccess = () => {
+    // Refresh the page or call parent callback
+    if (onPriceRefresh) {
+      onPriceRefresh(position.id)
     }
   }
 
@@ -386,6 +429,72 @@ export function PositionCard({
                 <span className="text-gray-600 font-mono text-xs">{position.id}</span>
               </div>
             </div>
+
+            {/* Covered Calls Section */}
+            {position.coveredCalls && position.coveredCalls.length > 0 && (
+              <div className="pt-3 border-t border-gray-200">
+                <h4 className="text-sm font-medium text-gray-700 uppercase tracking-wide mb-3">
+                  Covered Calls
+                </h4>
+                <div className="space-y-2">
+                  {position.coveredCalls.map((call) => {
+                    const strikePrice = typeof call.strikePrice === 'number' ? call.strikePrice : call.strikePrice.toNumber()
+                    const premium = typeof call.premium === 'number' ? call.premium : call.premium.toNumber()
+
+                    return (
+                      <div
+                        key={call.id}
+                        className="bg-blue-50 border border-blue-200 rounded-md p-3 flex items-center justify-between"
+                      >
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                call.status === 'OPEN'
+                                  ? 'bg-green-100 text-green-800'
+                                  : call.status === 'ASSIGNED'
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : call.status === 'CLOSED'
+                                      ? 'bg-gray-100 text-gray-800'
+                                      : 'bg-yellow-100 text-yellow-800'
+                              }`}
+                            >
+                              {call.status}
+                            </span>
+                            <span className="text-sm font-semibold text-gray-900">
+                              Strike: {formatCurrency(strikePrice)}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                            <div>
+                              <span>Premium:</span>{' '}
+                              <span className="font-medium text-green-600">
+                                {formatCurrency(premium)}
+                              </span>
+                            </div>
+                            <div>
+                              <span>Expires:</span>{' '}
+                              <span className="font-medium text-gray-900">
+                                {new Date(call.expirationDate).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        {call.status === 'OPEN' && (
+                          <button
+                            onClick={() => handleOpenAssignDialog(call)}
+                            className="ml-3 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                            aria-label="Mark as assigned"
+                          >
+                            Mark as Assigned
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -411,6 +520,34 @@ export function PositionCard({
           </div>
         )}
       </div>
+
+      {/* Assignment Dialog */}
+      {selectedCall && (
+        <AssignCallDialog
+          positionId={position.id}
+          ticker={position.ticker}
+          shares={position.shares}
+          costBasis={typeof position.costBasis === 'number' ? position.costBasis : position.costBasis.toNumber()}
+          totalCost={typeof position.totalCost === 'number' ? position.totalCost : position.totalCost.toNumber()}
+          coveredCall={{
+            id: selectedCall.id,
+            strikePrice: selectedCall.strikePrice,
+            premium: selectedCall.premium,
+            expirationDate: selectedCall.expirationDate,
+            status: selectedCall.status,
+          }}
+          putPremium={
+            position.assignmentTrade?.premium
+              ? typeof position.assignmentTrade.premium === 'number'
+                ? position.assignmentTrade.premium
+                : position.assignmentTrade.premium.toNumber()
+              : 0
+          }
+          isOpen={assignDialogOpen}
+          onClose={() => setAssignDialogOpen(false)}
+          onSuccess={handleAssignSuccess}
+        />
+      )}
     </div>
   )
 }

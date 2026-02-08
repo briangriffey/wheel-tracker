@@ -6,6 +6,7 @@ import {
   TradeTypeSchema,
   TradeActionSchema,
   TradeStatusSchema,
+  TradeOutcomeSchema,
 } from './trade'
 
 describe('TradeTypeSchema', () => {
@@ -55,6 +56,28 @@ describe('TradeStatusSchema', () => {
 
   it('should reject invalid statuses', () => {
     expect(() => TradeStatusSchema.parse('INVALID')).toThrow()
+  })
+})
+
+describe('TradeOutcomeSchema', () => {
+  it('should accept GREAT', () => {
+    expect(TradeOutcomeSchema.parse('GREAT')).toBe('GREAT')
+  })
+
+  it('should accept OKAY', () => {
+    expect(TradeOutcomeSchema.parse('OKAY')).toBe('OKAY')
+  })
+
+  it('should accept MISTAKE', () => {
+    expect(TradeOutcomeSchema.parse('MISTAKE')).toBe('MISTAKE')
+  })
+
+  it('should accept LEARNING', () => {
+    expect(TradeOutcomeSchema.parse('LEARNING')).toBe('LEARNING')
+  })
+
+  it('should reject invalid outcomes', () => {
+    expect(() => TradeOutcomeSchema.parse('INVALID')).toThrow()
   })
 })
 
@@ -166,6 +189,55 @@ describe('CreateTradeSchema', () => {
     })
     expect(result.expirationDate).toBeInstanceOf(Date)
   })
+
+  it('should accept optional tags array', () => {
+    const result = CreateTradeSchema.parse({
+      ...validInput,
+      tags: ['earnings', 'high-iv'],
+    })
+    expect(result.tags).toEqual(['earnings', 'high-iv'])
+  })
+
+  it('should default to empty array for tags', () => {
+    const result = CreateTradeSchema.parse(validInput)
+    expect(result.tags).toEqual([])
+  })
+
+  it('should reject more than 10 tags', () => {
+    const tags = Array.from({ length: 11 }, (_, i) => `tag${i}`)
+    expect(() => CreateTradeSchema.parse({ ...validInput, tags })).toThrow()
+  })
+
+  it('should reject tags longer than 50 characters', () => {
+    const longTag = 'a'.repeat(51)
+    expect(() => CreateTradeSchema.parse({ ...validInput, tags: [longTag] })).toThrow()
+  })
+
+  it('should reject empty string tags', () => {
+    expect(() => CreateTradeSchema.parse({ ...validInput, tags: [''] })).toThrow()
+  })
+
+  it('should accept optional outcome', () => {
+    const result = CreateTradeSchema.parse({
+      ...validInput,
+      outcome: 'GREAT',
+    })
+    expect(result.outcome).toBe('GREAT')
+  })
+
+  it('should accept all valid outcomes', () => {
+    const outcomes = ['GREAT', 'OKAY', 'MISTAKE', 'LEARNING'] as const
+    outcomes.forEach((outcome) => {
+      const result = CreateTradeSchema.parse({ ...validInput, outcome })
+      expect(result.outcome).toBe(outcome)
+    })
+  })
+
+  it('should reject invalid outcome', () => {
+    expect(() =>
+      CreateTradeSchema.parse({ ...validInput, outcome: 'INVALID' })
+    ).toThrow()
+  })
 })
 
 describe('UpdateTradeSchema', () => {
@@ -218,6 +290,33 @@ describe('UpdateTradeSchema', () => {
     const closeDate = new Date('2026-02-15')
     const result = UpdateTradeSchema.parse({ ...validInput, closeDate })
     expect(result.closeDate).toEqual(closeDate)
+  })
+
+  it('should accept optional tags', () => {
+    const result = UpdateTradeSchema.parse({
+      ...validInput,
+      tags: ['earnings', 'high-iv'],
+    })
+    expect(result.tags).toEqual(['earnings', 'high-iv'])
+  })
+
+  it('should reject more than 10 tags', () => {
+    const tags = Array.from({ length: 11 }, (_, i) => `tag${i}`)
+    expect(() => UpdateTradeSchema.parse({ ...validInput, tags })).toThrow()
+  })
+
+  it('should accept optional outcome', () => {
+    const result = UpdateTradeSchema.parse({
+      ...validInput,
+      outcome: 'LEARNING',
+    })
+    expect(result.outcome).toBe('LEARNING')
+  })
+
+  it('should reject invalid outcome', () => {
+    expect(() =>
+      UpdateTradeSchema.parse({ ...validInput, outcome: 'INVALID' })
+    ).toThrow()
   })
 })
 

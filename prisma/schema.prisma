@@ -30,6 +30,13 @@ enum PositionStatus {
   CLOSED           // Position closed/sold
 }
 
+enum TradeOutcome {
+  GREAT            // Excellent trade, went as planned
+  OKAY             // Average/neutral outcome
+  MISTAKE          // Poor decision, learned what not to do
+  LEARNING         // Valuable learning experience
+}
+
 // Models
 model User {
   id            String    @id @default(cuid())
@@ -104,6 +111,8 @@ model Trade {
   openDate        DateTime    @default(now())
   closeDate       DateTime?
   notes           String?
+  tags            String[]    @default([])
+  outcome         TradeOutcome?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 

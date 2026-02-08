@@ -63,6 +63,8 @@ export async function createTrade(
         expirationDate: validated.expirationDate,
         openDate: validated.openDate ?? new Date(),
         notes: validated.notes,
+        tags: validated.tags ?? [],
+        outcome: validated.outcome,
         positionId: validated.positionId,
       },
     })
@@ -132,6 +134,8 @@ export async function updateTrade(
     if (updates.openDate !== undefined) updateData.openDate = updates.openDate
     if (updates.closeDate !== undefined) updateData.closeDate = updates.closeDate
     if (updates.notes !== undefined) updateData.notes = updates.notes
+    if (updates.tags !== undefined) updateData.tags = updates.tags
+    if (updates.outcome !== undefined) updateData.outcome = updates.outcome
     if (updates.positionId !== undefined) updateData.positionId = updates.positionId
 
     // Recalculate shares if contracts changed
@@ -283,5 +287,60 @@ export async function deleteTrade(id: string): Promise<ActionResult<{ id: string
     }
 
     return { success: false, error: 'Failed to delete trade' }
+  }
+}
+
+/**
+ * Bulk update tags for multiple trades
+ */
+export async function bulkUpdateTags(
+  tradeIds: string[],
+  tags: string[]
+): Promise<ActionResult<{ count: number }>> {
+  try {
+    // Get current user
+    const userId = await getCurrentUserId()
+
+    // Verify all trades belong to the user
+    const trades = await prisma.trade.findMany({
+      where: {
+        id: { in: tradeIds },
+        userId,
+      },
+      select: { id: true },
+    })
+
+    if (trades.length !== tradeIds.length) {
+      return {
+        success: false,
+        error: 'Some trades not found or unauthorized',
+      }
+    }
+
+    // Update all trades with new tags
+    const result = await prisma.trade.updateMany({
+      where: {
+        id: { in: tradeIds },
+        userId,
+      },
+      data: {
+        tags,
+      },
+    })
+
+    // Revalidate relevant paths
+    revalidatePath('/trades')
+    revalidatePath('/journal')
+    revalidatePath('/dashboard')
+
+    return { success: true, data: { count: result.count } }
+  } catch (error) {
+    console.error('Error bulk updating tags:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to bulk update tags' }
   }
 }

@@ -4,6 +4,7 @@ import { z } from 'zod'
 export const TradeTypeSchema = z.enum(['PUT', 'CALL'])
 export const TradeActionSchema = z.enum(['SELL_TO_OPEN', 'BUY_TO_CLOSE'])
 export const TradeStatusSchema = z.enum(['OPEN', 'CLOSED', 'EXPIRED', 'ASSIGNED'])
+export const TradeOutcomeSchema = z.enum(['GREAT', 'OKAY', 'MISTAKE', 'LEARNING'])
 
 // Schema for creating a new trade
 export const CreateTradeSchema = z.object({
@@ -35,6 +36,12 @@ export const CreateTradeSchema = z.object({
     .refine((date) => date > new Date(), 'Expiration date must be in the future'),
   openDate: z.coerce.date().optional(),
   notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional(),
+  tags: z
+    .array(z.string().min(1).max(50, 'Each tag must be 50 characters or less'))
+    .max(10, 'Maximum 10 tags allowed')
+    .optional()
+    .default([]),
+  outcome: TradeOutcomeSchema.optional(),
   positionId: z.string().cuid().optional(),
 })
 
@@ -69,6 +76,11 @@ export const UpdateTradeSchema = z.object({
   openDate: z.coerce.date().optional(),
   closeDate: z.coerce.date().optional(),
   notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional(),
+  tags: z
+    .array(z.string().min(1).max(50, 'Each tag must be 50 characters or less'))
+    .max(10, 'Maximum 10 tags allowed')
+    .optional(),
+  outcome: TradeOutcomeSchema.optional(),
   positionId: z.string().cuid().optional(),
 })
 
@@ -86,3 +98,4 @@ export type UpdateTradeStatusInput = z.infer<typeof UpdateTradeStatusSchema>
 export type TradeType = z.infer<typeof TradeTypeSchema>
 export type TradeAction = z.infer<typeof TradeActionSchema>
 export type TradeStatus = z.infer<typeof TradeStatusSchema>
+export type TradeOutcome = z.infer<typeof TradeOutcomeSchema>

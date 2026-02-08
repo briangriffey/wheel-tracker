@@ -1,6 +1,7 @@
 import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { Alert, AlertTitle, AlertDescription } from '../alert'
 
 describe('Alert', () => {
@@ -351,6 +352,122 @@ describe('Alert', () => {
       const alert = screen.getByRole('alert')
       expect(alert).toHaveClass('mb-4')
       expect(alert).toHaveClass('shadow-lg')
+    })
+  })
+
+  describe('Keyboard Navigation', () => {
+    it('dismiss button can be focused programmatically', () => {
+      render(
+        <Alert dismissible>
+          <AlertTitle>Focusable Alert</AlertTitle>
+        </Alert>
+      )
+      const dismissButton = screen.getByLabelText('Dismiss alert')
+      dismissButton.focus()
+      expect(document.activeElement).toBe(dismissButton)
+    })
+
+    it('dismiss button is keyboard accessible', () => {
+      render(
+        <Alert dismissible>
+          <AlertTitle>Accessible Alert</AlertTitle>
+        </Alert>
+      )
+      const dismissButton = screen.getByLabelText('Dismiss alert')
+      expect(dismissButton).toHaveAttribute('type', 'button')
+      expect(dismissButton).not.toHaveAttribute('tabindex', '-1')
+    })
+
+    it('shows visible focus ring on dismiss button', () => {
+      render(
+        <Alert dismissible>
+          <AlertTitle>Focus Ring</AlertTitle>
+        </Alert>
+      )
+      const dismissButton = screen.getByLabelText('Dismiss alert')
+      dismissButton.focus()
+      expect(dismissButton).toHaveFocus()
+      expect(dismissButton.className).toContain('focus:ring-2')
+      expect(dismissButton.className).toContain('focus:outline-none')
+    })
+
+    it('non-dismissible alert has no interactive elements', () => {
+      const { container } = render(
+        <Alert>
+          <AlertTitle>Static Alert</AlertTitle>
+        </Alert>
+      )
+      const buttons = container.querySelectorAll('button')
+      expect(buttons).toHaveLength(0)
+    })
+  })
+
+  describe('Accessibility with axe-core', () => {
+    it('has no accessibility violations in default state', async () => {
+      const { container } = render(
+        <Alert>
+          <AlertTitle>Alert Title</AlertTitle>
+          <AlertDescription>Alert description</AlertDescription>
+        </Alert>
+      )
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations with all variants', async () => {
+      const variants = ['info', 'success', 'warning', 'error'] as const
+      for (const variant of variants) {
+        const { container } = render(
+          <Alert variant={variant}>
+            <AlertTitle>{variant} Alert</AlertTitle>
+            <AlertDescription>This is a {variant} message</AlertDescription>
+          </Alert>
+        )
+        const results = await axe(container)
+        expect(results).toHaveNoViolations()
+      }
+    })
+
+    it('has no violations with dismissible alert', async () => {
+      const { container } = render(
+        <Alert dismissible>
+          <AlertTitle>Dismissible Alert</AlertTitle>
+          <AlertDescription>This alert can be dismissed</AlertDescription>
+        </Alert>
+      )
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations with error variant', async () => {
+      const { container } = render(
+        <Alert variant="error">
+          <AlertTitle>Error Alert</AlertTitle>
+          <AlertDescription>This is an error message</AlertDescription>
+        </Alert>
+      )
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations with title only', async () => {
+      const { container } = render(
+        <Alert>
+          <AlertTitle>Title Only</AlertTitle>
+        </Alert>
+      )
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations with description only', async () => {
+      const { container } = render(
+        <Alert>
+          <AlertDescription>Description only</AlertDescription>
+        </Alert>
+      )
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
     })
   })
 })

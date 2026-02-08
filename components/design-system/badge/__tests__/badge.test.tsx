@@ -2,6 +2,7 @@ import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
 import { Badge } from '../badge'
 
 describe('Badge', () => {
@@ -177,6 +178,75 @@ describe('Badge', () => {
       const { container } = render(<Badge removable>Focus Test</Badge>)
       const closeButton = container.querySelector('button')
       expect(closeButton).toHaveClass('focus:outline-none', 'focus:ring-2')
+    })
+  })
+
+  describe('Keyboard Navigation', () => {
+    it('close button can be focused programmatically', () => {
+      render(<Badge removable>Focusable Badge</Badge>)
+      const closeButton = screen.getByLabelText('Remove badge')
+      closeButton.focus()
+      expect(document.activeElement).toBe(closeButton)
+    })
+
+    it('close button is keyboard accessible', () => {
+      render(<Badge removable>Accessible Badge</Badge>)
+      const closeButton = screen.getByLabelText('Remove badge')
+      expect(closeButton).toHaveAttribute('type', 'button')
+      expect(closeButton).not.toHaveAttribute('tabindex', '-1')
+    })
+
+    it('shows visible focus ring on close button', () => {
+      const { container } = render(<Badge removable>Focus Ring</Badge>)
+      const closeButton = container.querySelector('button')
+      closeButton?.focus()
+      expect(closeButton).toHaveFocus()
+      expect(closeButton).toHaveClass('focus:ring-2')
+      expect(closeButton).toHaveClass('focus:outline-none')
+    })
+
+    it('non-removable badge has no interactive elements', () => {
+      const { container } = render(<Badge>Static Badge</Badge>)
+      const buttons = container.querySelectorAll('button')
+      expect(buttons).toHaveLength(0)
+    })
+  })
+
+  describe('Accessibility with axe-core', () => {
+    it('has no accessibility violations in default state', async () => {
+      const { container } = render(<Badge>Accessible Badge</Badge>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations with all variants', async () => {
+      const variants = ['default', 'info', 'success', 'warning', 'error', 'outline'] as const
+      for (const variant of variants) {
+        const { container } = render(<Badge variant={variant}>{variant}</Badge>)
+        const results = await axe(container)
+        expect(results).toHaveNoViolations()
+      }
+    })
+
+    it('has no violations with all sizes', async () => {
+      const sizes = ['sm', 'md', 'lg'] as const
+      for (const size of sizes) {
+        const { container } = render(<Badge size={size}>{size}</Badge>)
+        const results = await axe(container)
+        expect(results).toHaveNoViolations()
+      }
+    })
+
+    it('has no violations with removable badge', async () => {
+      const { container } = render(<Badge removable>Removable Badge</Badge>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations with outline variant', async () => {
+      const { container } = render(<Badge variant="outline">Outline Badge</Badge>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
     })
   })
 })

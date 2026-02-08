@@ -1,6 +1,7 @@
 import React from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { Button } from '../button'
 
 // Mock icon component for testing
@@ -312,6 +313,94 @@ describe('Button', () => {
       render(<Button ref={ref}>Test</Button>)
       ref.current?.focus()
       expect(document.activeElement).toBe(ref.current)
+    })
+  })
+
+  describe('Keyboard Navigation', () => {
+    it('can be focused programmatically', () => {
+      render(<Button>Focusable</Button>)
+      const button = screen.getByRole('button')
+      button.focus()
+      expect(document.activeElement).toBe(button)
+    })
+
+    it('is keyboard accessible (not disabled by default)', () => {
+      render(<Button>Accessible</Button>)
+      const button = screen.getByRole('button')
+      expect(button).not.toHaveAttribute('disabled')
+      expect(button).not.toHaveAttribute('tabindex', '-1')
+    })
+
+    it('disabled button cannot be focused', () => {
+      render(<Button disabled>Disabled</Button>)
+      const button = screen.getByRole('button')
+      expect(button).toBeDisabled()
+    })
+
+    it('loading button cannot be focused', () => {
+      render(<Button loading>Loading</Button>)
+      const button = screen.getByRole('button')
+      expect(button).toBeDisabled()
+    })
+
+    it('shows visible focus ring styles', () => {
+      render(<Button>Focus Ring</Button>)
+      const button = screen.getByRole('button')
+      button.focus()
+      expect(button).toHaveFocus()
+      expect(button.className).toContain('focus:ring-2')
+      expect(button.className).toContain('focus:outline-none')
+    })
+
+    it('focus ring is visible for keyboard users (not outline-none only)', () => {
+      render(<Button>Focus Visible</Button>)
+      const button = screen.getByRole('button')
+      // Ensure focus styles are present
+      expect(button.className).toContain('focus:ring')
+    })
+  })
+
+  describe('Accessibility with axe-core', () => {
+    it('has no accessibility violations in default state', async () => {
+      const { container } = render(<Button>Accessible Button</Button>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations with icon only button', async () => {
+      const { container } = render(<Button aria-label="Icon button" leftIcon={<TestIcon />} />)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations in disabled state', async () => {
+      const { container } = render(<Button disabled>Disabled Button</Button>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations in loading state', async () => {
+      const { container } = render(<Button loading>Loading Button</Button>)
+      const results = await axe(container)
+      expect(results).toHaveNoViolations()
+    })
+
+    it('has no violations with all variants', async () => {
+      const variants = ['primary', 'secondary', 'outline', 'ghost', 'destructive'] as const
+      for (const variant of variants) {
+        const { container } = render(<Button variant={variant}>{variant} Button</Button>)
+        const results = await axe(container)
+        expect(results).toHaveNoViolations()
+      }
+    })
+
+    it('has no violations with all sizes', async () => {
+      const sizes = ['sm', 'md', 'lg'] as const
+      for (const size of sizes) {
+        const { container } = render(<Button size={size}>{size} Button</Button>)
+        const results = await axe(container)
+        expect(results).toHaveNoViolations()
+      }
     })
   })
 })

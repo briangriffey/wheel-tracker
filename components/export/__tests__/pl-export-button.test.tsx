@@ -76,7 +76,6 @@ describe('PLExportButton', () => {
 
     it('disables date inputs during export', async () => {
       // Mock successful fetch
-
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
@@ -149,8 +148,6 @@ describe('PLExportButton', () => {
 
     it('downloads CSV file on successful export', async () => {
       const mockCsvContent = 'ticker,premium,pl\nAAPL,100,50'
-
-
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
@@ -175,8 +172,6 @@ describe('PLExportButton', () => {
     })
 
     it('uses default filename when Content-Disposition header is missing', async () => {
-
-
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
@@ -202,7 +197,7 @@ describe('PLExportButton', () => {
   describe('Loading State', () => {
     it('shows loading text during export', async () => {
       // Mock a delayed fetch to capture loading state
-      // @ts-expect-error - Mocking fetch for testing
+      // @ts-expect-error - Mocking delayed fetch for testing
       global.fetch = vi.fn(
         () =>
           new Promise((resolve) => {
@@ -230,7 +225,7 @@ describe('PLExportButton', () => {
     })
 
     it('shows spinner in button during export', async () => {
-      // @ts-expect-error - Mocking fetch for testing
+      // @ts-expect-error - Mocking delayed fetch for testing
       global.fetch = vi.fn(
         () =>
           new Promise((resolve) => {
@@ -257,7 +252,6 @@ describe('PLExportButton', () => {
     })
 
     it('returns to normal state after successful export', async () => {
-
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
@@ -280,7 +274,6 @@ describe('PLExportButton', () => {
 
   describe('Error Handling', () => {
     it('displays error message when API returns error', async () => {
-
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: false,
@@ -298,7 +291,6 @@ describe('PLExportButton', () => {
     })
 
     it('displays generic error when API returns error without message', async () => {
-
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: false,
@@ -316,7 +308,6 @@ describe('PLExportButton', () => {
     })
 
     it('displays error message when fetch throws', async () => {
-
       global.fetch = vi.fn(() => Promise.reject(new Error('Network error')))
 
       render(<PLExportButton />)
@@ -330,7 +321,6 @@ describe('PLExportButton', () => {
 
     it('clears previous error on successful export', async () => {
       // First export fails
-
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: false,
@@ -347,7 +337,6 @@ describe('PLExportButton', () => {
       })
 
       // Second export succeeds
-
       global.fetch = vi.fn(() =>
         Promise.resolve({
           ok: true,
@@ -365,7 +354,6 @@ describe('PLExportButton', () => {
 
     it('logs error to console', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
       global.fetch = vi.fn(() => Promise.reject(new Error('Test error')))
 
       render(<PLExportButton />)
@@ -405,7 +393,6 @@ describe('PLExportButton', () => {
     })
 
     it('maintains focus accessibility during loading', async () => {
-
       global.fetch = vi.fn(
         () =>
           new Promise((resolve) => {

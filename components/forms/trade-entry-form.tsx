@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import toast from 'react-hot-toast'
 import { CreateTradeSchema, type CreateTradeInput } from '@/lib/validations/trade'
 import { createTrade } from '@/lib/actions/trades'
 
@@ -19,8 +20,6 @@ type TradeFormData = Omit<CreateTradeInput, 'expirationDate' | 'openDate'> & {
 
 export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
 
   const {
     register,
@@ -38,22 +37,20 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
 
   const onSubmit = async (formData: TradeFormData) => {
     setIsSubmitting(true)
-    setSubmitError(null)
-    setSubmitSuccess(false)
 
     try {
       // The schema will coerce string dates to Date objects automatically
       const result = await createTrade(formData as unknown as CreateTradeInput)
 
       if (!result.success) {
-        setSubmitError(result.error)
+        toast.error(result.error || 'Failed to create trade')
       } else {
-        setSubmitSuccess(true)
+        toast.success('Trade created successfully!')
         reset()
         onSuccess?.()
       }
     } catch {
-      setSubmitError('An unexpected error occurred. Please try again.')
+      toast.error('An unexpected error occurred. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -61,22 +58,6 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Success Message */}
-      {submitSuccess && (
-        <div className="rounded-md bg-green-50 p-4">
-          <div className="text-sm text-green-800">
-            Trade created successfully!
-          </div>
-        </div>
-      )}
-
-      {/* Error Message */}
-      {submitError && (
-        <div className="rounded-md bg-red-50 p-4">
-          <div className="text-sm text-red-800">{submitError}</div>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {/* Ticker */}
         <div>

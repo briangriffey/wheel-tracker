@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import toast from 'react-hot-toast'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
 import { deleteTrade, updateTradeStatus } from '@/lib/actions/trades'
@@ -102,11 +103,12 @@ export function TradeList({ initialTrades }: TradeListProps) {
       const result = await deleteTrade(tradeId)
       if (result.success) {
         setTrades(trades.filter((t) => t.id !== tradeId))
+        toast.success('Trade deleted successfully')
       } else {
-        alert(`Error: ${result.error}`)
+        toast.error(result.error || 'Failed to delete trade')
       }
     } catch {
-      alert('Failed to delete trade')
+      toast.error('An unexpected error occurred')
     } finally {
       setLoadingAction(null)
     }
@@ -125,11 +127,12 @@ export function TradeList({ initialTrades }: TradeListProps) {
               : t
           )
         )
+        toast.success(`Trade marked as ${status.toLowerCase()}`)
       } else {
-        alert(`Error: ${result.error}`)
+        toast.error(result.error || 'Failed to update trade status')
       }
     } catch {
-      alert('Failed to update trade status')
+      toast.error('An unexpected error occurred')
     } finally {
       setLoadingAction(null)
     }
@@ -391,7 +394,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                     <div className="flex justify-end gap-2">
                       {/* Edit Button */}
                       <button
-                        onClick={() => alert('Edit functionality coming soon')}
+                        onClick={() => toast('Edit functionality coming soon', { icon: 'ℹ️' })}
                         disabled={loadingAction === trade.id}
                         className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
                         title="Edit trade"
@@ -492,7 +495,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               {/* Actions */}
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
-                  onClick={() => alert('Edit functionality coming soon')}
+                  onClick={() => toast('Edit functionality coming soon', { icon: 'ℹ️' })}
                   disabled={loadingAction === trade.id}
                   className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 disabled:opacity-50"
                 >

@@ -5,6 +5,7 @@ import { SessionProvider } from '@/components/session-provider'
 import { ToastProvider } from '@/components/toast-provider'
 import { UserMenu } from '@/components/user-menu'
 import './globals.css'
+import './design-system.css'
 
 export const metadata: Metadata = {
   title: 'Wheel Tracker',

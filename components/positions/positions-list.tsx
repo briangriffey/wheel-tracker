@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import toast from 'react-hot-toast'
 import type { PositionWithCalculations } from '@/lib/queries/positions'
 import { PositionCard } from './position-card'
 import { refreshPositionPrices, getLatestPrices, type PriceData } from '@/lib/actions/prices'
@@ -39,11 +40,15 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
         setPriceData(result.data)
         setRefreshError(null)
       } else {
-        setRefreshError(result.error)
+        const errorMsg = result.error
+        setRefreshError(errorMsg)
+        toast.error(errorMsg)
       }
     } catch (error) {
       console.error('Error fetching price data:', error)
-      setRefreshError('Failed to fetch prices')
+      const errorMsg = 'Failed to fetch prices'
+      setRefreshError(errorMsg)
+      toast.error(errorMsg)
     }
   }, [positions])
 
@@ -56,16 +61,21 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
       const result = await refreshPositionPrices()
 
       if (result.success) {
+        toast.success('Positions refreshed successfully')
         // Refresh the page to get updated position values
         router.refresh()
         // Also fetch latest price data
         await fetchPriceData()
       } else {
-        setRefreshError(result.error)
+        const errorMsg = result.error
+        setRefreshError(errorMsg)
+        toast.error(errorMsg)
       }
     } catch (error) {
       console.error('Error refreshing positions:', error)
-      setRefreshError('Failed to refresh positions')
+      const errorMsg = 'Failed to refresh positions'
+      setRefreshError(errorMsg)
+      toast.error(errorMsg)
     } finally {
       setIsRefreshing(false)
     }
@@ -194,14 +204,16 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
   }
 
   // Handle quick actions
-  const handleSellCall = (positionId: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSellCall = (_positionId: string) => {
     // TODO: Implement sell call functionality
-    alert(`Sell Call for position ${positionId} - Coming soon!`)
+    toast('Sell covered call functionality coming soon!', { icon: 'ℹ️' })
   }
 
-  const handleViewDetails = (positionId: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleViewDetails = (_positionId: string) => {
     // TODO: Implement view details functionality
-    alert(`View Details for position ${positionId} - Coming soon!`)
+    toast('Position details view coming soon!', { icon: 'ℹ️' })
   }
 
   return (

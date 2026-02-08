@@ -11,11 +11,13 @@
 3. [Color Palette](#color-palette)
 4. [Design Tokens](#design-tokens)
 5. [Components](#components)
-6. [Migration Guide](#migration-guide)
-7. [Best Practices](#best-practices)
-8. [Accessibility](#accessibility)
-9. [Performance](#performance)
-10. [Contributing](#contributing)
+6. [Variant System](#variant-system)
+7. [Migration Guide](#migration-guide)
+8. [Best Practices](#best-practices)
+9. [Accessibility](#accessibility)
+10. [Performance](#performance)
+11. [Troubleshooting](#troubleshooting)
+12. [Contributing](#contributing)
 
 ---
 
@@ -33,7 +35,7 @@ The Wheel Tracker Design System is a comprehensive, production-ready component l
 
 ### What's Included
 
-- **3 Core Components**: Button, Badge, Alert
+- **5 Core Components**: Button, Badge, Alert, Input, Select
 - **Design Tokens**: Colors, spacing, shadows, border radius
 - **Semantic Color System**: Context-aware color utilities for P&L, status, and UI states
 - **Component Variants**: Type-safe variant system using class-variance-authority
@@ -52,6 +54,8 @@ The design system is already integrated into the Wheel Tracker application. To u
 import { Button } from '@/components/design-system/button/button'
 import { Badge } from '@/components/design-system/badge/badge'
 import { Alert, AlertTitle, AlertDescription } from '@/components/design-system/alert/alert'
+import { Input } from '@/components/design-system/input/input'
+import { Select } from '@/components/design-system/select/select'
 
 // Import design tokens
 import { designTokens } from '@/lib/design/tokens'
@@ -350,6 +354,182 @@ interface AlertProps {
 </Alert>
 ```
 
+### Input
+
+Flexible form input component with validation states, prefix/suffix support, and help text.
+
+#### Sizes
+
+- **sm**: Small input (32px height)
+- **md**: Medium input (40px height) - default
+- **lg**: Large input (48px height)
+
+#### States
+
+- **default**: Normal state
+- **error**: Error state (validation failed)
+- **success**: Success state (validation passed)
+
+#### Props
+
+```typescript
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  size?: 'sm' | 'md' | 'lg'
+  state?: 'default' | 'error' | 'success'
+  prefix?: ReactNode  // Content before input (e.g., $ symbol)
+  suffix?: ReactNode  // Content after input
+  error?: string  // Error message displayed below input
+  helpText?: string  // Help text displayed below input
+  wrapperClassName?: string
+  className?: string
+}
+```
+
+#### Examples
+
+```typescript
+// Basic input
+<Input placeholder="Enter your name" />
+
+// Input with error state
+<Input
+  state="error"
+  error="This field is required"
+  placeholder="Email address"
+/>
+
+// Input with prefix (currency)
+<Input
+  type="number"
+  prefix={<span className="text-neutral-500">$</span>}
+  placeholder="0.00"
+/>
+
+// Input with suffix
+<Input
+  type="number"
+  suffix={<span className="text-neutral-500">%</span>}
+  placeholder="0"
+/>
+
+// Large input with success state
+<Input
+  size="lg"
+  state="success"
+  placeholder="Username"
+/>
+
+// Input with help text
+<Input
+  placeholder="Email address"
+  helpText="We'll never share your email with anyone"
+/>
+```
+
+### Select
+
+Dropdown select component with validation states and help text.
+
+#### Sizes
+
+- **sm**: Small select (32px height)
+- **md**: Medium select (40px height) - default
+- **lg**: Large select (48px height)
+
+#### States
+
+- **default**: Normal state
+- **error**: Error state (validation failed)
+- **success**: Success state (validation passed)
+
+#### Props
+
+```typescript
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  size?: 'sm' | 'md' | 'lg'
+  state?: 'default' | 'error' | 'success'
+  error?: string  // Error message displayed below select
+  helpText?: string  // Help text displayed below select
+  wrapperClassName?: string
+  className?: string
+}
+```
+
+#### Examples
+
+```typescript
+// Basic select
+<Select>
+  <option value="">Choose an option</option>
+  <option value="PUT">PUT</option>
+  <option value="CALL">CALL</option>
+</Select>
+
+// Select with error state
+<Select state="error" error="Please select a trade type">
+  <option value="">Choose trade type</option>
+  <option value="PUT">PUT</option>
+  <option value="CALL">CALL</option>
+</Select>
+
+// Large select with success state
+<Select size="lg" state="success">
+  <option value="OPEN">OPEN</option>
+  <option value="CLOSED">CLOSED</option>
+</Select>
+
+// Select with help text
+<Select helpText="Choose the type of option trade">
+  <option value="">Select trade type</option>
+  <option value="PUT">PUT</option>
+  <option value="CALL">CALL</option>
+</Select>
+```
+
+---
+
+## Variant System
+
+The design system uses [class-variance-authority (CVA)](https://cva.style) to provide type-safe component variants. This ensures consistency and prevents styling errors through TypeScript inference.
+
+### How It Works
+
+Variants define different visual styles for components:
+
+- **Variant**: Visual appearance (primary, secondary, outline, ghost, etc.)
+- **Size**: Component dimensions (sm, md, lg)
+- **State**: Validation or interaction states (default, error, success)
+
+### Benefits
+
+1. **Type Safety**: TypeScript ensures you only use valid variant combinations
+2. **Consistency**: All components follow the same variant patterns
+3. **Maintainability**: Centralized style definitions in `lib/design/variants.ts`
+4. **Composability**: Combine variants for complex styling needs
+
+### Example Usage
+
+```typescript
+import { buttonVariants } from '@/lib/design/variants'
+
+// Using variants directly
+<button className={buttonVariants({ variant: 'primary', size: 'lg' })}>
+  Click me
+</button>
+
+// Combining with additional classes
+import { cn } from '@/lib/utils/cn'
+
+<button className={cn(buttonVariants({ variant: 'outline' }), 'mt-4')}>
+  Custom button
+</button>
+```
+
+### Available Variant Functions
+
+- `buttonVariants`: Button styling variants
+- Additional variants defined in `lib/design/variants.ts`
+
 ---
 
 ## Migration Guide
@@ -565,6 +745,271 @@ pnpm analyze
 
 ---
 
+## Troubleshooting
+
+Common issues and solutions when working with the design system.
+
+### Component Not Rendering
+
+**Problem**: Component doesn't appear or shows no styling.
+
+**Solutions**:
+```typescript
+// ✅ Correct import path
+import { Button } from '@/components/design-system/button/button'
+
+// ❌ Wrong - imports index file
+import { Button } from '@/components/design-system/button'
+
+// ✅ Verify component is mounted
+console.log('Rendering Button:', props)
+return <Button {...props}>Click me</Button>
+```
+
+### TypeScript Errors with Props
+
+**Problem**: TypeScript complains about variant props or types.
+
+**Solutions**:
+```typescript
+// ✅ Use string literals for variants
+<Button variant="primary" size="md">Click</Button>
+
+// ❌ Wrong - using variables without typing
+const variant = 'primary'  // Type is 'string', not specific literal
+<Button variant={variant}>Click</Button>
+
+// ✅ Correct - use type assertion or const assertion
+const variant = 'primary' as const
+<Button variant={variant}>Click</Button>
+
+// ✅ Or type the variable explicitly
+const variant: 'primary' | 'secondary' = 'primary'
+<Button variant={variant}>Click</Button>
+```
+
+### Styles Not Applying
+
+**Problem**: Custom className not overriding component styles.
+
+**Solutions**:
+```typescript
+// ✅ Use cn() utility to merge classes properly
+import { cn } from '@/lib/utils/cn'
+
+<Button className={cn('mt-4', customClass)}>
+  Click me
+</Button>
+
+// ❌ Wrong - Tailwind specificity issues
+<Button className="bg-blue-500">  // Won't override variant styles
+  Click me
+</Button>
+
+// ✅ Better - use variants or use !important sparingly
+<Button variant="primary" className="!bg-blue-500">
+  Click me
+</Button>
+```
+
+### Input/Select Not Showing Error State
+
+**Problem**: Validation errors not displaying properly.
+
+**Solutions**:
+```typescript
+// ✅ Pass error prop - automatically sets state to 'error'
+<Input error="This field is required" />
+
+// ✅ Or explicitly set state
+<Input state="error" />
+
+// ✅ With form library (React Hook Form)
+<Input
+  {...register('email')}
+  error={errors.email?.message}
+/>
+
+// ❌ Wrong - forgetting to connect error state
+<Input />
+{errors.email && <span>{errors.email.message}</span>}
+```
+
+### Badge or Alert Not Dismissing
+
+**Problem**: Dismissible components don't close when clicked.
+
+**Solutions**:
+```typescript
+// ✅ Provide onDismiss/onRemove handler
+const [visible, setVisible] = useState(true)
+
+{visible && (
+  <Alert variant="info" dismissible onDismiss={() => setVisible(false)}>
+    <AlertDescription>Info message</AlertDescription>
+  </Alert>
+)}
+
+// ✅ For removable Badge
+<Badge variant="success" onRemove={() => handleRemove(id)}>
+  Tag
+</Badge>
+
+// ❌ Wrong - forgetting to manage visibility state
+<Alert dismissible>Message</Alert>
+```
+
+### Prefix/Suffix Not Positioning Correctly
+
+**Problem**: Input prefix or suffix overlaps with text.
+
+**Solutions**:
+```typescript
+// ✅ Use ReactNode for complex prefix/suffix
+<Input
+  prefix={<span className="text-neutral-500 text-sm">$</span>}
+  type="number"
+/>
+
+// ✅ Or use string - component handles sizing
+<Input prefix="$" type="number" />
+
+// ❌ Wrong - forgetting to account for padding
+<Input className="pl-2" prefix="$" />  // Prefix will overlap
+```
+
+### Color Palette Not Matching
+
+**Problem**: Custom colors don't match design system.
+
+**Solutions**:
+```typescript
+// ✅ Use Tailwind config colors
+<div className="bg-primary-500 text-white">Content</div>
+
+// ✅ Use semantic color functions
+import { getPnlColor } from '@/lib/design/colors'
+const colors = getPnlColor(value)
+<span className={colors.text}>{value}</span>
+
+// ❌ Wrong - hardcoded hex values
+<div style={{ backgroundColor: '#43D984' }}>Content</div>
+```
+
+### Button Loading State Not Working
+
+**Problem**: Loading spinner doesn't appear.
+
+**Solutions**:
+```typescript
+// ✅ Pass loading prop
+<Button loading disabled>
+  Saving...
+</Button>
+
+// Note: loading prop should also disable the button
+// to prevent multiple submissions
+
+// ✅ With async handler
+const [loading, setLoading] = useState(false)
+
+const handleSubmit = async () => {
+  setLoading(true)
+  try {
+    await saveData()
+  } finally {
+    setLoading(false)
+  }
+}
+
+<Button loading={loading} onClick={handleSubmit}>
+  Save
+</Button>
+```
+
+### Accessibility Issues
+
+**Problem**: Screen readers not announcing component states.
+
+**Solutions**:
+```typescript
+// ✅ Always provide id for Input/Select with errors
+<Input
+  id="email"
+  error="Invalid email"
+  aria-label="Email address"
+/>
+
+// ✅ Alert automatically sets role="alert"
+<Alert variant="error">
+  <AlertTitle>Error</AlertTitle>
+  <AlertDescription>Message here</AlertDescription>
+</Alert>
+
+// ✅ Button with icon should have accessible label
+<Button aria-label="Delete item">
+  <TrashIcon />
+</Button>
+```
+
+### Build or Import Errors
+
+**Problem**: Build fails or imports not resolving.
+
+**Solutions**:
+```bash
+# Clear Next.js cache
+rm -rf .next
+pnpm dev
+
+# Verify TypeScript is not erroring
+pnpm type-check
+
+# Check for circular dependencies
+# Components should not import from each other
+
+# ✅ Correct - each component is independent
+import { Button } from '@/components/design-system/button/button'
+import { Badge } from '@/components/design-system/badge/badge'
+
+# ❌ Wrong - circular imports
+# button.tsx imports from badge.tsx
+# badge.tsx imports from button.tsx
+```
+
+### Performance Issues
+
+**Problem**: Components causing slow renders or large bundle.
+
+**Solutions**:
+```typescript
+// ✅ Import only what you need
+import { Button } from '@/components/design-system/button/button'
+
+// ❌ Wrong - barrel imports can prevent tree-shaking
+import { Button, Badge, Alert } from '@/components/design-system'
+
+// ✅ Use React.memo for expensive components
+import { memo } from 'react'
+export const ExpensiveComponent = memo(({ data }) => {
+  // Component logic
+})
+
+// ✅ Analyze bundle size
+// pnpm build && pnpm analyze
+```
+
+### Still Having Issues?
+
+1. **Check the component source code**: `components/design-system/[component]/`
+2. **Review test files**: `components/design-system/[component]/__tests__/`
+3. **Check the variant definitions**: `lib/design/variants.ts`
+4. **Verify Tailwind configuration**: `tailwind.config.ts`
+5. **Check the design system page**: `/design-system` for live examples
+6. **Review the README**: `lib/design/README.md` for technical details
+
+---
+
 ## Contributing
 
 ### Adding a New Component
@@ -617,12 +1062,13 @@ pnpm analyze
 
 ### Version 1.0.0 (February 2026)
 
-- Initial release with 3 core components (Button, Badge, Alert)
-- Complete design token system
-- Semantic color functions
-- Interactive component gallery
-- Comprehensive documentation
+- Initial release with 5 core components (Button, Badge, Alert, Input, Select)
+- Complete design token system with type-safe variants
+- Semantic color functions for P&L and status colors
+- Interactive component gallery with live examples
+- Comprehensive documentation with troubleshooting guide
 - Full accessibility compliance (WCAG 2.1 AA)
+- Form components with validation state support
 
 ---
 

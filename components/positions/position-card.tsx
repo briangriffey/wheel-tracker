@@ -26,7 +26,7 @@ export interface PositionCardData {
   costBasis: number | Prisma.Decimal
   totalCost: number | Prisma.Decimal
   currentValue: number | Prisma.Decimal | null
-  status: 'OPEN' | 'CLOSED'
+  status: 'OPEN' | 'COVERED' | 'PENDING_CLOSE' | 'CLOSED'
   acquiredDate: Date
   closedDate: Date | null
   assignmentTrade?: {

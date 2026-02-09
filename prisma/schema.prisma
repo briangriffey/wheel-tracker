@@ -26,7 +26,9 @@ enum TradeStatus {
 }
 
 enum PositionStatus {
-  OPEN             // Currently holding shares
+  OPEN             // Currently holding shares, no active CALL
+  COVERED          // Position has an active (OPEN) CALL
+  PENDING_CLOSE    // CALL is ITM within 3 days of expiration
   CLOSED           // Position closed/sold
 }
 

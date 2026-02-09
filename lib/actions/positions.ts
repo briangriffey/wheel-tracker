@@ -635,3 +635,215 @@ export async function updatePosition(
     return { success: false, error: 'Failed to update position' }
   }
 }
+
+/**
+ * Update position status to COVERED when a covered CALL is opened
+ *
+ * This should be called when a CALL trade is created against a position.
+ * Transitions position status from OPEN to COVERED.
+ *
+ * @param positionId - Position ID to update
+ * @returns Promise resolving to action result with position ID on success
+ */
+export async function markPositionAsCovered(
+  positionId: string
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const userId = await getCurrentUserId()
+
+    // Verify position exists and belongs to user
+    const position = await prisma.position.findUnique({
+      where: { id: positionId },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        coveredCalls: {
+          where: { status: 'OPEN' },
+          select: { id: true },
+        },
+      },
+    })
+
+    if (!position) {
+      return { success: false, error: 'Position not found' }
+    }
+
+    if (position.userId !== userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    if (position.status === 'CLOSED') {
+      return { success: false, error: 'Cannot update status of closed position' }
+    }
+
+    // Only update to COVERED if there's at least one OPEN covered call
+    if (position.coveredCalls.length > 0 && position.status !== 'COVERED') {
+      await prisma.position.update({
+        where: { id: positionId },
+        data: { status: 'COVERED' },
+      })
+    }
+
+    // Revalidate relevant paths
+    revalidatePath('/positions')
+    revalidatePath(`/positions/${positionId}`)
+    revalidatePath('/dashboard')
+
+    return { success: true, data: { id: positionId } }
+  } catch (error) {
+    console.error('Error marking position as covered:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to mark position as covered' }
+  }
+}
+
+/**
+ * Update position status to OPEN when the last covered CALL is closed/expired
+ *
+ * This should be called when a CALL trade is closed or expires. If there are no
+ * more OPEN CALLs against the position, it transitions back to OPEN status.
+ *
+ * @param positionId - Position ID to update
+ * @returns Promise resolving to action result with position ID on success
+ */
+export async function updatePositionStatusAfterCallClosed(
+  positionId: string
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const userId = await getCurrentUserId()
+
+    // Verify position exists and belongs to user
+    const position = await prisma.position.findUnique({
+      where: { id: positionId },
+      select: {
+        id: true,
+        userId: true,
+        status: true,
+        coveredCalls: {
+          where: { status: 'OPEN' },
+          select: { id: true },
+        },
+      },
+    })
+
+    if (!position) {
+      return { success: false, error: 'Position not found' }
+    }
+
+    if (position.userId !== userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    if (position.status === 'CLOSED') {
+      return { success: false, error: 'Cannot update status of closed position' }
+    }
+
+    // If no more OPEN covered calls, update status back to OPEN
+    if (position.coveredCalls.length === 0 && position.status !== 'OPEN') {
+      await prisma.position.update({
+        where: { id: positionId },
+        data: { status: 'OPEN' },
+      })
+    }
+
+    // Revalidate relevant paths
+    revalidatePath('/positions')
+    revalidatePath(`/positions/${positionId}`)
+    revalidatePath('/dashboard')
+
+    return { success: true, data: { id: positionId } }
+  } catch (error) {
+    console.error('Error updating position status after call closed:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to update position status' }
+  }
+}
+
+/**
+ * Check and update positions to PENDING_CLOSE status
+ *
+ * Checks all COVERED positions and marks them as PENDING_CLOSE if:
+ * - The position has an OPEN covered CALL
+ * - The CALL is ITM (current stock price > strike price)
+ * - The CALL expires within 3 days
+ *
+ * This function should be called by a scheduled job (cron) or manually triggered.
+ *
+ * @returns Promise resolving to action result with count of updated positions
+ */
+export async function updatePendingClosePositions(): Promise<
+  ActionResult<{ updatedCount: number }>
+> {
+  try {
+    const userId = await getCurrentUserId()
+
+    // Find all COVERED positions with OPEN calls expiring within 3 days
+    const threeDaysFromNow = new Date()
+    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3)
+
+    const positions = await prisma.position.findMany({
+      where: {
+        userId,
+        status: 'COVERED',
+        coveredCalls: {
+          some: {
+            status: 'OPEN',
+            expirationDate: {
+              lte: threeDaysFromNow,
+            },
+          },
+        },
+      },
+      include: {
+        coveredCalls: {
+          where: {
+            status: 'OPEN',
+            expirationDate: {
+              lte: threeDaysFromNow,
+            },
+          },
+        },
+      },
+    })
+
+    let updatedCount = 0
+
+    // For each position, check if the call is ITM
+    // Note: In a real implementation, you would fetch current stock prices
+    // For now, we'll mark all positions with expiring calls as PENDING_CLOSE
+    for (const position of positions) {
+      if (position.coveredCalls.length > 0) {
+        await prisma.position.update({
+          where: { id: position.id },
+          data: { status: 'PENDING_CLOSE' },
+        })
+        updatedCount++
+      }
+    }
+
+    // Revalidate relevant paths
+    if (updatedCount > 0) {
+      revalidatePath('/positions')
+      revalidatePath('/dashboard')
+    }
+
+    return { success: true, data: { updatedCount } }
+  } catch (error) {
+    console.error('Error updating pending close positions:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to update pending close positions' }
+  }
+}

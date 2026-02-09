@@ -86,6 +86,14 @@ export async function createTrade(
       },
     })
 
+    // If this is a covered CALL, update position status to COVERED
+    if (validated.type === 'CALL' && validated.positionId) {
+      await prisma.position.update({
+        where: { id: validated.positionId },
+        data: { status: 'COVERED' },
+      })
+    }
+
     // Revalidate relevant paths
     revalidatePath('/trades')
     revalidatePath('/dashboard')
@@ -229,7 +237,13 @@ export async function updateTradeStatus(
     // Verify trade exists and belongs to user
     const existingTrade = await prisma.trade.findUnique({
       where: { id },
-      select: { userId: true, status: true, expirationDate: true },
+      select: {
+        userId: true,
+        status: true,
+        expirationDate: true,
+        type: true,
+        positionId: true,
+      },
     })
 
     if (!existingTrade) {
@@ -265,10 +279,35 @@ export async function updateTradeStatus(
       },
     })
 
+    // If this is a covered CALL being closed/expired, update position status
+    if (
+      existingTrade.type === 'CALL' &&
+      existingTrade.positionId &&
+      (status === 'CLOSED' || status === 'EXPIRED')
+    ) {
+      // Check if position has any remaining OPEN calls
+      const remainingOpenCalls = await prisma.trade.count({
+        where: {
+          positionId: existingTrade.positionId,
+          type: 'CALL',
+          status: 'OPEN',
+        },
+      })
+
+      // If no more open calls, update position status back to OPEN
+      if (remainingOpenCalls === 0) {
+        await prisma.position.update({
+          where: { id: existingTrade.positionId },
+          data: { status: 'OPEN' },
+        })
+      }
+    }
+
     // Revalidate relevant paths
     revalidatePath('/trades')
     revalidatePath(`/trades/${id}`)
     revalidatePath('/dashboard')
+    revalidatePath('/positions')
 
     return { success: true, data: { id: trade.id } }
   } catch (error) {

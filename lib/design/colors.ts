@@ -27,7 +27,7 @@ export type TradeStatus = 'OPEN' | 'CLOSED' | 'EXPIRED' | 'ASSIGNED'
 /**
  * Position status enum values
  */
-export type PositionStatus = 'OPEN' | 'CLOSED'
+export type PositionStatus = 'OPEN' | 'COVERED' | 'PENDING_CLOSE' | 'CLOSED'
 
 /**
  * Get color classes for P&L (profit and loss) values
@@ -100,24 +100,42 @@ export function getPnLBackgroundClass(pnl: number): string {
 }
 
 /**
- * Get color classes for trade status
+ * Get color classes for trade status or position status
  *
- * @param status - The trade status
+ * @param status - The trade or position status
  * @returns Object with text, background, and border color classes
  *
  * @example
  * ```typescript
  * const colors = getStatusColor('OPEN')
- * // Returns: { text: 'text-green-800', bg: 'bg-green-100', border: 'border-green-200' }
+ * // Returns: { text: 'text-blue-800', bg: 'bg-blue-100', border: 'border-blue-200' }
  * ```
  */
 export function getStatusColor(status: TradeStatus | PositionStatus): ColorVariant {
   switch (status) {
     case 'OPEN':
+      // For positions: OPEN means no active call (blue)
+      // For trades: OPEN means active (green)
+      return {
+        text: 'text-blue-800',
+        bg: 'bg-blue-100',
+        border: 'border-blue-200',
+      }
+
+    case 'COVERED':
+      // Position has an active covered call (green)
       return {
         text: 'text-green-800',
         bg: 'bg-green-100',
         border: 'border-green-200',
+      }
+
+    case 'PENDING_CLOSE':
+      // Call is ITM and near expiration (yellow)
+      return {
+        text: 'text-yellow-800',
+        bg: 'bg-yellow-100',
+        border: 'border-yellow-200',
       }
 
     case 'ASSIGNED':

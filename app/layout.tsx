@@ -35,6 +35,9 @@ export default async function RootLayout({
                       <Link href="/dashboard" className="text-sm text-neutral-700 hover:text-neutral-900">
                         Dashboard
                       </Link>
+                      <Link href="/wheels" className="text-sm text-neutral-700 hover:text-neutral-900">
+                        Wheels
+                      </Link>
                       <Link href="/trades" className="text-sm text-neutral-700 hover:text-neutral-900">
                         Trades
                       </Link>

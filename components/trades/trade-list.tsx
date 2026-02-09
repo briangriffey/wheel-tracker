@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import Link from 'next/link'
 import toast from 'react-hot-toast'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
@@ -385,6 +386,15 @@ export function TradeList({ initialTrades }: TradeListProps) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
+                      {/* View Button */}
+                      <Link
+                        href={`/trades/${trade.id}`}
+                        className="text-blue-600 hover:text-blue-900"
+                        title="View trade details"
+                      >
+                        View
+                      </Link>
+
                       {/* Edit Button */}
                       <button
                         onClick={() => toast('Edit functionality coming soon', { icon: 'ℹ️' })}
@@ -487,6 +497,13 @@ export function TradeList({ initialTrades }: TradeListProps) {
 
               {/* Actions */}
               <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  href={`/trades/${trade.id}`}
+                  className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 text-center"
+                >
+                  View
+                </Link>
+
                 <button
                   onClick={() => toast('Edit functionality coming soon', { icon: 'ℹ️' })}
                   disabled={loadingAction === trade.id}

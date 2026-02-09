@@ -128,6 +128,11 @@ model Trade {
   wheel           Wheel?      @relation("WheelTrades", fields: [wheelId], references: [id])
   wheelId         String?
 
+  // Relations for roll tracking (when options are rolled to new dates/strikes)
+  rolledFrom      Trade?      @relation("RollTracking", fields: [rolledFromId], references: [id])
+  rolledFromId    String?
+  rolledTo        Trade[]     @relation("RollTracking")
+
   @@index([userId])
   @@index([ticker])
   @@index([status])
@@ -136,6 +141,8 @@ model Trade {
   @@index([openDate])
   @@index([closeDate])
   @@index([userId, openDate])
+  @@index([wheelId])
+  @@index([rolledFromId])
 }
 
 model Position {
@@ -175,6 +182,7 @@ model Position {
   @@index([closedDate])
   @@index([userId, acquiredDate])
   @@index([userId, status, acquiredDate])
+  @@index([wheelId])
 }
 
 model Wheel {

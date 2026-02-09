@@ -37,6 +37,14 @@ enum WheelStatus {
   COMPLETED        // User ended the wheel permanently
 }
 
+enum NotificationType {
+  EXPIRING_SOON    // Option expiring soon
+  ITM_OPTION       // Option is in-the-money
+  NO_COVERED_CALL  // Position without covered call
+  ASSIGNMENT       // Option was assigned
+  GENERAL          // General notification
+}
+
 // Models
 model User {
   id            String    @id @default(cuid())
@@ -55,6 +63,7 @@ model User {
   marketBenchmarks MarketBenchmark[]
   accounts        Account[]
   sessions        Session[]
+  notifications   Notification[]
 
   @@index([email])
 }
@@ -256,4 +265,25 @@ model MarketBenchmark {
   @@unique([userId, ticker])
   @@index([userId])
   @@index([ticker])
+}
+
+model Notification {
+  id              String           @id @default(cuid())
+  userId          String
+  type            NotificationType
+  title           String
+  message         String
+  read            Boolean          @default(false)
+  actionUrl       String?          // URL to navigate when clicked
+  relatedTradeId  String?          // Optional link to trade
+  relatedPositionId String?        // Optional link to position
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }

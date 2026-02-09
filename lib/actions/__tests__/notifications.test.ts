@@ -7,6 +7,11 @@ import {
   getUpcomingExpirations,
   getITMOptions,
   getPositionsWithoutCalls,
+  getUnreadNotificationCount,
+  getRecentNotifications,
+  getAllNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
 } from '../notifications'
 import * as pricesModule from '../prices'
 
@@ -21,6 +26,11 @@ vi.mock('@/lib/db', () => ({
     },
     position: {
       findMany: vi.fn(),
+    },
+    notification: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      updateMany: vi.fn(),
     },
   },
 }))
@@ -310,6 +320,184 @@ describe('Notification Actions', () => {
       vi.mocked(prisma.position.findMany).mockRejectedValue(new Error('Database error'))
 
       const result = await getPositionsWithoutCalls()
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error).toBe('Database error')
+      }
+    })
+  })
+
+  describe('getUnreadNotificationCount', () => {
+    it('should return count of unread notifications', async () => {
+      vi.mocked(prisma.notification.count).mockResolvedValue(5 as never)
+
+      const result = await getUnreadNotificationCount()
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data).toBe(5)
+      }
+    })
+
+    it('should return 0 when no unread notifications', async () => {
+      vi.mocked(prisma.notification.count).mockResolvedValue(0 as never)
+
+      const result = await getUnreadNotificationCount()
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data).toBe(0)
+      }
+    })
+
+    it('should handle errors gracefully', async () => {
+      vi.mocked(prisma.notification.count).mockRejectedValue(new Error('Database error'))
+
+      const result = await getUnreadNotificationCount()
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error).toBe('Database error')
+      }
+    })
+  })
+
+  describe('getRecentNotifications', () => {
+    it('should return recent notifications', async () => {
+      const mockNotifications = [
+        {
+          id: 'notif-1',
+          userId: mockUserId,
+          type: 'EXPIRING_SOON',
+          title: 'AAPL PUT expiring soon',
+          message: 'Your option expires in 2 days',
+          read: false,
+          actionUrl: '/trades/trade-1',
+          relatedTradeId: 'trade-1',
+          relatedPositionId: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]
+
+      vi.mocked(prisma.notification.findMany).mockResolvedValue(mockNotifications as never)
+
+      const result = await getRecentNotifications(10)
+
+      expect(result.success).toBe(true)
+      if (result.success && result.data) {
+        expect(result.data).toHaveLength(1)
+        expect(result.data[0].title).toBe('AAPL PUT expiring soon')
+      }
+    })
+
+    it('should handle errors gracefully', async () => {
+      vi.mocked(prisma.notification.findMany).mockRejectedValue(new Error('Database error'))
+
+      const result = await getRecentNotifications(10)
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error).toBe('Database error')
+      }
+    })
+  })
+
+  describe('getAllNotifications', () => {
+    it('should return all notifications', async () => {
+      const mockNotifications = [
+        {
+          id: 'notif-1',
+          userId: mockUserId,
+          type: 'EXPIRING_SOON',
+          title: 'AAPL PUT expiring soon',
+          message: 'Your option expires in 2 days',
+          read: false,
+          actionUrl: '/trades/trade-1',
+          relatedTradeId: 'trade-1',
+          relatedPositionId: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: 'notif-2',
+          userId: mockUserId,
+          type: 'ITM_OPTION',
+          title: 'MSFT CALL is in-the-money',
+          message: 'Your option is ITM',
+          read: true,
+          actionUrl: '/trades/trade-2',
+          relatedTradeId: 'trade-2',
+          relatedPositionId: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]
+
+      vi.mocked(prisma.notification.findMany).mockResolvedValue(mockNotifications as never)
+
+      const result = await getAllNotifications()
+
+      expect(result.success).toBe(true)
+      if (result.success && result.data) {
+        expect(result.data).toHaveLength(2)
+      }
+    })
+  })
+
+  describe('markNotificationAsRead', () => {
+    it('should mark notification as read', async () => {
+      vi.mocked(prisma.notification.updateMany).mockResolvedValue({ count: 1 } as never)
+
+      const result = await markNotificationAsRead('notif-1')
+
+      expect(result.success).toBe(true)
+      expect(prisma.notification.updateMany).toHaveBeenCalledWith({
+        where: {
+          id: 'notif-1',
+          userId: mockUserId,
+        },
+        data: {
+          read: true,
+        },
+      })
+    })
+
+    it('should handle errors gracefully', async () => {
+      vi.mocked(prisma.notification.updateMany).mockRejectedValue(new Error('Database error'))
+
+      const result = await markNotificationAsRead('notif-1')
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error).toBe('Database error')
+      }
+    })
+  })
+
+  describe('markAllNotificationsAsRead', () => {
+    it('should mark all notifications as read', async () => {
+      vi.mocked(prisma.notification.updateMany).mockResolvedValue({ count: 5 } as never)
+
+      const result = await markAllNotificationsAsRead()
+
+      expect(result.success).toBe(true)
+      expect(prisma.notification.updateMany).toHaveBeenCalledWith({
+        where: {
+          userId: mockUserId,
+          read: false,
+        },
+        data: {
+          read: true,
+        },
+      })
+    })
+
+    it('should handle errors gracefully', async () => {
+      vi.mocked(prisma.notification.updateMany).mockRejectedValue(new Error('Database error'))
+
+      const result = await markAllNotificationsAsRead()
 
       expect(result.success).toBe(false)
       if (!result.success) {

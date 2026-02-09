@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { SessionProvider } from '@/components/session-provider'
 import { ToastProvider } from '@/components/toast-provider'
 import { UserMenu } from '@/components/user-menu'
+import { NotificationBell } from '@/components/layout/notification-bell'
 import { SkipLink } from '@/components/ui/skip-link'
 import './globals.css'
 import './design-system.css'
@@ -51,7 +52,10 @@ export default async function RootLayout({
                       </Link>
                     </nav>
                   </div>
-                  <UserMenu user={session.user} />
+                  <div className="flex items-center gap-2">
+                    <NotificationBell />
+                    <UserMenu user={session.user} />
+                  </div>
                 </div>
               </div>
             </header>

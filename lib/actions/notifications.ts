@@ -320,3 +320,146 @@ export async function getPositionsWithoutCalls(): Promise<
     return { success: false, error: 'Failed to fetch positions without calls' }
   }
 }
+
+/**
+ * Get unread notification count for current user
+ */
+export async function getUnreadNotificationCount(): Promise<ActionResult<number>> {
+  try {
+    const userId = await getCurrentUserId()
+
+    const count = await prisma.notification.count({
+      where: {
+        userId,
+        read: false,
+      },
+    })
+
+    return { success: true, data: count }
+  } catch (error) {
+    console.error('Error fetching unread notification count:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to fetch unread notification count' }
+  }
+}
+
+/**
+ * Get recent notifications for current user
+ */
+export async function getRecentNotifications(limit: number = 10) {
+  try {
+    const userId = await getCurrentUserId()
+
+    const notifications = await prisma.notification.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: limit,
+    })
+
+    return { success: true, data: notifications }
+  } catch (error) {
+    console.error('Error fetching recent notifications:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to fetch recent notifications' }
+  }
+}
+
+/**
+ * Get all notifications for current user
+ */
+export async function getAllNotifications() {
+  try {
+    const userId = await getCurrentUserId()
+
+    const notifications = await prisma.notification.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    return { success: true, data: notifications }
+  } catch (error) {
+    console.error('Error fetching all notifications:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to fetch all notifications' }
+  }
+}
+
+/**
+ * Mark a notification as read
+ */
+export async function markNotificationAsRead(
+  notificationId: string
+): Promise<ActionResult<void>> {
+  try {
+    const userId = await getCurrentUserId()
+
+    await prisma.notification.updateMany({
+      where: {
+        id: notificationId,
+        userId, // Ensure user owns this notification
+      },
+      data: {
+        read: true,
+      },
+    })
+
+    return { success: true, data: undefined }
+  } catch (error) {
+    console.error('Error marking notification as read:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to mark notification as read' }
+  }
+}
+
+/**
+ * Mark all notifications as read for current user
+ */
+export async function markAllNotificationsAsRead(): Promise<ActionResult<void>> {
+  try {
+    const userId = await getCurrentUserId()
+
+    await prisma.notification.updateMany({
+      where: {
+        userId,
+        read: false,
+      },
+      data: {
+        read: true,
+      },
+    })
+
+    return { success: true, data: undefined }
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to mark all notifications as read' }
+  }
+}

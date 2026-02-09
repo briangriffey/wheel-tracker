@@ -5,6 +5,40 @@
  * These validators return structured results with errors (blocking) or warnings (informational).
  */
 
+import { z } from 'zod'
+
+// ============================================================================
+// Zod Schemas for Server Actions
+// ============================================================================
+
+export const WheelStatusSchema = z.enum(['ACTIVE', 'IDLE', 'PAUSED', 'COMPLETED'])
+
+export const CreateWheelSchema = z.object({
+  ticker: z
+    .string()
+    .min(1, 'Ticker is required')
+    .max(5, 'Ticker must be 5 characters or less')
+    .transform((val) => val.toUpperCase())
+    .refine((val) => /^[A-Z]+$/.test(val), 'Ticker must contain only letters'),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional(),
+})
+
+export const UpdateWheelSchema = z.object({
+  id: z.string().cuid('Invalid wheel ID'),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional(),
+})
+
+export const WheelFiltersSchema = z
+  .object({
+    ticker: z.string().max(5).optional(),
+    status: WheelStatusSchema.optional(),
+  })
+  .optional()
+
+export type CreateWheelInput = z.infer<typeof CreateWheelSchema>
+export type UpdateWheelInput = z.infer<typeof UpdateWheelSchema>
+export type WheelFilters = z.infer<typeof WheelFiltersSchema>
+
 // ============================================================================
 // Types
 // ============================================================================

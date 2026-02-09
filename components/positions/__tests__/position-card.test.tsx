@@ -18,6 +18,7 @@ const mockPosition: PositionWithCalculations = {
   createdAt: new Date('2026-01-15'),
   updatedAt: new Date('2026-02-07'),
   assignmentTradeId: 'trade1',
+  wheelId: null,
   assignmentTrade: {
     id: 'trade1',
     ticker: 'AAPL',

@@ -8,6 +8,12 @@ import {
   getWinRateData,
 } from '@/lib/queries/dashboard'
 import { PLExportButton } from '@/components/export/pl-export-button'
+import { AlertsWidget } from '@/components/dashboard/alerts-widget'
+import {
+  getUpcomingExpirations,
+  getITMOptions,
+  getPositionsWithoutCalls,
+} from '@/lib/actions/notifications'
 
 // Enable ISR with 60 second revalidation
 export const revalidate = 60
@@ -25,13 +31,17 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // Fetch initial dashboard data for 'All' time range
-  const [metrics, plOverTime, plByTicker, winRateData] = await Promise.all([
-    getDashboardMetrics('All'),
-    getPLOverTime('All'),
-    getPLByTicker('All'),
-    getWinRateData('All'),
-  ])
+  // Fetch initial dashboard data for 'All' time range and notifications
+  const [metrics, plOverTime, plByTicker, winRateData, expirations, itmOptions, positions] =
+    await Promise.all([
+      getDashboardMetrics('All'),
+      getPLOverTime('All'),
+      getPLByTicker('All'),
+      getWinRateData('All'),
+      getUpcomingExpirations(7),
+      getITMOptions(),
+      getPositionsWithoutCalls(),
+    ])
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
@@ -39,6 +49,16 @@ export default async function DashboardPage() {
         <div className="mb-6">
           <PLExportButton />
         </div>
+
+        {/* Alerts Widget */}
+        <div className="mb-6">
+          <AlertsWidget
+            upcomingExpirations={expirations.success ? expirations.data : []}
+            itmOptions={itmOptions.success ? itmOptions.data : []}
+            positionsWithoutCalls={positions.success ? positions.data : []}
+          />
+        </div>
+
         <PLDashboard
           initialMetrics={metrics}
           initialPLOverTime={plOverTime}

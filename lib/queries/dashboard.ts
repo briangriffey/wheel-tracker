@@ -99,10 +99,11 @@ export interface WinRateData {
 
 /**
  * Get dashboard metrics for the current user
+ * Cached to avoid duplicate queries within the same request
  */
-export async function getDashboardMetrics(
+export const getDashboardMetrics = cache(async (
   timeRange: TimeRange = 'All'
-): Promise<DashboardMetrics> {
+): Promise<DashboardMetrics> => {
   try {
     const userId = await getCurrentUserId()
     const dateThreshold = getDateThreshold(timeRange)
@@ -243,12 +244,13 @@ export async function getDashboardMetrics(
     console.error('Error fetching dashboard metrics:', error)
     throw new Error('Failed to fetch dashboard metrics')
   }
-}
+})
 
 /**
  * Get P&L over time data
+ * Cached to avoid duplicate queries within the same request
  */
-export async function getPLOverTime(timeRange: TimeRange = 'All'): Promise<PLOverTimeDataPoint[]> {
+export const getPLOverTime = cache(async (timeRange: TimeRange = 'All'): Promise<PLOverTimeDataPoint[]> => {
   try {
     const userId = await getCurrentUserId()
     const dateThreshold = getDateThreshold(timeRange)
@@ -358,12 +360,13 @@ export async function getPLOverTime(timeRange: TimeRange = 'All'): Promise<PLOve
     console.error('Error fetching P&L over time:', error)
     throw new Error('Failed to fetch P&L over time data')
   }
-}
+})
 
 /**
  * Get P&L by ticker
+ * Cached to avoid duplicate queries within the same request
  */
-export async function getPLByTicker(timeRange: TimeRange = 'All'): Promise<PLByTickerDataPoint[]> {
+export const getPLByTicker = cache(async (timeRange: TimeRange = 'All'): Promise<PLByTickerDataPoint[]> => {
   try {
     const userId = await getCurrentUserId()
     const dateThreshold = getDateThreshold(timeRange)
@@ -427,12 +430,13 @@ export async function getPLByTicker(timeRange: TimeRange = 'All'): Promise<PLByT
     console.error('Error fetching P&L by ticker:', error)
     throw new Error('Failed to fetch P&L by ticker data')
   }
-}
+})
 
 /**
  * Get win rate data
+ * Cached to avoid duplicate queries within the same request
  */
-export async function getWinRateData(timeRange: TimeRange = 'All'): Promise<WinRateData> {
+export const getWinRateData = cache(async (timeRange: TimeRange = 'All'): Promise<WinRateData> => {
   try {
     const userId = await getCurrentUserId()
     const dateThreshold = getDateThreshold(timeRange)
@@ -480,4 +484,4 @@ export async function getWinRateData(timeRange: TimeRange = 'All'): Promise<WinR
     console.error('Error fetching win rate data:', error)
     throw new Error('Failed to fetch win rate data')
   }
-}
+})

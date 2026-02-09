@@ -9,6 +9,7 @@ import { createTrade } from '@/lib/actions/trades'
 import { Input } from '@/components/design-system/input/input'
 import { Select } from '@/components/design-system/select/select'
 import { Button } from '@/components/design-system/button/button'
+import { InfoTooltip } from '@/components/ui/tooltip'
 
 interface TradeEntryFormProps {
   onSuccess?: () => void
@@ -84,6 +85,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         <div>
           <label htmlFor="type" className="block text-sm font-medium text-neutral-700">
             Trade Type <span className="text-error" aria-hidden="true">*</span>
+            <InfoTooltip
+              content="PUT = Right to sell shares at strike price. CALL = Right to buy shares at strike price. For the wheel strategy, start by selling PUTs."
+              position="top"
+            />
           </label>
           <Select
             id="type"
@@ -103,6 +108,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         <div>
           <label htmlFor="action" className="block text-sm font-medium text-neutral-700">
             Trade Action <span className="text-error" aria-hidden="true">*</span>
+            <InfoTooltip
+              content="SELL TO OPEN = Opening a new position (collecting premium). BUY TO CLOSE = Closing an existing position early (paying premium)."
+              position="top"
+            />
           </label>
           <Select
             id="action"
@@ -121,6 +130,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         <div>
           <label htmlFor="strikePrice" className="block text-sm font-medium text-neutral-700">
             Strike Price <span className="text-error" aria-hidden="true">*</span>
+            <InfoTooltip
+              content="The price at which the option can be exercised. For PUTs, you'll buy shares at this price if assigned. Choose a strike you're comfortable owning the stock at."
+              position="top"
+            />
           </label>
           <Input
             id="strikePrice"
@@ -140,6 +153,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         <div>
           <label htmlFor="premium" className="block text-sm font-medium text-neutral-700">
             Premium (Total) <span className="text-error" aria-hidden="true">*</span>
+            <InfoTooltip
+              content="Total premium collected or paid across all contracts. Example: If you collect $2.50 per share on 1 contract, enter $250 (2.50 × 100 shares)."
+              position="top"
+            />
           </label>
           <Input
             id="premium"
@@ -194,6 +211,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         <div>
           <label htmlFor="expirationDate" className="block text-sm font-medium text-neutral-700">
             Expiration Date <span className="text-error" aria-hidden="true">*</span>
+            <InfoTooltip
+              content="The date when the option expires. Best practice: 30-45 days out for optimal theta decay. Options closer to expiration decay faster but carry more risk."
+              position="top"
+            />
           </label>
           <Input
             id="expirationDate"

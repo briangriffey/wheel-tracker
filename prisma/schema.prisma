@@ -143,6 +143,11 @@ model Trade {
   @@index([userId, openDate])
   @@index([wheelId])
   @@index([rolledFromId])
+  @@index([positionId])
+  @@index([userId, ticker])
+  @@index([userId, expirationDate])
+  @@index([userId, status, expirationDate])
+  @@index([ticker, status])
 }
 
 model Position {
@@ -183,6 +188,8 @@ model Position {
   @@index([userId, acquiredDate])
   @@index([userId, status, acquiredDate])
   @@index([wheelId])
+  @@index([userId, ticker])
+  @@index([userId, ticker, status])
 }
 
 model Wheel {
@@ -220,6 +227,7 @@ model StockPrice {
   @@unique([ticker, date])
   @@index([ticker])
   @@index([date])
+  @@index([ticker, date])
 }
 
 model Benchmark {

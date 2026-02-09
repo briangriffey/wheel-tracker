@@ -79,10 +79,31 @@ export const UpdateTradeStatusSchema = z.object({
   closeDate: z.coerce.date().optional(),
 })
 
+// Schema for rolling an option
+export const RollOptionSchema = z.object({
+  originalTradeId: z.string().cuid('Invalid trade ID'),
+  newExpirationDate: z.coerce
+    .date()
+    .refine((date) => date > new Date(), 'New expiration date must be in the future'),
+  newStrikePrice: z
+    .number()
+    .positive('Strike price must be positive')
+    .finite('Strike price must be finite'),
+  newPremium: z
+    .number()
+    .positive('Premium must be positive')
+    .finite('Premium must be finite'),
+  closePremium: z
+    .number()
+    .positive('Close premium must be positive')
+    .finite('Close premium must be finite'),
+})
+
 // Type exports for use in components and actions
 export type CreateTradeInput = z.infer<typeof CreateTradeSchema>
 export type UpdateTradeInput = z.infer<typeof UpdateTradeSchema>
 export type UpdateTradeStatusInput = z.infer<typeof UpdateTradeStatusSchema>
+export type RollOptionInput = z.infer<typeof RollOptionSchema>
 export type TradeType = z.infer<typeof TradeTypeSchema>
 export type TradeAction = z.infer<typeof TradeActionSchema>
 export type TradeStatus = z.infer<typeof TradeStatusSchema>

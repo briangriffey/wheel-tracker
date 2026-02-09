@@ -32,6 +32,7 @@ const mockTrades: Trade[] = [
     updatedAt: new Date('2026-02-01'),
     positionId: null,
     wheelId: null,
+    rollFromTradeId: null,
   },
   {
     id: '2',
@@ -52,6 +53,7 @@ const mockTrades: Trade[] = [
     updatedAt: new Date('2026-02-20'),
     positionId: null,
     wheelId: null,
+    rollFromTradeId: null,
   },
   {
     id: '3',
@@ -72,6 +74,7 @@ const mockTrades: Trade[] = [
     updatedAt: new Date('2026-02-10'),
     positionId: null,
     wheelId: null,
+    rollFromTradeId: null,
   },
 ]
 

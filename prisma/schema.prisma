@@ -128,6 +128,12 @@ model Trade {
   wheel           Wheel?      @relation("WheelTrades", fields: [wheelId], references: [id])
   wheelId         String?
 
+  // Relations for rolled options (tracking option rolls)
+  // A trade can be rolled from one trade, but one trade can be rolled to multiple trades
+  rolledFromTrade Trade?      @relation("RolledOptions", fields: [rollFromTradeId], references: [id])
+  rollFromTradeId String?
+  rolledToTrades  Trade[]     @relation("RolledOptions")
+
   @@index([userId])
   @@index([ticker])
   @@index([status])

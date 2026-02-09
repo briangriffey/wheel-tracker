@@ -6,9 +6,11 @@ import {
   CreateTradeSchema,
   UpdateTradeSchema,
   UpdateTradeStatusSchema,
+  RollOptionSchema,
   type CreateTradeInput,
   type UpdateTradeInput,
   type UpdateTradeStatusInput,
+  type RollOptionInput,
 } from '@/lib/validations/trade'
 import { Prisma } from '@/lib/generated/prisma'
 
@@ -343,5 +345,159 @@ export async function deleteTrade(id: string): Promise<ActionResult<{ id: string
     }
 
     return { success: false, error: 'Failed to delete trade' }
+  }
+}
+
+/**
+ * Roll an option to a new expiration date
+ *
+ * Creates two linked trades: BUY_TO_CLOSE for the original option and
+ * SELL_TO_OPEN for the new option at a later expiration. This preserves
+ * the wheel continuity while extending the timeline.
+ *
+ * @param input - Roll data including original trade ID, new expiration, strike, and premiums
+ * @returns Promise resolving to action result with both trade IDs on success
+ *
+ * @example
+ * const result = await rollOption({
+ *   originalTradeId: 'trade_123',
+ *   newExpirationDate: new Date('2024-04-19'),
+ *   newStrikePrice: 150,
+ *   newPremium: 300,
+ *   closePremium: 50
+ * });
+ *
+ * @throws {Error} If validation fails, trade not found, or database operation fails
+ */
+export async function rollOption(
+  input: RollOptionInput
+): Promise<ActionResult<{ closeTradeId: string; openTradeId: string; netCredit: number }>> {
+  try {
+    // Validate input
+    const validated = RollOptionSchema.parse(input)
+    const { originalTradeId, newExpirationDate, newStrikePrice, newPremium, closePremium } =
+      validated
+
+    // Get current user
+    const userId = await getCurrentUserId()
+
+    // Verify original trade exists and belongs to user
+    const originalTrade = await prisma.trade.findUnique({
+      where: { id: originalTradeId },
+      select: {
+        userId: true,
+        ticker: true,
+        type: true,
+        strikePrice: true,
+        premium: true,
+        contracts: true,
+        status: true,
+        positionId: true,
+        wheelId: true,
+      },
+    })
+
+    if (!originalTrade) {
+      return { success: false, error: 'Original trade not found' }
+    }
+
+    if (originalTrade.userId !== userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    if (originalTrade.status !== 'OPEN') {
+      return {
+        success: false,
+        error: `Cannot roll ${originalTrade.status.toLowerCase()} trade`,
+      }
+    }
+
+    // Calculate net credit/debit
+    const netCredit = newPremium - closePremium
+
+    // Create both trades in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Create BUY_TO_CLOSE trade for original option
+      const closeTrade = await tx.trade.create({
+        data: {
+          userId,
+          ticker: originalTrade.ticker,
+          type: originalTrade.type,
+          action: 'BUY_TO_CLOSE',
+          status: 'CLOSED',
+          strikePrice: originalTrade.strikePrice,
+          premium: new Prisma.Decimal(closePremium),
+          contracts: originalTrade.contracts,
+          shares: originalTrade.contracts * 100,
+          expirationDate: newExpirationDate, // Same as new option
+          openDate: new Date(),
+          closeDate: new Date(),
+          notes: `Rolled from original option (net ${netCredit >= 0 ? 'credit' : 'debit'}: $${Math.abs(netCredit).toFixed(2)})`,
+          positionId: originalTrade.positionId,
+          wheelId: originalTrade.wheelId,
+          rollFromTradeId: originalTradeId,
+        },
+      })
+
+      // 2. Update original trade status to CLOSED
+      await tx.trade.update({
+        where: { id: originalTradeId },
+        data: {
+          status: 'CLOSED',
+          closeDate: new Date(),
+          notes: originalTrade.ticker
+            ? `${originalTrade.ticker || ''} Rolled to new expiration (net ${netCredit >= 0 ? 'credit' : 'debit'}: $${Math.abs(netCredit).toFixed(2)})`
+            : `Rolled to new expiration (net ${netCredit >= 0 ? 'credit' : 'debit'}: $${Math.abs(netCredit).toFixed(2)})`,
+        },
+      })
+
+      // 3. Create SELL_TO_OPEN trade for new option
+      const openTrade = await tx.trade.create({
+        data: {
+          userId,
+          ticker: originalTrade.ticker,
+          type: originalTrade.type,
+          action: 'SELL_TO_OPEN',
+          status: 'OPEN',
+          strikePrice: new Prisma.Decimal(newStrikePrice),
+          premium: new Prisma.Decimal(newPremium),
+          contracts: originalTrade.contracts,
+          shares: originalTrade.contracts * 100,
+          expirationDate: newExpirationDate,
+          openDate: new Date(),
+          notes: `Rolled from original option (net ${netCredit >= 0 ? 'credit' : 'debit'}: $${Math.abs(netCredit).toFixed(2)})`,
+          positionId: originalTrade.positionId,
+          wheelId: originalTrade.wheelId,
+          rollFromTradeId: originalTradeId,
+        },
+      })
+
+      return { closeTrade, openTrade }
+    })
+
+    // Revalidate relevant paths (skip in test environment)
+    if (process.env.NODE_ENV !== 'test') {
+      revalidatePath('/trades')
+      revalidatePath(`/trades/${originalTradeId}`)
+      revalidatePath('/dashboard')
+      revalidatePath('/positions')
+    }
+
+    return {
+      success: true,
+      data: {
+        closeTradeId: result.closeTrade.id,
+        openTradeId: result.openTrade.id,
+        netCredit,
+      },
+    }
+  } catch (error) {
+    console.error('Error rolling option:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to roll option' }
   }
 }

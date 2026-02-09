@@ -37,6 +37,13 @@ enum WheelStatus {
   COMPLETED        // User ended the wheel permanently
 }
 
+enum WheelStep {
+  IDLE             // No active cycle
+  PUT              // PUT sold, waiting for assignment
+  HOLDING          // Shares acquired (PUT assigned)
+  COVERED          // Covered CALL sold against position
+}
+
 // Models
 model User {
   id            String    @id @default(cuid())
@@ -190,6 +197,7 @@ model Wheel {
   userId          String
   ticker          String
   status          WheelStatus  @default(ACTIVE)
+  currentStep     WheelStep    @default(IDLE)
   cycleCount      Int          @default(0)
   totalPremiums   Decimal      @db.Decimal(10, 2) @default(0)
   totalRealizedPL Decimal      @db.Decimal(10, 2) @default(0)

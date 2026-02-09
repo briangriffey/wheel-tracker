@@ -11,6 +11,8 @@ import {
   type UpdatePositionInput,
 } from '@/lib/validations/position'
 import { Prisma } from '@/lib/generated/prisma'
+import { WheelStep } from '@/lib/types/wheel'
+import { updateWheelStatus, incrementCycle } from '@/lib/actions/wheels'
 
 /**
  * Server action result type
@@ -150,6 +152,8 @@ export async function assignPut(
         await tx.wheel.update({
           where: { id: trade.wheelId },
           data: {
+            currentStep: WheelStep.HOLDING,
+            status: 'ACTIVE',
             lastActivityAt: new Date(),
           },
         })
@@ -218,11 +222,13 @@ export async function assignCall(
         premium: true,
         shares: true,
         positionId: true,
+        wheelId: true,
         position: {
           select: {
             id: true,
             status: true,
             totalCost: true,
+            wheelId: true,
             assignmentTrade: {
               select: {
                 premium: true,
@@ -306,12 +312,27 @@ export async function assignCall(
       return { position: updatedPosition, trade }
     })
 
+    // Update wheel cycle if this belongs to a wheel
+    const wheelId = trade.wheelId || position.wheelId
+    if (wheelId) {
+      // Increment cycle count and update totals
+      await incrementCycle(wheelId, totalPremiums, realizedGainLoss)
+
+      // Transition wheel back to IDLE state (ready for next PUT)
+      await updateWheelStatus(wheelId, WheelStep.IDLE, 'IDLE')
+    }
+
     // Revalidate relevant paths
     revalidatePath('/trades')
     revalidatePath(`/trades/${tradeId}`)
     revalidatePath('/positions')
     revalidatePath(`/positions/${position.id}`)
     revalidatePath('/dashboard')
+
+    if (wheelId) {
+      revalidatePath('/wheels')
+      revalidatePath(`/wheels/${wheelId}`)
+    }
 
     return {
       success: true,

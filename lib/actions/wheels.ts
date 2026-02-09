@@ -11,6 +11,7 @@ import {
   type WheelFilters,
 } from '@/lib/validations/wheel'
 import { Prisma } from '@/lib/generated/prisma'
+import { WheelStep, isValidWheelStepTransition } from '@/lib/types/wheel'
 
 /**
  * Server action result type
@@ -122,6 +123,7 @@ export async function getWheels(
       id: string
       ticker: string
       status: string
+      currentStep: string
       cycleCount: number
       totalPremiums: number
       totalRealizedPL: number
@@ -157,6 +159,7 @@ export async function getWheels(
         id: true,
         ticker: true,
         status: true,
+        currentStep: true,
         cycleCount: true,
         totalPremiums: true,
         totalRealizedPL: true,
@@ -178,6 +181,7 @@ export async function getWheels(
       id: wheel.id,
       ticker: wheel.ticker,
       status: wheel.status,
+      currentStep: wheel.currentStep,
       cycleCount: wheel.cycleCount,
       totalPremiums: Number(wheel.totalPremiums),
       totalRealizedPL: Number(wheel.totalRealizedPL),
@@ -215,6 +219,7 @@ export async function getWheelDetail(wheelId: string): Promise<
     id: string
     ticker: string
     status: string
+    currentStep: string
     cycleCount: number
     totalPremiums: number
     totalRealizedPL: number
@@ -257,6 +262,7 @@ export async function getWheelDetail(wheelId: string): Promise<
         userId: true,
         ticker: true,
         status: true,
+        currentStep: true,
         cycleCount: true,
         totalPremiums: true,
         totalRealizedPL: true,
@@ -308,6 +314,7 @@ export async function getWheelDetail(wheelId: string): Promise<
       id: wheel.id,
       ticker: wheel.ticker,
       status: wheel.status,
+      currentStep: wheel.currentStep,
       cycleCount: wheel.cycleCount,
       totalPremiums: Number(wheel.totalPremiums),
       totalRealizedPL: Number(wheel.totalRealizedPL),
@@ -539,5 +546,218 @@ export async function completeWheel(wheelId: string): Promise<ActionResult<void>
     }
 
     return { success: false, error: 'Failed to complete wheel' }
+  }
+}
+
+/**
+ * Update wheel status and current step
+ *
+ * Transitions the wheel to a new step in the cycle and optionally updates
+ * the overall wheel status (ACTIVE/IDLE). Validates that the transition is
+ * allowed according to the wheel state machine.
+ *
+ * @param wheelId - The wheel ID to update
+ * @param step - The new wheel step (PUT, HOLDING, COVERED, IDLE)
+ * @param status - Optional new wheel status (ACTIVE, IDLE, etc.)
+ * @returns Promise resolving to success/failure
+ *
+ * @example
+ * // Transition to HOLDING when PUT is assigned
+ * await updateWheelStatus(wheelId, WheelStep.HOLDING);
+ *
+ * // Transition to IDLE and mark as IDLE status when CALL is assigned
+ * await updateWheelStatus(wheelId, WheelStep.IDLE, 'IDLE');
+ */
+export async function updateWheelStatus(
+  wheelId: string,
+  step: WheelStep,
+  status?: 'ACTIVE' | 'IDLE' | 'PAUSED' | 'COMPLETED'
+): Promise<ActionResult<void>> {
+  try {
+    // Get current user
+    const userId = await getCurrentUserId()
+
+    // Verify wheel exists and get current step
+    const existingWheel = await prisma.wheel.findUnique({
+      where: { id: wheelId },
+      select: { userId: true, currentStep: true, status: true, ticker: true },
+    })
+
+    if (!existingWheel) {
+      return { success: false, error: 'Wheel not found' }
+    }
+
+    if (existingWheel.userId !== userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    // Validate step transition
+    const currentStep = existingWheel.currentStep as WheelStep
+    if (!isValidWheelStepTransition(currentStep, step)) {
+      return {
+        success: false,
+        error: `Invalid wheel step transition from ${currentStep} to ${step}`,
+      }
+    }
+
+    // Update wheel
+    await prisma.wheel.update({
+      where: { id: wheelId },
+      data: {
+        currentStep: step,
+        ...(status && { status }),
+        lastActivityAt: new Date(),
+      },
+    })
+
+    // Revalidate relevant paths
+    revalidatePath('/wheels')
+    revalidatePath(`/wheels/${wheelId}`)
+    revalidatePath('/dashboard')
+
+    return { success: true, data: undefined }
+  } catch (error) {
+    console.error('Error updating wheel status:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to update wheel status' }
+  }
+}
+
+/**
+ * Increment wheel cycle count and update totals
+ *
+ * Called when a complete wheel cycle finishes (CALL assignment).
+ * Increments the cycle counter and updates total premiums and realized P/L.
+ *
+ * @param wheelId - The wheel ID to update
+ * @param premiumToAdd - Premium from the completed cycle (PUT + CALL premiums)
+ * @param realizedPLToAdd - Realized P/L from the completed cycle
+ * @returns Promise resolving to success/failure with updated cycle count
+ *
+ * @example
+ * // After CALL assignment completes a cycle
+ * await incrementCycle(wheelId, 500, 250);
+ */
+export async function incrementCycle(
+  wheelId: string,
+  premiumToAdd: number,
+  realizedPLToAdd: number
+): Promise<ActionResult<{ cycleCount: number }>> {
+  try {
+    // Get current user
+    const userId = await getCurrentUserId()
+
+    // Verify wheel exists and belongs to user
+    const existingWheel = await prisma.wheel.findUnique({
+      where: { id: wheelId },
+      select: {
+        userId: true,
+        cycleCount: true,
+        totalPremiums: true,
+        totalRealizedPL: true,
+      },
+    })
+
+    if (!existingWheel) {
+      return { success: false, error: 'Wheel not found' }
+    }
+
+    if (existingWheel.userId !== userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    // Calculate new totals
+    const newCycleCount = existingWheel.cycleCount + 1
+    const newTotalPremiums = Number(existingWheel.totalPremiums) + premiumToAdd
+    const newTotalRealizedPL = Number(existingWheel.totalRealizedPL) + realizedPLToAdd
+
+    // Update wheel
+    await prisma.wheel.update({
+      where: { id: wheelId },
+      data: {
+        cycleCount: newCycleCount,
+        totalPremiums: new Prisma.Decimal(newTotalPremiums),
+        totalRealizedPL: new Prisma.Decimal(newTotalRealizedPL),
+        lastActivityAt: new Date(),
+      },
+    })
+
+    // Revalidate relevant paths
+    revalidatePath('/wheels')
+    revalidatePath(`/wheels/${wheelId}`)
+    revalidatePath('/dashboard')
+
+    return { success: true, data: { cycleCount: newCycleCount } }
+  } catch (error) {
+    console.error('Error incrementing cycle:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to increment cycle' }
+  }
+}
+
+/**
+ * Find or create a wheel for a ticker
+ *
+ * Checks if an ACTIVE or IDLE wheel exists for the ticker. If found, returns it.
+ * If not found, prompts user to create a new wheel.
+ *
+ * @param ticker - The stock ticker
+ * @returns Promise resolving to wheel ID or null if user declines
+ *
+ * @example
+ * const wheelId = await findOrCreateWheel('AAPL');
+ */
+export async function findActiveWheel(
+  ticker: string
+): Promise<ActionResult<{ id: string; currentStep: string } | null>> {
+  try {
+    const userId = await getCurrentUserId()
+
+    // Look for ACTIVE or IDLE wheel for this ticker
+    const wheel = await prisma.wheel.findFirst({
+      where: {
+        userId,
+        ticker,
+        status: {
+          in: ['ACTIVE', 'IDLE'],
+        },
+      },
+      select: {
+        id: true,
+        currentStep: true,
+        status: true,
+      },
+      orderBy: {
+        lastActivityAt: 'desc',
+      },
+    })
+
+    if (!wheel) {
+      return { success: true, data: null }
+    }
+
+    return {
+      success: true,
+      data: {
+        id: wheel.id,
+        currentStep: wheel.currentStep,
+      },
+    }
+  } catch (error) {
+    console.error('Error finding active wheel:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to find active wheel' }
   }
 }

@@ -13,6 +13,7 @@ import {
   type CloseOptionInput,
 } from '@/lib/validations/trade'
 import { Prisma } from '@/lib/generated/prisma'
+import { WheelStep } from '@/lib/types/wheel'
 
 /**
  * Server action result type
@@ -70,22 +71,72 @@ export async function createTrade(
     // Calculate shares (contracts * 100)
     const shares = validated.contracts * 100
 
-    // Create trade
-    const trade = await prisma.trade.create({
-      data: {
-        userId,
-        ticker: validated.ticker,
-        type: validated.type,
-        action: validated.action,
-        strikePrice: new Prisma.Decimal(validated.strikePrice),
-        premium: new Prisma.Decimal(validated.premium),
-        contracts: validated.contracts,
-        shares,
-        expirationDate: validated.expirationDate,
-        openDate: validated.openDate ?? new Date(),
-        notes: validated.notes,
-        positionId: validated.positionId,
-      },
+    // Validate wheel constraints if linking to a wheel
+    if (validated.wheelId && validated.action === 'SELL_TO_OPEN' && validated.type === 'PUT') {
+      // Check for existing active PUTs on this wheel
+      const existingActivePut = await prisma.trade.findFirst({
+        where: {
+          wheelId: validated.wheelId,
+          type: 'PUT',
+          status: 'OPEN',
+        },
+      })
+
+      if (existingActivePut) {
+        return {
+          success: false,
+          error: 'Cannot have multiple active PUTs on the same wheel. Close or assign the existing PUT first.',
+        }
+      }
+    }
+
+    // Create trade and update wheel in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Create trade
+      const trade = await tx.trade.create({
+        data: {
+          userId,
+          ticker: validated.ticker,
+          type: validated.type,
+          action: validated.action,
+          strikePrice: new Prisma.Decimal(validated.strikePrice),
+          premium: new Prisma.Decimal(validated.premium),
+          contracts: validated.contracts,
+          shares,
+          expirationDate: validated.expirationDate,
+          openDate: validated.openDate ?? new Date(),
+          notes: validated.notes,
+          positionId: validated.positionId,
+          wheelId: validated.wheelId,
+        },
+      })
+
+      // Update wheel status if trade is linked to a wheel
+      if (validated.wheelId && validated.action === 'SELL_TO_OPEN') {
+        let newStep: WheelStep | null = null
+
+        // Determine the new wheel step based on trade type
+        if (validated.type === 'PUT') {
+          newStep = WheelStep.PUT
+        } else if (validated.type === 'CALL' && validated.positionId) {
+          // Only transition to COVERED if it's a covered call (has positionId)
+          newStep = WheelStep.COVERED
+        }
+
+        // Update wheel step if applicable
+        if (newStep) {
+          await tx.wheel.update({
+            where: { id: validated.wheelId },
+            data: {
+              currentStep: newStep,
+              status: 'ACTIVE',
+              lastActivityAt: new Date(),
+            },
+          })
+        }
+      }
+
+      return trade
     })
 
     // Revalidate relevant paths
@@ -93,7 +144,12 @@ export async function createTrade(
     revalidatePath('/dashboard')
     revalidatePath('/positions')
 
-    return { success: true, data: { id: trade.id } }
+    if (validated.wheelId) {
+      revalidatePath('/wheels')
+      revalidatePath(`/wheels/${validated.wheelId}`)
+    }
+
+    return { success: true, data: { id: result.id } }
   } catch (error) {
     console.error('Error creating trade:', error)
 
@@ -491,5 +547,125 @@ export async function deleteTrade(id: string): Promise<ActionResult<{ id: string
     }
 
     return { success: false, error: 'Failed to delete trade' }
+  }
+}
+
+/**
+ * Link a trade to a wheel
+ *
+ * Associates an existing trade with a wheel for cycle tracking.
+ * Updates the wheel status based on the trade type.
+ *
+ * @param tradeId - The trade ID to link
+ * @param wheelId - The wheel ID to link to
+ * @returns Promise resolving to action result
+ *
+ * @example
+ * await linkTradeToWheel('trade_123', 'wheel_456');
+ */
+export async function linkTradeToWheel(
+  tradeId: string,
+  wheelId: string
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    // Get current user
+    const userId = await getCurrentUserId()
+
+    // Verify trade exists and belongs to user
+    const existingTrade = await prisma.trade.findUnique({
+      where: { id: tradeId },
+      select: {
+        userId: true,
+        type: true,
+        action: true,
+        positionId: true,
+        ticker: true,
+        wheelId: true,
+      },
+    })
+
+    if (!existingTrade) {
+      return { success: false, error: 'Trade not found' }
+    }
+
+    if (existingTrade.userId !== userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    if (existingTrade.wheelId) {
+      return {
+        success: false,
+        error: 'Trade is already linked to a wheel',
+      }
+    }
+
+    // Verify wheel exists and belongs to user
+    const wheel = await prisma.wheel.findUnique({
+      where: { id: wheelId },
+      select: { userId: true, ticker: true },
+    })
+
+    if (!wheel) {
+      return { success: false, error: 'Wheel not found' }
+    }
+
+    if (wheel.userId !== userId) {
+      return { success: false, error: 'Unauthorized' }
+    }
+
+    // Verify ticker matches
+    if (wheel.ticker !== existingTrade.ticker) {
+      return {
+        success: false,
+        error: `Trade ticker ${existingTrade.ticker} does not match wheel ticker ${wheel.ticker}`,
+      }
+    }
+
+    // Link trade to wheel and update wheel status
+    await prisma.$transaction(async (tx) => {
+      await tx.trade.update({
+        where: { id: tradeId },
+        data: { wheelId },
+      })
+
+      // Update wheel step if this is a sell-to-open trade
+      if (existingTrade.action === 'SELL_TO_OPEN') {
+        let newStep: WheelStep | null = null
+
+        if (existingTrade.type === 'PUT') {
+          newStep = WheelStep.PUT
+        } else if (existingTrade.type === 'CALL' && existingTrade.positionId) {
+          newStep = WheelStep.COVERED
+        }
+
+        if (newStep) {
+          await tx.wheel.update({
+            where: { id: wheelId },
+            data: {
+              currentStep: newStep,
+              status: 'ACTIVE',
+              lastActivityAt: new Date(),
+            },
+          })
+        }
+      }
+    })
+
+    // Revalidate relevant paths
+    revalidatePath('/trades')
+    revalidatePath(`/trades/${tradeId}`)
+    revalidatePath('/wheels')
+    revalidatePath(`/wheels/${wheelId}`)
+    revalidatePath('/dashboard')
+
+    return { success: true, data: { id: tradeId } }
+  } catch (error) {
+    console.error('Error linking trade to wheel:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to link trade to wheel' }
   }
 }

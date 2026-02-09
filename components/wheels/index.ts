@@ -1,2 +1,7 @@
 export { WheelsList } from './wheels-list'
 export { WheelCard } from './wheel-card'
+export { WheelOverview } from './wheel-overview'
+export { WheelCurrentStatus } from './wheel-current-status'
+export { WheelTradesList } from './wheel-trades-list'
+export { WheelPositionsList } from './wheel-positions-list'
+export { WheelCycleHistory } from './wheel-cycle-history'

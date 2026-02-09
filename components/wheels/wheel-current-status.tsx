@@ -150,8 +150,8 @@ export function WheelCurrentStatus({
   }
 
   return (
-    <div className={`border rounded-lg p-6 ${getStepColor(currentStep.color)}`}>
-      <div className="flex items-start justify-between">
+    <div className={`border rounded-lg p-4 sm:p-6 ${getStepColor(currentStep.color)}`}>
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <span
@@ -162,13 +162,13 @@ export function WheelCurrentStatus({
               {currentStep.title}
             </span>
           </div>
-          <p className="mt-3 text-gray-700">{currentStep.description}</p>
+          <p className="mt-3 text-sm sm:text-base text-gray-700">{currentStep.description}</p>
 
           {/* Wheel Cycle Visual */}
-          <div className="mt-4 flex items-center gap-2">
+          <div className="mt-4 flex items-center gap-1 sm:gap-2">
             {/* Step 1: PUT */}
             <div
-              className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
+              className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 ${
                 currentStep.step === 1
                   ? 'bg-green-500 border-green-600 text-white'
                   : currentStep.step > 1
@@ -176,13 +176,13 @@ export function WheelCurrentStatus({
                   : 'bg-white border-gray-300 text-gray-400'
               }`}
             >
-              <span className="text-sm font-bold">1</span>
+              <span className="text-xs sm:text-sm font-bold">1</span>
             </div>
             <div className="flex-1 h-0.5 bg-gray-300"></div>
 
             {/* Step 2: Position */}
             <div
-              className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
+              className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 ${
                 currentStep.step === 2
                   ? 'bg-purple-500 border-purple-600 text-white'
                   : currentStep.step > 2
@@ -190,13 +190,13 @@ export function WheelCurrentStatus({
                   : 'bg-white border-gray-300 text-gray-400'
               }`}
             >
-              <span className="text-sm font-bold">2</span>
+              <span className="text-xs sm:text-sm font-bold">2</span>
             </div>
             <div className="flex-1 h-0.5 bg-gray-300"></div>
 
             {/* Step 3: CALL */}
             <div
-              className={`flex items-center justify-center w-12 h-12 rounded-full border-2 ${
+              className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 ${
                 currentStep.step === 3
                   ? 'bg-blue-500 border-blue-600 text-white'
                   : currentStep.step > 3
@@ -204,27 +204,27 @@ export function WheelCurrentStatus({
                   : 'bg-white border-gray-300 text-gray-400'
               }`}
             >
-              <span className="text-sm font-bold">3</span>
+              <span className="text-xs sm:text-sm font-bold">3</span>
             </div>
           </div>
 
-          <div className="mt-2 flex gap-4 text-xs text-gray-600">
-            <span className="w-12 text-center">PUT</span>
+          <div className="mt-2 flex gap-1 sm:gap-4 text-xs text-gray-600">
+            <span className="w-10 sm:w-12 text-center">PUT</span>
             <span className="flex-1"></span>
-            <span className="w-12 text-center">Position</span>
+            <span className="w-10 sm:w-12 text-center">Position</span>
             <span className="flex-1"></span>
-            <span className="w-12 text-center">CALL</span>
+            <span className="w-10 sm:w-12 text-center">CALL</span>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="ml-6 flex flex-col gap-2">
+        <div className="lg:ml-6 flex flex-col gap-2">
           {wheel.status === 'ACTIVE' && (
             <>
               {currentStep.step === 1 && (
                 <Link
                   href={`/trades`}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Manage PUT
                 </Link>
@@ -233,7 +233,7 @@ export function WheelCurrentStatus({
               {currentStep.step === 2 && (
                 <Link
                   href={`/trades/new?ticker=${wheel.ticker}&type=CALL&wheelId=${wheel.id}`}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Sell Covered CALL
                 </Link>
@@ -242,7 +242,7 @@ export function WheelCurrentStatus({
               {currentStep.step === 3 && (
                 <Link
                   href={`/trades`}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Manage CALL
                 </Link>
@@ -251,7 +251,7 @@ export function WheelCurrentStatus({
               {currentStep.step === 0 && (
                 <Link
                   href={`/trades/new?ticker=${wheel.ticker}&type=PUT&wheelId=${wheel.id}`}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 >
                   Sell PUT
                 </Link>
@@ -262,7 +262,7 @@ export function WheelCurrentStatus({
           {wheel.status === 'IDLE' && (
             <Link
               href={`/trades/new?ticker=${wheel.ticker}&type=PUT&wheelId=${wheel.id}`}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
               Start New PUT
             </Link>

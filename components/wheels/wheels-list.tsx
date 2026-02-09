@@ -90,8 +90,8 @@ export function WheelsList({ initialWheels }: WheelsListProps) {
       </div>
 
       {/* Status Filter Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      <div className="border-b border-gray-200 overflow-x-auto">
+        <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-min" aria-label="Tabs">
           {statusFilters.map((filter) => {
             const count =
               filter.value === 'ALL'
@@ -105,7 +105,7 @@ export function WheelsList({ initialWheels }: WheelsListProps) {
                 key={filter.value}
                 onClick={() => setStatusFilter(filter.value)}
                 className={`
-                  whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm
+                  whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex-shrink-0
                   ${
                     isActive
                       ? 'border-blue-500 text-blue-600'

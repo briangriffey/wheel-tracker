@@ -82,11 +82,11 @@ export function WheelOverview({ wheel }: WheelOverviewProps) {
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-200">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-gray-900">{wheel.ticker}</h1>
+      <div className="px-4 sm:px-6 py-5 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{wheel.ticker}</h1>
               <span
                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
                   wheel.status
@@ -102,7 +102,7 @@ export function WheelOverview({ wheel }: WheelOverviewProps) {
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
             {wheel.status === 'ACTIVE' && (
               <>
                 <button

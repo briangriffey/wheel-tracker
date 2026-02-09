@@ -6,6 +6,8 @@ import { WheelCurrentStatus } from '@/components/wheels/wheel-current-status'
 import { WheelTradesList } from '@/components/wheels/wheel-trades-list'
 import { WheelPositionsList } from '@/components/wheels/wheel-positions-list'
 import { WheelCycleHistory } from '@/components/wheels/wheel-cycle-history'
+import { WheelMetrics } from '@/components/wheels/wheel-metrics'
+import { WheelCharts } from '@/components/charts/wheel-charts'
 
 export const metadata = {
   title: 'Wheel Details | Wheel Tracker',
@@ -64,6 +66,18 @@ export default async function WheelDetailPage({ params }: WheelDetailPageProps) 
           currentTrades={currentTrades}
           currentPosition={currentPosition}
         />
+      </div>
+
+      {/* Wheel Metrics */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Performance Metrics</h2>
+        <WheelMetrics wheel={wheel} trades={wheel.trades} positions={wheel.positions} />
+      </div>
+
+      {/* Wheel Charts */}
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Analytics</h2>
+        <WheelCharts wheelData={wheel} />
       </div>
 
       {/* Current Trades Section */}

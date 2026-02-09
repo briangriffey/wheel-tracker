@@ -517,6 +517,7 @@ export function PositionCard({
           shares={position.shares}
           costBasis={typeof position.costBasis === 'number' ? position.costBasis : position.costBasis.toNumber()}
           totalCost={typeof position.totalCost === 'number' ? position.totalCost : position.totalCost.toNumber()}
+          acquiredDate={position.acquiredDate}
           coveredCall={{
             id: selectedCall.id,
             strikePrice: selectedCall.strikePrice,

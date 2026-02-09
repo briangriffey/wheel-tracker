@@ -79,10 +79,20 @@ export const UpdateTradeStatusSchema = z.object({
   closeDate: z.coerce.date().optional(),
 })
 
+// Schema for closing an option early (BUY_TO_CLOSE)
+export const CloseOptionSchema = z.object({
+  tradeId: z.string().cuid('Invalid trade ID'),
+  closePremium: z
+    .number()
+    .nonnegative('Close premium must be non-negative')
+    .finite('Close premium must be finite'),
+})
+
 // Type exports for use in components and actions
 export type CreateTradeInput = z.infer<typeof CreateTradeSchema>
 export type UpdateTradeInput = z.infer<typeof UpdateTradeSchema>
 export type UpdateTradeStatusInput = z.infer<typeof UpdateTradeStatusSchema>
+export type CloseOptionInput = z.infer<typeof CloseOptionSchema>
 export type TradeType = z.infer<typeof TradeTypeSchema>
 export type TradeAction = z.infer<typeof TradeActionSchema>
 export type TradeStatus = z.infer<typeof TradeStatusSchema>

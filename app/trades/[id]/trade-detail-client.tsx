@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AssignPutDialog } from '@/components/trades/assign-put-dialog'
+import { CloseOptionDialog } from '@/components/trades/close-option-dialog'
 import { formatCurrency } from '@/lib/utils/position-calculations'
 
 interface Trade {
@@ -44,10 +45,16 @@ interface TradeDetailClientProps {
 export function TradeDetailClient({ trade }: TradeDetailClientProps) {
   const router = useRouter()
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false)
 
   const canAssign = trade.type === 'PUT' && trade.status === 'OPEN'
+  const canClose = trade.status === 'OPEN'
 
   const handleAssignSuccess = () => {
+    router.refresh()
+  }
+
+  const handleCloseSuccess = () => {
     router.refresh()
   }
 
@@ -126,14 +133,24 @@ export function TradeDetailClient({ trade }: TradeDetailClientProps) {
                 </span>
               </div>
             </div>
-            {canAssign && (
-              <button
-                onClick={() => setIsAssignDialogOpen(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-              >
-                Assign PUT
-              </button>
-            )}
+            <div className="flex gap-2">
+              {canClose && (
+                <button
+                  onClick={() => setIsCloseDialogOpen(true)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+                >
+                  Close Early
+                </button>
+              )}
+              {canAssign && (
+                <button
+                  onClick={() => setIsAssignDialogOpen(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                >
+                  Assign PUT
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Quick Stats */}
@@ -305,6 +322,20 @@ export function TradeDetailClient({ trade }: TradeDetailClientProps) {
           onClose={() => setIsAssignDialogOpen(false)}
           onSuccess={handleAssignSuccess}
           onSellCoveredCall={handleSellCoveredCall}
+        />
+
+        {/* Close Option Dialog */}
+        <CloseOptionDialog
+          tradeId={trade.id}
+          ticker={trade.ticker}
+          type={trade.type}
+          strikePrice={trade.strikePrice}
+          originalPremium={trade.premium}
+          expirationDate={trade.expirationDate}
+          contracts={trade.contracts}
+          isOpen={isCloseDialogOpen}
+          onClose={() => setIsCloseDialogOpen(false)}
+          onSuccess={handleCloseSuccess}
         />
       </div>
     </div>

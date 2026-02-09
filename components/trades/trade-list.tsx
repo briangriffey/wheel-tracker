@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
@@ -15,6 +16,7 @@ type SortField = 'expirationDate' | 'ticker' | 'premium'
 type SortDirection = 'asc' | 'desc'
 
 export function TradeList({ initialTrades }: TradeListProps) {
+  const router = useRouter()
   const [trades, setTrades] = useState<Trade[]>(initialTrades)
   const [tickerFilter, setTickerFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<TradeStatus | 'ALL'>('ALL')
@@ -396,15 +398,27 @@ export function TradeList({ initialTrades }: TradeListProps) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
-                      {/* Edit Button */}
+                      {/* View Details Button */}
                       <button
-                        onClick={() => toast('Edit functionality coming soon', { icon: 'ℹ️' })}
+                        onClick={() => router.push(`/trades/${trade.id}`)}
                         disabled={loadingAction === trade.id}
                         className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                        aria-label={`Edit ${trade.ticker} trade`}
+                        aria-label={`View ${trade.ticker} trade details`}
                       >
-                        Edit
+                        View
                       </button>
+
+                      {/* Close Early - Only for OPEN trades */}
+                      {trade.status === 'OPEN' && (
+                        <button
+                          onClick={() => router.push(`/trades/${trade.id}`)}
+                          disabled={loadingAction === trade.id}
+                          className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                          aria-label={`Close ${trade.ticker} trade early`}
+                        >
+                          Close
+                        </button>
+                      )}
 
                       {/* Mark Expired - Only for OPEN trades */}
                       {trade.status === 'OPEN' && (
@@ -499,16 +513,24 @@ export function TradeList({ initialTrades }: TradeListProps) {
               {/* Actions */}
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
-                  onClick={() => toast('Edit functionality coming soon', { icon: 'ℹ️' })}
+                  onClick={() => router.push(`/trades/${trade.id}`)}
                   disabled={loadingAction === trade.id}
                   className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 disabled:opacity-50"
-                  aria-label={`Edit ${trade.ticker} trade`}
+                  aria-label={`View ${trade.ticker} trade details`}
                 >
-                  Edit
+                  View Details
                 </button>
 
                 {trade.status === 'OPEN' && (
                   <>
+                    <button
+                      onClick={() => router.push(`/trades/${trade.id}`)}
+                      disabled={loadingAction === trade.id}
+                      className="flex-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded hover:bg-green-100 disabled:opacity-50"
+                      aria-label={`Close ${trade.ticker} trade early`}
+                    >
+                      Close
+                    </button>
                     <button
                       onClick={() => handleStatusUpdate(trade.id, 'EXPIRED')}
                       disabled={loadingAction === trade.id}

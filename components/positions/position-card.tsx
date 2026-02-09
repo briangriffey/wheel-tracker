@@ -13,6 +13,7 @@ import {
 import { getPnLColorClass, getPnLBackgroundClass, getStatusColor } from '@/lib/design/colors'
 import { refreshSinglePositionPrice, type PriceData } from '@/lib/actions/prices'
 import { AssignCallDialog } from './assign-call-dialog'
+import { CloseOptionDialog } from '@/components/trades/close-option-dialog'
 import type { PositionWithCalculations } from '@/lib/queries/positions'
 import type { Prisma } from '@/lib/generated/prisma'
 
@@ -64,12 +65,14 @@ export function PositionCard({
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
   const [assignDialogOpen, setAssignDialogOpen] = useState(false)
+  const [closeDialogOpen, setCloseDialogOpen] = useState(false)
   const [selectedCall, setSelectedCall] = useState<{
     id: string
     strikePrice: number
     premium: number
     expirationDate: Date
     status: string
+    contracts?: number
   } | null>(null)
 
   // Handle manual price refresh
@@ -111,12 +114,41 @@ export function PositionCard({
       premium: typeof call.premium === 'number' ? call.premium : call.premium.toNumber(),
       expirationDate: call.expirationDate,
       status: call.status,
+      contracts: 1, // Covered calls are typically 1 contract per position
     })
     setAssignDialogOpen(true)
   }
 
+  // Handle opening close option dialog
+  const handleOpenCloseDialog = (call: {
+    id: string
+    strikePrice: number | Prisma.Decimal
+    premium: number | Prisma.Decimal
+    expirationDate: Date
+    status: string
+  }) => {
+    // Convert Decimals to numbers for the dialog
+    setSelectedCall({
+      id: call.id,
+      strikePrice: typeof call.strikePrice === 'number' ? call.strikePrice : call.strikePrice.toNumber(),
+      premium: typeof call.premium === 'number' ? call.premium : call.premium.toNumber(),
+      expirationDate: call.expirationDate,
+      status: call.status,
+      contracts: 1, // Covered calls are typically 1 contract per position
+    })
+    setCloseDialogOpen(true)
+  }
+
   // Handle successful assignment
   const handleAssignSuccess = () => {
+    // Refresh the page or call parent callback
+    if (onPriceRefresh) {
+      onPriceRefresh(position.id)
+    }
+  }
+
+  // Handle successful close
+  const handleCloseSuccess = () => {
     // Refresh the page or call parent callback
     if (onPriceRefresh) {
       onPriceRefresh(position.id)
@@ -469,13 +501,22 @@ export function PositionCard({
                           </div>
                         </div>
                         {call.status === 'OPEN' && (
-                          <button
-                            onClick={() => handleOpenAssignDialog(call)}
-                            className="ml-3 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                            aria-label="Mark as assigned"
-                          >
-                            Mark as Assigned
-                          </button>
+                          <div className="ml-3 flex flex-col gap-2">
+                            <button
+                              onClick={() => handleOpenCloseDialog(call)}
+                              className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors whitespace-nowrap"
+                              aria-label="Close call early"
+                            >
+                              Close Early
+                            </button>
+                            <button
+                              onClick={() => handleOpenAssignDialog(call)}
+                              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors whitespace-nowrap"
+                              aria-label="Mark as assigned"
+                            >
+                              Mark Assigned
+                            </button>
+                          </div>
                         )}
                       </div>
                     )
@@ -511,31 +552,47 @@ export function PositionCard({
 
       {/* Assignment Dialog */}
       {selectedCall && (
-        <AssignCallDialog
-          positionId={position.id}
-          ticker={position.ticker}
-          shares={position.shares}
-          costBasis={typeof position.costBasis === 'number' ? position.costBasis : position.costBasis.toNumber()}
-          totalCost={typeof position.totalCost === 'number' ? position.totalCost : position.totalCost.toNumber()}
-          acquiredDate={position.acquiredDate}
-          coveredCall={{
-            id: selectedCall.id,
-            strikePrice: selectedCall.strikePrice,
-            premium: selectedCall.premium,
-            expirationDate: selectedCall.expirationDate,
-            status: selectedCall.status,
-          }}
-          putPremium={
-            position.assignmentTrade?.premium
-              ? typeof position.assignmentTrade.premium === 'number'
-                ? position.assignmentTrade.premium
-                : position.assignmentTrade.premium.toNumber()
-              : 0
-          }
-          isOpen={assignDialogOpen}
-          onClose={() => setAssignDialogOpen(false)}
-          onSuccess={handleAssignSuccess}
-        />
+        <>
+          <AssignCallDialog
+            positionId={position.id}
+            ticker={position.ticker}
+            shares={position.shares}
+            costBasis={typeof position.costBasis === 'number' ? position.costBasis : position.costBasis.toNumber()}
+            totalCost={typeof position.totalCost === 'number' ? position.totalCost : position.totalCost.toNumber()}
+            acquiredDate={position.acquiredDate}
+            coveredCall={{
+              id: selectedCall.id,
+              strikePrice: selectedCall.strikePrice,
+              premium: selectedCall.premium,
+              expirationDate: selectedCall.expirationDate,
+              status: selectedCall.status,
+            }}
+            putPremium={
+              position.assignmentTrade?.premium
+                ? typeof position.assignmentTrade.premium === 'number'
+                  ? position.assignmentTrade.premium
+                  : position.assignmentTrade.premium.toNumber()
+                : 0
+            }
+            isOpen={assignDialogOpen}
+            onClose={() => setAssignDialogOpen(false)}
+            onSuccess={handleAssignSuccess}
+          />
+
+          {/* Close Option Dialog */}
+          <CloseOptionDialog
+            tradeId={selectedCall.id}
+            ticker={position.ticker}
+            type="CALL"
+            strikePrice={selectedCall.strikePrice}
+            originalPremium={selectedCall.premium}
+            expirationDate={selectedCall.expirationDate}
+            contracts={selectedCall.contracts || 1}
+            isOpen={closeDialogOpen}
+            onClose={() => setCloseDialogOpen(false)}
+            onSuccess={handleCloseSuccess}
+          />
+        </>
       )}
     </div>
   )

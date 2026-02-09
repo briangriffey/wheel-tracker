@@ -73,7 +73,7 @@ export async function assignPut(
     // Get current user
     const userId = await getCurrentUserId()
 
-    // Verify trade exists and get details
+    // Verify trade exists and get details (including wheel relationship)
     const trade = await prisma.trade.findUnique({
       where: { id: tradeId },
       select: {
@@ -87,6 +87,7 @@ export async function assignPut(
         contracts: true,
         shares: true,
         openDate: true,
+        wheelId: true,
       },
     })
 
@@ -129,7 +130,7 @@ export async function assignPut(
         },
       })
 
-      // Create position
+      // Create position (with wheel linkage if applicable)
       const position = await tx.position.create({
         data: {
           userId,
@@ -140,8 +141,19 @@ export async function assignPut(
           status: 'OPEN',
           acquiredDate: new Date(),
           assignmentTradeId: tradeId,
+          ...(trade.wheelId && { wheelId: trade.wheelId }),
         },
       })
+
+      // Update wheel if this trade belongs to a wheel
+      if (trade.wheelId) {
+        await tx.wheel.update({
+          where: { id: trade.wheelId },
+          data: {
+            lastActivityAt: new Date(),
+          },
+        })
+      }
 
       return { position, trade }
     })
@@ -151,6 +163,12 @@ export async function assignPut(
     revalidatePath(`/trades/${tradeId}`)
     revalidatePath('/positions')
     revalidatePath('/dashboard')
+
+    // Revalidate wheel page if applicable
+    if (trade.wheelId) {
+      revalidatePath('/wheels')
+      revalidatePath(`/wheels/${trade.wheelId}`)
+    }
 
     return {
       success: true,

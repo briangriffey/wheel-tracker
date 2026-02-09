@@ -91,7 +91,7 @@ export async function getTrades(options: GetTradesOptions = {}): Promise<Trade[]
 /**
  * Get a specific trade by ID
  */
-export async function getTrade(id: string): Promise<Trade | null> {
+export async function getTrade(id: string) {
   try {
     const userId = await getCurrentUserId()
 
@@ -116,6 +116,13 @@ export async function getTrade(id: string): Promise<Trade | null> {
             ticker: true,
             shares: true,
             costBasis: true,
+            status: true,
+          },
+        },
+        wheel: {
+          select: {
+            id: true,
+            ticker: true,
             status: true,
           },
         },

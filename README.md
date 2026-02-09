@@ -76,10 +76,18 @@ Visit [http://localhost:3000](http://localhost:3000) to see your application.
 
 ## 📚 Documentation
 
+### For Users
+- **[Features Guide](docs/FEATURES.md)**: Complete guide to Wheels Dashboard, Notifications, and all features
 - **[User Guide](docs/USER_GUIDE.md)**: Comprehensive guide for using Wheel Tracker
-- **[Error Handling](docs/ERROR_HANDLING.md)**: Error handling implementation details
+- **[Wheel Strategy Guide](docs/wheel-strategy-guide.md)**: Learn the wheel options trading strategy
 - **[FAQ](app/help/faq)**: Frequently asked questions
 - **[Glossary](app/help/glossary)**: Options trading terminology
+
+### For Developers
+- **[Design System](docs/DESIGN_SYSTEM.md)**: Component library and design tokens
+- **[Error Handling](docs/ERROR_HANDLING.md)**: Error handling implementation details
+- **[Deployment Guide](docs/RAILWAY_DEPLOYMENT.md)**: Railway deployment instructions
+- **[Migrations Guide](docs/MIGRATIONS.md)**: Database migration reference
 
 ## 🛠️ Tech Stack
 

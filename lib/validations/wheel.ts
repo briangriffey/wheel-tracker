@@ -25,7 +25,7 @@ export const CreateWheelSchema = z.object({
 
 export const UpdateWheelSchema = z.object({
   id: z.string().cuid('Invalid wheel ID'),
-  notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional(),
+  notes: z.string().max(1000, 'Notes must be 1000 characters or less').nullable().optional(),
 })
 
 export const WheelFiltersSchema = z

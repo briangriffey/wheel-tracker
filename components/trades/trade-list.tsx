@@ -263,6 +263,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
               setDateRangeEnd('')
             }}
             className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+            aria-label="Clear all filters and show all trades"
           >
             Clear all filters
           </button>
@@ -270,7 +271,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
       </div>
 
       {/* Results Count */}
-      <div className="text-sm text-gray-600 mb-4">
+      <div className="text-sm text-gray-600 mb-4" role="status" aria-live="polite" aria-atomic="true">
         Showing {filteredTrades.length} of {trades.length} trades
       </div>
 
@@ -282,6 +283,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -302,58 +304,67 @@ export function TradeList({ initialTrades }: TradeListProps) {
       {/* Desktop Table View */}
       {filteredTrades.length > 0 && (
         <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200" aria-label="Trades list">
+            <caption className="sr-only">
+              List of trades with filtering and sorting options
+            </caption>
             <thead className="bg-gray-50">
               <tr>
                 <th
+                  scope="col"
                   onClick={() => handleSort('ticker')}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  aria-sort={sortField === 'ticker' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
                 >
                   <div className="flex items-center gap-1">
                     Ticker
                     {sortField === 'ticker' && (
-                      <span className="text-blue-600">
+                      <span className="text-blue-600" aria-hidden="true">
                         {sortDirection === 'asc' ? '↑' : '↓'}
                       </span>
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Strike
                 </th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('premium')}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  aria-sort={sortField === 'premium' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
                 >
                   <div className="flex items-center gap-1">
                     Premium
                     {sortField === 'premium' && (
-                      <span className="text-blue-600">
+                      <span className="text-blue-600" aria-hidden="true">
                         {sortDirection === 'asc' ? '↑' : '↓'}
                       </span>
                     )}
                   </div>
                 </th>
                 <th
+                  scope="col"
                   onClick={() => handleSort('expirationDate')}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  aria-sort={sortField === 'expirationDate' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
                 >
                   <div className="flex items-center gap-1">
                     Expiration
                     {sortField === 'expirationDate' && (
-                      <span className="text-blue-600">
+                      <span className="text-blue-600" aria-hidden="true">
                         {sortDirection === 'asc' ? '↑' : '↓'}
                       </span>
                     )}
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -390,7 +401,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                         onClick={() => toast('Edit functionality coming soon', { icon: 'ℹ️' })}
                         disabled={loadingAction === trade.id}
                         className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
-                        title="Edit trade"
+                        aria-label={`Edit ${trade.ticker} trade`}
                       >
                         Edit
                       </button>
@@ -401,7 +412,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                           onClick={() => handleStatusUpdate(trade.id, 'EXPIRED')}
                           disabled={loadingAction === trade.id}
                           className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
-                          title="Mark as expired"
+                          aria-label={`Mark ${trade.ticker} trade as expired`}
                         >
                           Expired
                         </button>
@@ -413,7 +424,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                           onClick={() => handleStatusUpdate(trade.id, 'ASSIGNED')}
                           disabled={loadingAction === trade.id}
                           className="text-purple-600 hover:text-purple-900 disabled:opacity-50"
-                          title="Mark as assigned"
+                          aria-label={`Mark ${trade.ticker} trade as assigned`}
                         >
                           Assigned
                         </button>
@@ -425,7 +436,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                           onClick={() => handleDelete(trade.id)}
                           disabled={loadingAction === trade.id}
                           className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                          title="Delete trade"
+                          aria-label={`Delete ${trade.ticker} trade`}
                         >
                           Delete
                         </button>
@@ -491,6 +502,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                   onClick={() => toast('Edit functionality coming soon', { icon: 'ℹ️' })}
                   disabled={loadingAction === trade.id}
                   className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 disabled:opacity-50"
+                  aria-label={`Edit ${trade.ticker} trade`}
                 >
                   Edit
                 </button>
@@ -501,6 +513,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                       onClick={() => handleStatusUpdate(trade.id, 'EXPIRED')}
                       disabled={loadingAction === trade.id}
                       className="flex-1 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded hover:bg-indigo-100 disabled:opacity-50"
+                      aria-label={`Mark ${trade.ticker} trade as expired`}
                     >
                       Expired
                     </button>
@@ -508,6 +521,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                       onClick={() => handleStatusUpdate(trade.id, 'ASSIGNED')}
                       disabled={loadingAction === trade.id}
                       className="flex-1 px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 rounded hover:bg-purple-100 disabled:opacity-50"
+                      aria-label={`Mark ${trade.ticker} trade as assigned`}
                     >
                       Assigned
                     </button>
@@ -515,6 +529,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
                       onClick={() => handleDelete(trade.id)}
                       disabled={loadingAction === trade.id}
                       className="flex-1 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 disabled:opacity-50"
+                      aria-label={`Delete ${trade.ticker} trade`}
                     >
                       Delete
                     </button>

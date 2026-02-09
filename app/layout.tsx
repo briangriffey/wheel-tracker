@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { SessionProvider } from '@/components/session-provider'
 import { ToastProvider } from '@/components/toast-provider'
 import { UserMenu } from '@/components/user-menu'
+import { SkipLink } from '@/components/ui/skip-link'
 import './globals.css'
 import './design-system.css'
 
@@ -22,16 +23,17 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
+        <SkipLink />
         <SessionProvider>
           {session?.user && (
-            <header className="bg-white shadow-sm">
+            <header className="bg-white shadow-sm" role="banner">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                   <div className="flex items-center gap-8">
                     <Link href="/dashboard" className="text-xl font-bold text-neutral-900">
                       Wheel Tracker
                     </Link>
-                    <nav className="hidden md:flex gap-6">
+                    <nav className="hidden md:flex gap-6" aria-label="Main navigation">
                       <Link href="/dashboard" className="text-sm text-neutral-700 hover:text-neutral-900">
                         Dashboard
                       </Link>
@@ -54,7 +56,9 @@ export default async function RootLayout({
               </div>
             </header>
           )}
-          {children}
+          <main id="main-content">
+            {children}
+          </main>
         </SessionProvider>
         <ToastProvider />
       </body>

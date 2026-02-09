@@ -60,12 +60,12 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" aria-label="Trade entry form">
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {/* Ticker */}
         <div>
           <label htmlFor="ticker" className="block text-sm font-medium text-neutral-700">
-            Ticker Symbol <span className="text-error">*</span>
+            Ticker Symbol <span className="text-error" aria-hidden="true">*</span>
           </label>
           <Input
             id="ticker"
@@ -74,6 +74,8 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             wrapperClassName="mt-1"
             className="uppercase"
             error={errors.ticker?.message}
+            required
+            aria-required="true"
             {...register('ticker')}
           />
         </div>
@@ -81,12 +83,14 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Trade Type */}
         <div>
           <label htmlFor="type" className="block text-sm font-medium text-neutral-700">
-            Trade Type <span className="text-error">*</span>
+            Trade Type <span className="text-error" aria-hidden="true">*</span>
           </label>
           <Select
             id="type"
             wrapperClassName="mt-1"
             error={errors.type?.message}
+            required
+            aria-required="true"
             {...register('type')}
           >
             <option value="">Select type</option>
@@ -98,12 +102,14 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Trade Action */}
         <div>
           <label htmlFor="action" className="block text-sm font-medium text-neutral-700">
-            Trade Action <span className="text-error">*</span>
+            Trade Action <span className="text-error" aria-hidden="true">*</span>
           </label>
           <Select
             id="action"
             wrapperClassName="mt-1"
             error={errors.action?.message}
+            required
+            aria-required="true"
             {...register('action')}
           >
             <option value="SELL_TO_OPEN">Sell to Open</option>
@@ -114,7 +120,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Strike Price */}
         <div>
           <label htmlFor="strikePrice" className="block text-sm font-medium text-neutral-700">
-            Strike Price <span className="text-error">*</span>
+            Strike Price <span className="text-error" aria-hidden="true">*</span>
           </label>
           <Input
             id="strikePrice"
@@ -124,6 +130,8 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             wrapperClassName="mt-1"
             prefix={<span className="text-neutral-500 sm:text-sm">$</span>}
             error={errors.strikePrice?.message}
+            required
+            aria-required="true"
             {...register('strikePrice', { valueAsNumber: true })}
           />
         </div>
@@ -131,7 +139,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Premium */}
         <div>
           <label htmlFor="premium" className="block text-sm font-medium text-neutral-700">
-            Premium (Total) <span className="text-error">*</span>
+            Premium (Total) <span className="text-error" aria-hidden="true">*</span>
           </label>
           <Input
             id="premium"
@@ -141,6 +149,8 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             wrapperClassName="mt-1"
             prefix={<span className="text-neutral-500 sm:text-sm">$</span>}
             error={errors.premium?.message}
+            required
+            aria-required="true"
             {...register('premium', { valueAsNumber: true })}
           />
         </div>
@@ -148,7 +158,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Contracts */}
         <div>
           <label htmlFor="contracts" className="block text-sm font-medium text-neutral-700">
-            Number of Contracts <span className="text-error">*</span>
+            Number of Contracts <span className="text-error" aria-hidden="true">*</span>
           </label>
           <Input
             id="contracts"
@@ -158,6 +168,8 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             wrapperClassName="mt-1"
             error={errors.contracts?.message}
             helpText="Each contract = 100 shares"
+            required
+            aria-required="true"
             {...register('contracts', { valueAsNumber: true })}
           />
         </div>
@@ -165,13 +177,15 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Entry Date */}
         <div>
           <label htmlFor="openDate" className="block text-sm font-medium text-neutral-700">
-            Entry Date <span className="text-error">*</span>
+            Entry Date <span className="text-error" aria-hidden="true">*</span>
           </label>
           <Input
             id="openDate"
             type="date"
             wrapperClassName="mt-1"
             error={errors.openDate?.message}
+            required
+            aria-required="true"
             {...register('openDate')}
           />
         </div>
@@ -179,13 +193,15 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Expiration Date */}
         <div>
           <label htmlFor="expirationDate" className="block text-sm font-medium text-neutral-700">
-            Expiration Date <span className="text-error">*</span>
+            Expiration Date <span className="text-error" aria-hidden="true">*</span>
           </label>
           <Input
             id="expirationDate"
             type="date"
             wrapperClassName="mt-1"
             error={errors.expirationDate?.message}
+            required
+            aria-required="true"
             {...register('expirationDate')}
           />
         </div>

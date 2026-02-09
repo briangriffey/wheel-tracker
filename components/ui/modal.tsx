@@ -13,6 +13,7 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, description, children, size = 'lg' }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
+  const previouslyFocusedElement = useRef<HTMLElement | null>(null)
 
   // Handle escape key to close modal
   useEffect(() => {
@@ -26,11 +27,22 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'l
     return () => document.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose])
 
-  // Prevent body scroll when modal is open
+  // Prevent body scroll when modal is open and manage focus
   useEffect(() => {
     if (isOpen) {
+      // Store the currently focused element
+      previouslyFocusedElement.current = document.activeElement as HTMLElement
+
+      // Focus the modal
+      modalRef.current?.focus()
+
+      // Prevent body scroll
       document.body.style.overflow = 'hidden'
     } else {
+      // Restore focus
+      previouslyFocusedElement.current?.focus()
+
+      // Restore body scroll
       document.body.style.overflow = 'unset'
     }
 
@@ -52,6 +64,7 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'l
     <div
       className="fixed inset-0 z-50 overflow-y-auto"
       aria-labelledby="modal-title"
+      aria-describedby={description ? "modal-description" : undefined}
       role="dialog"
       aria-modal="true"
     >
@@ -66,7 +79,8 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'l
       <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
         <div
           ref={modalRef}
-          className={`relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 w-full ${sizeClasses[size]}`}
+          tabIndex={-1}
+          className={`relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 w-full ${sizeClasses[size]} focus:outline-none`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -80,7 +94,9 @@ export function Modal({ isOpen, onClose, title, description, children, size = 'l
                   {title}
                 </h3>
                 {description && (
-                  <p className="mt-1 text-sm text-gray-500">{description}</p>
+                  <p id="modal-description" className="mt-1 text-sm text-gray-500">
+                    {description}
+                  </p>
                 )}
               </div>
               <button

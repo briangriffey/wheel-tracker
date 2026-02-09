@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AssignPutDialog } from '@/components/trades/assign-put-dialog'
+import { SellCoveredCallDialog } from '@/components/positions/sell-covered-call-dialog'
 import { formatCurrency } from '@/lib/utils/position-calculations'
 
 interface Trade {
@@ -44,6 +45,7 @@ interface TradeDetailClientProps {
 export function TradeDetailClient({ trade }: TradeDetailClientProps) {
   const router = useRouter()
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
+  const [isSellCallDialogOpen, setIsSellCallDialogOpen] = useState(false)
 
   const canAssign = trade.type === 'PUT' && trade.status === 'OPEN'
 
@@ -52,8 +54,14 @@ export function TradeDetailClient({ trade }: TradeDetailClientProps) {
   }
 
   const handleSellCoveredCall = () => {
-    // Navigate to new trade form with pre-filled data for covered call
-    router.push(`/trades/new?type=CALL&ticker=${trade.ticker}&fromAssignment=true`)
+    // Close the assign dialog and open the sell covered call dialog
+    setIsAssignDialogOpen(false)
+    setIsSellCallDialogOpen(true)
+  }
+
+  const handleSellCallSuccess = () => {
+    setIsSellCallDialogOpen(false)
+    router.refresh()
   }
 
   // Determine status badge color
@@ -306,6 +314,25 @@ export function TradeDetailClient({ trade }: TradeDetailClientProps) {
           onSuccess={handleAssignSuccess}
           onSellCoveredCall={handleSellCoveredCall}
         />
+
+        {/* Sell Covered Call Dialog */}
+        {trade.createdPosition && (
+          <SellCoveredCallDialog
+            position={{
+              id: trade.createdPosition.id,
+              ticker: trade.createdPosition.ticker,
+              shares: trade.createdPosition.shares,
+              costBasis: trade.createdPosition.costBasis,
+              totalCost: trade.createdPosition.costBasis * trade.createdPosition.shares,
+              acquiredDate: new Date(), // This will be from the current time
+              coveredCalls: [],
+            }}
+            wheelId={trade.wheelId}
+            isOpen={isSellCallDialogOpen}
+            onClose={() => setIsSellCallDialogOpen(false)}
+            onSuccess={handleSellCallSuccess}
+          />
+        )}
       </div>
     </div>
   )

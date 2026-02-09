@@ -68,22 +68,56 @@ export async function createTrade(
     // Calculate shares (contracts * 100)
     const shares = validated.contracts * 100
 
-    // Create trade
-    const trade = await prisma.trade.create({
-      data: {
-        userId,
-        ticker: validated.ticker,
-        type: validated.type,
-        action: validated.action,
-        strikePrice: new Prisma.Decimal(validated.strikePrice),
-        premium: new Prisma.Decimal(validated.premium),
-        contracts: validated.contracts,
-        shares,
-        expirationDate: validated.expirationDate,
-        openDate: validated.openDate ?? new Date(),
-        notes: validated.notes,
-        positionId: validated.positionId,
-      },
+    // For covered calls, validate no existing OPEN calls on the position
+    if (validated.type === 'CALL' && validated.positionId) {
+      const existingOpenCalls = await prisma.trade.findFirst({
+        where: {
+          positionId: validated.positionId,
+          type: 'CALL',
+          status: 'OPEN',
+        },
+      })
+
+      if (existingOpenCalls) {
+        return {
+          success: false,
+          error: 'Position already has an open covered call. Close or wait for expiration before creating a new one.',
+        }
+      }
+    }
+
+    // Use transaction to create trade and update wheel
+    const result = await prisma.$transaction(async (tx) => {
+      // Create trade
+      const trade = await tx.trade.create({
+        data: {
+          userId,
+          ticker: validated.ticker,
+          type: validated.type,
+          action: validated.action,
+          strikePrice: new Prisma.Decimal(validated.strikePrice),
+          premium: new Prisma.Decimal(validated.premium),
+          contracts: validated.contracts,
+          shares,
+          expirationDate: validated.expirationDate,
+          openDate: validated.openDate ?? new Date(),
+          notes: validated.notes,
+          positionId: validated.positionId,
+          wheelId: validated.wheelId,
+        },
+      })
+
+      // Update wheel lastActivityAt if this trade is part of a wheel
+      if (validated.wheelId) {
+        await tx.wheel.update({
+          where: { id: validated.wheelId },
+          data: {
+            lastActivityAt: new Date(),
+          },
+        })
+      }
+
+      return trade
     })
 
     // Revalidate relevant paths
@@ -91,7 +125,16 @@ export async function createTrade(
     revalidatePath('/dashboard')
     revalidatePath('/positions')
 
-    return { success: true, data: { id: trade.id } }
+    if (validated.positionId) {
+      revalidatePath(`/positions/${validated.positionId}`)
+    }
+
+    if (validated.wheelId) {
+      revalidatePath('/wheels')
+      revalidatePath(`/wheels/${validated.wheelId}`)
+    }
+
+    return { success: true, data: { id: result.id } }
   } catch (error) {
     console.error('Error creating trade:', error)
 

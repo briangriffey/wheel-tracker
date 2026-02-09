@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/modal'
 import { TradeEntryForm } from '@/components/forms/trade-entry-form'
 import { getPnLColorClass } from '@/lib/design/colors'
+import { SellCoveredCallDialog } from './sell-covered-call-dialog'
 
 interface PositionsListProps {
   initialPositions: PositionWithCalculations[]
@@ -30,6 +31,8 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
   const [refreshError, setRefreshError] = useState<string | null>(null)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false)
+  const [sellCallDialogOpen, setSellCallDialogOpen] = useState(false)
+  const [selectedPosition, setSelectedPosition] = useState<PositionWithCalculations | null>(null)
 
   // Fetch price data for all positions
   const fetchPriceData = useCallback(async () => {
@@ -201,10 +204,14 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
   }
 
   // Handle quick actions
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSellCall = (_positionId: string) => {
-    // TODO: Implement sell call functionality
-    toast('Sell covered call functionality coming soon!', { icon: 'ℹ️' })
+  const handleSellCall = (positionId: string) => {
+    const position = positions.find((p) => p.id === positionId)
+    if (!position) {
+      toast.error('Position not found')
+      return
+    }
+    setSelectedPosition(position)
+    setSellCallDialogOpen(true)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -219,6 +226,16 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
     // Refresh the page to get updated positions
     router.refresh()
   }, [router])
+
+  // Handle successful covered call creation
+  const handleSellCallSuccess = useCallback(() => {
+    setSellCallDialogOpen(false)
+    setSelectedPosition(null)
+    // Refresh the page to get updated positions
+    router.refresh()
+    // Also fetch latest price data
+    fetchPriceData()
+  }, [router, fetchPriceData])
 
   return (
     <div className="w-full">
@@ -488,6 +505,31 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
           onCancel={() => setIsTradeModalOpen(false)}
         />
       </Modal>
+
+      {/* Sell Covered Call Dialog */}
+      {selectedPosition && (
+        <SellCoveredCallDialog
+          position={{
+            id: selectedPosition.id,
+            ticker: selectedPosition.ticker,
+            shares: selectedPosition.shares,
+            costBasis: selectedPosition.costBasis.toNumber(),
+            totalCost: selectedPosition.totalCost.toNumber(),
+            acquiredDate: selectedPosition.acquiredDate,
+            coveredCalls: selectedPosition.coveredCalls?.map((call) => ({
+              id: call.id,
+              status: call.status,
+            })),
+          }}
+          wheelId={selectedPosition.wheelId}
+          isOpen={sellCallDialogOpen}
+          onClose={() => {
+            setSellCallDialogOpen(false)
+            setSelectedPosition(null)
+          }}
+          onSuccess={handleSellCallSuccess}
+        />
+      )}
     </div>
   )
 }

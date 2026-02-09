@@ -36,6 +36,7 @@ export const CreateTradeSchema = z.object({
   openDate: z.coerce.date().optional(),
   notes: z.string().max(1000, 'Notes must be 1000 characters or less').optional(),
   positionId: z.string().cuid().optional(),
+  wheelId: z.string().cuid().optional(),
 })
 
 // Schema for updating a trade

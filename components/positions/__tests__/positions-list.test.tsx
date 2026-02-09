@@ -19,6 +19,7 @@ const mockPositions: PositionWithCalculations[] = [
     createdAt: new Date('2026-01-15'),
     updatedAt: new Date('2026-02-07'),
     assignmentTradeId: 'trade1',
+    wheelId: null,
     assignmentTrade: {
       id: 'trade1',
       ticker: 'AAPL',
@@ -49,6 +50,7 @@ const mockPositions: PositionWithCalculations[] = [
     createdAt: new Date('2026-01-20'),
     updatedAt: new Date('2026-02-07'),
     assignmentTradeId: 'trade2',
+    wheelId: null,
     assignmentTrade: {
       id: 'trade2',
       ticker: 'TSLA',
@@ -79,6 +81,7 @@ const mockPositions: PositionWithCalculations[] = [
     createdAt: new Date('2026-01-10'),
     updatedAt: new Date('2026-02-07'),
     assignmentTradeId: 'trade3',
+    wheelId: null,
     assignmentTrade: {
       id: 'trade3',
       ticker: 'MSFT',

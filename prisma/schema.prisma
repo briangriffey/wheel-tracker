@@ -30,6 +30,13 @@ enum PositionStatus {
   CLOSED           // Position closed/sold
 }
 
+enum WheelStatus {
+  ACTIVE           // Currently in a wheel cycle
+  IDLE             // Completed cycle, waiting for new PUT
+  PAUSED           // User paused the wheel
+  COMPLETED        // User ended the wheel permanently
+}
+
 // Models
 model User {
   id            String    @id @default(cuid())
@@ -43,6 +50,7 @@ model User {
 
   trades          Trade[]
   positions       Position[]
+  wheels          Wheel[]
   benchmarks      Benchmark[]
   marketBenchmarks MarketBenchmark[]
   accounts        Account[]
@@ -116,6 +124,10 @@ model Trade {
   position        Position?   @relation("CoveredCalls", fields: [positionId], references: [id])
   positionId      String?
 
+  // Relations for wheel strategy tracking
+  wheel           Wheel?      @relation("WheelTrades", fields: [wheelId], references: [id])
+  wheelId         String?
+
   @@index([userId])
   @@index([ticker])
   @@index([status])
@@ -151,6 +163,10 @@ model Position {
   // Covered calls sold against this position
   coveredCalls      Trade[]         @relation("CoveredCalls")
 
+  // Relations for wheel strategy tracking
+  wheel             Wheel?          @relation("WheelPositions", fields: [wheelId], references: [id])
+  wheelId           String?
+
   @@index([userId])
   @@index([ticker])
   @@index([status])
@@ -159,6 +175,30 @@ model Position {
   @@index([closedDate])
   @@index([userId, acquiredDate])
   @@index([userId, status, acquiredDate])
+}
+
+model Wheel {
+  id              String       @id @default(cuid())
+  userId          String
+  ticker          String
+  status          WheelStatus  @default(ACTIVE)
+  cycleCount      Int          @default(0)
+  totalPremiums   Decimal      @db.Decimal(10, 2) @default(0)
+  totalRealizedPL Decimal      @db.Decimal(10, 2) @default(0)
+  startedAt       DateTime     @default(now())
+  lastActivityAt  DateTime     @default(now())
+  completedAt     DateTime?
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades          Trade[]      @relation("WheelTrades")
+  positions       Position[]   @relation("WheelPositions")
+
+  @@index([userId, ticker])
+  @@index([status])
+  @@index([userId])
 }
 
 model StockPrice {

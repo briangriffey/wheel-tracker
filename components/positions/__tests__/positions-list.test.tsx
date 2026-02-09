@@ -18,6 +18,7 @@ const mockPositions: PositionWithCalculations[] = [
     notes: 'Test position 1',
     createdAt: new Date('2026-01-15'),
     updatedAt: new Date('2026-02-07'),
+    wheelId: null,
     assignmentTradeId: 'trade1',
     assignmentTrade: {
       id: 'trade1',
@@ -48,6 +49,7 @@ const mockPositions: PositionWithCalculations[] = [
     notes: null,
     createdAt: new Date('2026-01-20'),
     updatedAt: new Date('2026-02-07'),
+    wheelId: null,
     assignmentTradeId: 'trade2',
     assignmentTrade: {
       id: 'trade2',
@@ -78,6 +80,7 @@ const mockPositions: PositionWithCalculations[] = [
     notes: 'Test position 3',
     createdAt: new Date('2026-01-10'),
     updatedAt: new Date('2026-02-07'),
+    wheelId: null,
     assignmentTradeId: 'trade3',
     assignmentTrade: {
       id: 'trade3',

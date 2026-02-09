@@ -33,6 +33,7 @@ export interface PositionWithCalculations extends Position {
     strikePrice: Prisma.Decimal
     expirationDate: Date
     status: string
+    contracts: number
     openDate?: Date
   }>
   unrealizedPL?: number
@@ -93,6 +94,7 @@ function enrichPosition(
       strikePrice: Prisma.Decimal
       expirationDate: Date
       status: string
+      contracts: number
       openDate?: Date
     }>
   }
@@ -186,6 +188,7 @@ export async function getPositions(
             strikePrice: true,
             expirationDate: true,
             status: true,
+            contracts: true,
           },
         },
       },
@@ -244,6 +247,7 @@ export async function getPosition(id: string): Promise<PositionWithCalculations 
             strikePrice: true,
             expirationDate: true,
             status: true,
+            contracts: true,
             openDate: true,
           },
         },

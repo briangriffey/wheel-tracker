@@ -13,6 +13,7 @@ import {
 import { getPnLColorClass, getPnLBackgroundClass, getStatusColor } from '@/lib/design/colors'
 import { refreshSinglePositionPrice, type PriceData } from '@/lib/actions/prices'
 import { AssignCallDialog } from './assign-call-dialog'
+import { RollOptionDialog } from '@/components/trades/roll-option-dialog'
 import type { PositionWithCalculations } from '@/lib/queries/positions'
 import type { Prisma } from '@/lib/generated/prisma'
 
@@ -38,6 +39,7 @@ export interface PositionCardData {
     strikePrice: number | Prisma.Decimal
     expirationDate: Date
     status: string
+    contracts: number
   }>
 }
 
@@ -64,12 +66,14 @@ export function PositionCard({
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
   const [assignDialogOpen, setAssignDialogOpen] = useState(false)
+  const [rollDialogOpen, setRollDialogOpen] = useState(false)
   const [selectedCall, setSelectedCall] = useState<{
     id: string
     strikePrice: number
     premium: number
     expirationDate: Date
     status: string
+    contracts: number
   } | null>(null)
 
   // Handle manual price refresh
@@ -103,6 +107,7 @@ export function PositionCard({
     premium: number | Prisma.Decimal
     expirationDate: Date
     status: string
+    contracts: number
   }) => {
     // Convert Decimals to numbers for the dialog
     setSelectedCall({
@@ -111,8 +116,30 @@ export function PositionCard({
       premium: typeof call.premium === 'number' ? call.premium : call.premium.toNumber(),
       expirationDate: call.expirationDate,
       status: call.status,
+      contracts: call.contracts,
     })
     setAssignDialogOpen(true)
+  }
+
+  // Handle opening roll dialog
+  const handleOpenRollDialog = (call: {
+    id: string
+    strikePrice: number | Prisma.Decimal
+    premium: number | Prisma.Decimal
+    expirationDate: Date
+    status: string
+    contracts: number
+  }) => {
+    // Convert Decimals to numbers for the dialog
+    setSelectedCall({
+      id: call.id,
+      strikePrice: typeof call.strikePrice === 'number' ? call.strikePrice : call.strikePrice.toNumber(),
+      premium: typeof call.premium === 'number' ? call.premium : call.premium.toNumber(),
+      expirationDate: call.expirationDate,
+      status: call.status,
+      contracts: call.contracts,
+    })
+    setRollDialogOpen(true)
   }
 
   // Handle successful assignment
@@ -469,13 +496,22 @@ export function PositionCard({
                           </div>
                         </div>
                         {call.status === 'OPEN' && (
-                          <button
-                            onClick={() => handleOpenAssignDialog(call)}
-                            className="ml-3 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                            aria-label="Mark as assigned"
-                          >
-                            Mark as Assigned
-                          </button>
+                          <div className="ml-3 flex flex-col gap-1.5">
+                            <button
+                              onClick={() => handleOpenRollDialog(call)}
+                              className="px-3 py-1.5 border border-blue-600 text-blue-600 text-xs font-medium rounded hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                              aria-label="Roll call option"
+                            >
+                              Roll Call
+                            </button>
+                            <button
+                              onClick={() => handleOpenAssignDialog(call)}
+                              className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                              aria-label="Mark as assigned"
+                            >
+                              Mark as Assigned
+                            </button>
+                          </div>
                         )}
                       </div>
                     )
@@ -511,31 +547,50 @@ export function PositionCard({
 
       {/* Assignment Dialog */}
       {selectedCall && (
-        <AssignCallDialog
-          positionId={position.id}
-          ticker={position.ticker}
-          shares={position.shares}
-          costBasis={typeof position.costBasis === 'number' ? position.costBasis : position.costBasis.toNumber()}
-          totalCost={typeof position.totalCost === 'number' ? position.totalCost : position.totalCost.toNumber()}
-          acquiredDate={position.acquiredDate}
-          coveredCall={{
-            id: selectedCall.id,
-            strikePrice: selectedCall.strikePrice,
-            premium: selectedCall.premium,
-            expirationDate: selectedCall.expirationDate,
-            status: selectedCall.status,
-          }}
-          putPremium={
-            position.assignmentTrade?.premium
-              ? typeof position.assignmentTrade.premium === 'number'
-                ? position.assignmentTrade.premium
-                : position.assignmentTrade.premium.toNumber()
-              : 0
-          }
-          isOpen={assignDialogOpen}
-          onClose={() => setAssignDialogOpen(false)}
-          onSuccess={handleAssignSuccess}
-        />
+        <>
+          <AssignCallDialog
+            positionId={position.id}
+            ticker={position.ticker}
+            shares={position.shares}
+            costBasis={typeof position.costBasis === 'number' ? position.costBasis : position.costBasis.toNumber()}
+            totalCost={typeof position.totalCost === 'number' ? position.totalCost : position.totalCost.toNumber()}
+            acquiredDate={position.acquiredDate}
+            coveredCall={{
+              id: selectedCall.id,
+              strikePrice: selectedCall.strikePrice,
+              premium: selectedCall.premium,
+              expirationDate: selectedCall.expirationDate,
+              status: selectedCall.status,
+            }}
+            putPremium={
+              position.assignmentTrade?.premium
+                ? typeof position.assignmentTrade.premium === 'number'
+                  ? position.assignmentTrade.premium
+                  : position.assignmentTrade.premium.toNumber()
+                : 0
+            }
+            isOpen={assignDialogOpen}
+            onClose={() => setAssignDialogOpen(false)}
+            onSuccess={handleAssignSuccess}
+          />
+
+          {/* Roll Option Dialog */}
+          <RollOptionDialog
+            trade={{
+              id: selectedCall.id,
+              ticker: position.ticker,
+              type: 'CALL',
+              strikePrice: selectedCall.strikePrice,
+              premium: selectedCall.premium,
+              contracts: selectedCall.contracts,
+              expirationDate: selectedCall.expirationDate,
+              status: selectedCall.status,
+            }}
+            isOpen={rollDialogOpen}
+            onClose={() => setRollDialogOpen(false)}
+            onSuccess={handleAssignSuccess}
+          />
+        </>
       )}
     </div>
   )

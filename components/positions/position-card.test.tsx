@@ -23,14 +23,16 @@ const mockOpenPosition: PositionCardData = {
       premium: 250,
       strikePrice: 160,
       expirationDate: new Date('2024-02-16'),
-      status: 'OPEN'
+      status: 'OPEN',
+      contracts: 1,
     },
     {
       id: 'call-2',
       premium: 300,
       strikePrice: 165,
       expirationDate: new Date('2024-03-15'),
-      status: 'CLOSED'
+      status: 'CLOSED',
+      contracts: 1,
     },
   ],
 }
@@ -354,7 +356,8 @@ describe('PositionCard', () => {
             premium: 250,
             strikePrice: 160,
             expirationDate: new Date('2024-02-16'),
-            status: 'OPEN'
+            status: 'OPEN',
+            contracts: 1,
           }
         ],
       }

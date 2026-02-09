@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AssignPutDialog } from '@/components/trades/assign-put-dialog'
+import { RollOptionDialog } from '@/components/trades/roll-option-dialog'
 import { formatCurrency } from '@/lib/utils/position-calculations'
 
 interface Trade {
@@ -44,10 +45,16 @@ interface TradeDetailClientProps {
 export function TradeDetailClient({ trade }: TradeDetailClientProps) {
   const router = useRouter()
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
+  const [isRollDialogOpen, setIsRollDialogOpen] = useState(false)
 
   const canAssign = trade.type === 'PUT' && trade.status === 'OPEN'
+  const canRoll = trade.status === 'OPEN' && trade.action === 'SELL_TO_OPEN'
 
   const handleAssignSuccess = () => {
+    router.refresh()
+  }
+
+  const handleRollSuccess = () => {
     router.refresh()
   }
 
@@ -126,14 +133,24 @@ export function TradeDetailClient({ trade }: TradeDetailClientProps) {
                 </span>
               </div>
             </div>
-            {canAssign && (
-              <button
-                onClick={() => setIsAssignDialogOpen(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-              >
-                Assign PUT
-              </button>
-            )}
+            <div className="flex gap-2">
+              {canAssign && (
+                <button
+                  onClick={() => setIsAssignDialogOpen(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                >
+                  Assign PUT
+                </button>
+              )}
+              {canRoll && (
+                <button
+                  onClick={() => setIsRollDialogOpen(true)}
+                  className="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                >
+                  Roll Option
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Quick Stats */}
@@ -305,6 +322,23 @@ export function TradeDetailClient({ trade }: TradeDetailClientProps) {
           onClose={() => setIsAssignDialogOpen(false)}
           onSuccess={handleAssignSuccess}
           onSellCoveredCall={handleSellCoveredCall}
+        />
+
+        {/* Roll Option Dialog */}
+        <RollOptionDialog
+          trade={{
+            id: trade.id,
+            ticker: trade.ticker,
+            type: trade.type,
+            strikePrice: trade.strikePrice,
+            premium: trade.premium,
+            contracts: trade.contracts,
+            expirationDate: trade.expirationDate,
+            status: trade.status,
+          }}
+          isOpen={isRollDialogOpen}
+          onClose={() => setIsRollDialogOpen(false)}
+          onSuccess={handleRollSuccess}
         />
       </div>
     </div>

@@ -33,6 +33,7 @@ const mockPosition: PositionWithCalculations = {
       strikePrice: new Prisma.Decimal(155),
       expirationDate: new Date('2026-02-15'),
       status: 'OPEN',
+      contracts: 1,
     },
   ],
   unrealizedPL: 2500,

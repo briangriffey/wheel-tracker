@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { assignPut } from '@/lib/actions/positions'
 import { fetchCurrentStockPrice } from '@/lib/actions/stock-price'
 import { formatCurrency, formatPercentage } from '@/lib/utils/position-calculations'
+import { ValidationWarnings, ConfirmationCheckbox } from '@/components/trades/validation-warnings'
+import type { ValidationResult } from '@/lib/validations/wheel'
 import toast from 'react-hot-toast'
 
 export interface AssignPutDialogProps {
@@ -38,6 +40,8 @@ export function AssignPutDialog({
   const [currentPrice, setCurrentPrice] = useState<number | null>(null)
   const [isPriceLoading, setIsPriceLoading] = useState(true)
   const [priceError, setPriceError] = useState<string | null>(null)
+  const [validation, setValidation] = useState<ValidationResult | null>(null)
+  const [confirmed, setConfirmed] = useState(false)
 
   // Fetch current stock price when dialog opens
   useEffect(() => {
@@ -80,11 +84,16 @@ export function AssignPutDialog({
 
   const handleAssign = async () => {
     setIsSubmitting(true)
+    setValidation(null) // Clear previous validation
 
     try {
       const result = await assignPut({ tradeId: trade.id })
 
       if (result.success) {
+        // Store validation info if present
+        if (result.validation) {
+          setValidation(result.validation)
+        }
         toast.success('PUT assigned and position created successfully!')
         onSuccess()
 
@@ -95,6 +104,10 @@ export function AssignPutDialog({
           onClose()
         }
       } else {
+        // Store validation results for display
+        if (result.validation) {
+          setValidation(result.validation)
+        }
         toast.error(result.error || 'Failed to assign PUT')
       }
     } catch (error) {
@@ -228,6 +241,9 @@ export function AssignPutDialog({
 
           {/* Content */}
           <div className="px-6 py-4 space-y-4">
+            {/* Validation warnings/errors */}
+            {validation && <ValidationWarnings validation={validation} title="Assignment Validation" />}
+
             {/* Warning Message */}
             <div className="rounded-md bg-yellow-50 p-4 border border-yellow-200">
               <div className="flex">

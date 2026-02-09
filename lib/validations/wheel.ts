@@ -73,6 +73,24 @@ export type WheelContinuityInput = {
   activeWheelId?: string | null
 }
 
+export type PutAssignmentInput = {
+  strikePrice: number
+  shares: number
+  premium: number
+  cashBalance: number
+  ticker: string
+}
+
+export type CallAssignmentInput = {
+  strikePrice: number
+  shares: number
+  premium: number
+  positionCostBasis: number
+  positionTotalCost: number
+  currentStockPrice?: number
+  ticker: string
+}
+
 // ============================================================================
 // Validation Functions
 // ============================================================================
@@ -265,4 +283,207 @@ export function validateWheelContinuity(input: WheelContinuityInput): Validation
   }
 
   return result
+}
+
+/**
+ * Validates PUT assignment and provides detailed cost breakdown
+ *
+ * When a PUT is assigned, the user must buy shares at the strike price.
+ * This validator:
+ * 1. Checks if user has sufficient cash to complete the purchase
+ * 2. Calculates effective cost basis (strike - premium per share)
+ * 3. Provides detailed breakdown of the transaction
+ *
+ * @param input - PUT assignment details including strike, premium, shares, and cash balance
+ * @returns ValidationResult with error if insufficient cash, plus detailed breakdown
+ *
+ * @example
+ * validatePutAssignment({
+ *   strikePrice: 150,
+ *   shares: 100,
+ *   premium: 250,
+ *   cashBalance: 10000,
+ *   ticker: 'AAPL'
+ * })
+ * // Returns: validation result with cost breakdown
+ */
+export function validatePutAssignment(input: PutAssignmentInput): ValidationResult & {
+  breakdown?: {
+    totalCost: number
+    effectiveCostBasis: number
+    cashRequired: number
+    cashRemaining: number
+  }
+} {
+  const { strikePrice, shares, premium, cashBalance, ticker } = input
+
+  const totalCost = strikePrice * shares
+  const effectiveCostBasis = strikePrice - premium / shares
+  const cashRemaining = cashBalance - totalCost
+
+  const result: ValidationResult & {
+    breakdown?: {
+      totalCost: number
+      effectiveCostBasis: number
+      cashRequired: number
+      cashRemaining: number
+    }
+  } = {
+    valid: true,
+    errors: [],
+    warnings: [],
+    breakdown: {
+      totalCost,
+      effectiveCostBasis,
+      cashRequired: totalCost,
+      cashRemaining,
+    },
+  }
+
+  // Check if user has sufficient cash
+  if (cashBalance < totalCost) {
+    result.valid = false
+    result.errors.push(
+      `Insufficient cash to complete PUT assignment for ${ticker}. Required: $${totalCost.toFixed(2)}, Available: $${cashBalance.toFixed(2)}, Shortfall: $${(totalCost - cashBalance).toFixed(2)}`
+    )
+  }
+
+  // Warning if cash will be very low after assignment
+  if (cashRemaining >= 0 && cashRemaining < totalCost * 0.1) {
+    result.warnings.push(
+      `After assignment, you will have only $${cashRemaining.toFixed(2)} in cash remaining (${((cashRemaining / cashBalance) * 100).toFixed(1)}% of current balance). Consider maintaining adequate cash reserves.`
+    )
+  }
+
+  // Informational: show effective cost basis
+  const premiumReduction = premium / shares
+  result.warnings.push(
+    `Effective cost basis: $${effectiveCostBasis.toFixed(2)} per share (strike $${strikePrice.toFixed(2)} - premium $${premiumReduction.toFixed(2)})`
+  )
+
+  return result
+}
+
+/**
+ * Validates CALL assignment and provides detailed profit/loss breakdown
+ *
+ * When a CALL is assigned, shares are sold at the strike price. This validator:
+ * 1. Calculates profit/loss on the shares (strike - cost basis)
+ * 2. Includes total premiums collected in P&L calculation
+ * 3. Provides detailed breakdown for user confirmation
+ *
+ * This is informational validation (no blocking errors) - always returns valid: true
+ * because CALL assignment is mandatory when exercised by the buyer.
+ *
+ * @param input - CALL assignment details including strike, cost basis, premium
+ * @returns ValidationResult with detailed profit breakdown
+ *
+ * @example
+ * validateCallAssignment({
+ *   strikePrice: 155,
+ *   shares: 100,
+ *   premium: 300,
+ *   positionCostBasis: 147.50,
+ *   positionTotalCost: 14750,
+ *   currentStockPrice: 160,
+ *   ticker: 'AAPL'
+ * })
+ * // Returns: validation with profit breakdown showing gains from shares + premium
+ */
+export function validateCallAssignment(input: CallAssignmentInput): ValidationResult & {
+  breakdown: {
+    saleProceeds: number
+    costBasis: number
+    shareProfit: number
+    totalPremiums: number
+    totalProfit: number
+    returnOnInvestment: number
+  }
+} {
+  const { strikePrice, shares, premium, positionCostBasis, positionTotalCost, currentStockPrice, ticker } = input
+
+  const saleProceeds = strikePrice * shares
+  const shareProfit = saleProceeds - positionTotalCost
+  const totalProfit = shareProfit + premium
+  const returnOnInvestment = (totalProfit / positionTotalCost) * 100
+  // currentStockPrice and ticker are used in warnings below
+
+  const result: ValidationResult & {
+    breakdown: {
+      saleProceeds: number
+      costBasis: number
+      shareProfit: number
+      totalPremiums: number
+      totalProfit: number
+      returnOnInvestment: number
+    }
+  } = {
+    valid: true,
+    errors: [],
+    warnings: [],
+    breakdown: {
+      saleProceeds,
+      costBasis: positionTotalCost,
+      shareProfit,
+      totalPremiums: premium,
+      totalProfit,
+      returnOnInvestment,
+    },
+  }
+
+  // Show profit breakdown
+  if (totalProfit > 0) {
+    result.warnings.push(
+      `✓ Profitable assignment for ${ticker}: Total profit $${totalProfit.toFixed(2)} (${returnOnInvestment.toFixed(2)}% ROI)`
+    )
+  } else if (totalProfit < 0) {
+    result.warnings.push(
+      `⚠ Assignment will result in a loss for ${ticker}: Total loss $${Math.abs(totalProfit).toFixed(2)} (${returnOnInvestment.toFixed(2)}% loss)`
+    )
+  } else {
+    result.warnings.push(`Break-even assignment for ${ticker}`)
+  }
+
+  // Detail the components
+  result.warnings.push(
+    `Breakdown: Shares sold at $${strikePrice.toFixed(2)} (${shareProfit >= 0 ? '+' : ''}$${shareProfit.toFixed(2)}) + Premium collected ($${premium.toFixed(2)}) = $${totalProfit.toFixed(2)}`
+  )
+
+  // Show opportunity cost if current price is higher than strike
+  if (currentStockPrice && currentStockPrice > strikePrice) {
+    const missedGains = (currentStockPrice - strikePrice) * shares
+    result.warnings.push(
+      `Note: Current stock price is $${currentStockPrice.toFixed(2)}, which is $${(currentStockPrice - strikePrice).toFixed(2)} above your strike. You're giving up $${missedGains.toFixed(2)} in potential additional gains, but still profiting overall.`
+    )
+  }
+
+  return result
+}
+
+/**
+ * Calculates recommended strike price for covered CALLs
+ *
+ * Best practice: Sell CALLs with strike at or above cost basis to ensure
+ * profit if assigned. This function suggests strikes based on:
+ * - Minimum: Cost basis (break-even on shares)
+ * - Conservative: Cost basis + 2% (modest profit target)
+ * - Aggressive: Cost basis + 5% (higher profit target)
+ *
+ * @param costBasis - Position cost basis per share
+ * @returns Object with recommended strike prices
+ *
+ * @example
+ * const recommendations = calculateRecommendedStrikes(147.50);
+ * // { minimum: 147.50, conservative: 150.45, aggressive: 154.88 }
+ */
+export function calculateRecommendedStrikes(costBasis: number): {
+  minimum: number
+  conservative: number
+  aggressive: number
+} {
+  return {
+    minimum: costBasis,
+    conservative: costBasis * 1.02,
+    aggressive: costBasis * 1.05,
+  }
 }

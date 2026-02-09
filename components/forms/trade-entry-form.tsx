@@ -9,6 +9,8 @@ import { createTrade } from '@/lib/actions/trades'
 import { Input } from '@/components/design-system/input/input'
 import { Select } from '@/components/design-system/select/select'
 import { Button } from '@/components/design-system/button/button'
+import { ValidationWarnings } from '@/components/trades/validation-warnings'
+import type { ValidationResult } from '@/lib/validations/wheel'
 
 interface TradeEntryFormProps {
   onSuccess?: () => void
@@ -23,6 +25,7 @@ type TradeFormData = Omit<CreateTradeInput, 'expirationDate' | 'openDate'> & {
 
 export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [validation, setValidation] = useState<ValidationResult | null>(null)
 
   const {
     register,
@@ -40,16 +43,26 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
 
   const onSubmit = async (formData: TradeFormData) => {
     setIsSubmitting(true)
+    setValidation(null) // Clear previous validation
 
     try {
       // The schema will coerce string dates to Date objects automatically
       const result = await createTrade(formData as unknown as CreateTradeInput)
 
       if (!result.success) {
+        // Store validation results for display
+        if (result.validation) {
+          setValidation(result.validation)
+        }
         toast.error(result.error || 'Failed to create trade')
       } else {
+        // Show validation warnings if any (non-blocking)
+        if (result.validation && result.validation.warnings.length > 0) {
+          setValidation(result.validation)
+        }
         toast.success('Trade created successfully!')
         reset()
+        setValidation(null)
         onSuccess?.()
       }
     } catch {
@@ -61,6 +74,9 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" aria-label="Trade entry form">
+      {/* Validation warnings/errors */}
+      {validation && <ValidationWarnings validation={validation} title="Trade Validation" />}
+
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {/* Ticker */}
         <div>

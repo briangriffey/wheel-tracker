@@ -4,11 +4,16 @@ import {
   validateStrikePrice,
   validatePositionState,
   validateWheelContinuity,
+  validatePutAssignment,
+  validateCallAssignment,
+  calculateRecommendedStrikes,
   type ValidationResult,
   type CashRequirementInput,
   type StrikePriceInput,
   type PositionStateInput,
   type WheelContinuityInput,
+  type PutAssignmentInput,
+  type CallAssignmentInput,
 } from './wheel'
 
 // ============================================================================
@@ -479,5 +484,270 @@ describe('ValidationResult type structure', () => {
 
     expect(result.errors).toHaveLength(2)
     expect(result.warnings).toHaveLength(3)
+  })
+})
+
+// ============================================================================
+// validatePutAssignment Tests
+// ============================================================================
+
+describe('validatePutAssignment', () => {
+  it('should pass when cash balance is sufficient', () => {
+    const input: PutAssignmentInput = {
+      strikePrice: 150,
+      shares: 100,
+      premium: 250,
+      cashBalance: 20000,
+      ticker: 'AAPL',
+    }
+
+    const result = validatePutAssignment(input)
+
+    expect(result.valid).toBe(true)
+    expect(result.errors).toHaveLength(0)
+    expect(result.breakdown).toBeDefined()
+    expect(result.breakdown?.totalCost).toBe(15000)
+    expect(result.breakdown?.effectiveCostBasis).toBe(147.5) // 150 - (250/100)
+    expect(result.breakdown?.cashRemaining).toBe(5000)
+  })
+
+  it('should fail when cash balance is insufficient', () => {
+    const input: PutAssignmentInput = {
+      strikePrice: 150,
+      shares: 100,
+      premium: 250,
+      cashBalance: 10000,
+      ticker: 'AAPL',
+    }
+
+    const result = validatePutAssignment(input)
+
+    expect(result.valid).toBe(false)
+    expect(result.errors).toHaveLength(1)
+    expect(result.errors[0]).toContain('Insufficient cash')
+    expect(result.errors[0]).toContain('$15000.00')
+    expect(result.errors[0]).toContain('$10000.00')
+    expect(result.errors[0]).toContain('$5000.00') // Shortfall
+  })
+
+  it('should warn when cash will be very low after assignment', () => {
+    const input: PutAssignmentInput = {
+      strikePrice: 150,
+      shares: 100,
+      premium: 250,
+      cashBalance: 15500, // Only $500 remaining
+      ticker: 'AAPL',
+    }
+
+    const result = validatePutAssignment(input)
+
+    expect(result.valid).toBe(true)
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('only $500.00 in cash remaining')
+    )
+  })
+
+  it('should include effective cost basis in warnings', () => {
+    const input: PutAssignmentInput = {
+      strikePrice: 150,
+      shares: 100,
+      premium: 300,
+      cashBalance: 20000,
+      ticker: 'AAPL',
+    }
+
+    const result = validatePutAssignment(input)
+
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('Effective cost basis: $147.00 per share')
+    )
+  })
+
+  it('should calculate breakdown correctly for multiple shares', () => {
+    const input: PutAssignmentInput = {
+      strikePrice: 100,
+      shares: 200, // 2 contracts
+      premium: 400,
+      cashBalance: 25000,
+      ticker: 'MSFT',
+    }
+
+    const result = validatePutAssignment(input)
+
+    expect(result.breakdown?.totalCost).toBe(20000)
+    expect(result.breakdown?.effectiveCostBasis).toBe(98) // 100 - (400/200)
+    expect(result.breakdown?.cashRemaining).toBe(5000)
+  })
+})
+
+// ============================================================================
+// validateCallAssignment Tests
+// ============================================================================
+
+describe('validateCallAssignment', () => {
+  it('should show profit for profitable assignment', () => {
+    const input: CallAssignmentInput = {
+      strikePrice: 155,
+      shares: 100,
+      premium: 550, // PUT premium 250 + CALL premium 300
+      positionCostBasis: 147.5,
+      positionTotalCost: 14750,
+      ticker: 'AAPL',
+    }
+
+    const result = validateCallAssignment(input)
+
+    expect(result.valid).toBe(true)
+    expect(result.breakdown.saleProceeds).toBe(15500)
+    expect(result.breakdown.shareProfit).toBe(750)
+    expect(result.breakdown.totalPremiums).toBe(550)
+    expect(result.breakdown.totalProfit).toBe(1300) // 750 + 550
+    expect(result.breakdown.returnOnInvestment).toBeCloseTo(8.81, 2)
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('Profitable assignment')
+    )
+  })
+
+  it('should show loss for unprofitable assignment', () => {
+    const input: CallAssignmentInput = {
+      strikePrice: 145,
+      shares: 100,
+      premium: 400, // Total premiums
+      positionCostBasis: 147.5,
+      positionTotalCost: 14750,
+      ticker: 'AAPL',
+    }
+
+    const result = validateCallAssignment(input)
+
+    expect(result.valid).toBe(true)
+    expect(result.breakdown.shareProfit).toBe(-250) // 14500 - 14750
+    expect(result.breakdown.totalProfit).toBe(150) // -250 + 400
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('Profitable assignment')
+    )
+  })
+
+  it('should show break-even for zero profit assignment', () => {
+    const input: CallAssignmentInput = {
+      strikePrice: 147.5,
+      shares: 100,
+      premium: 0,
+      positionCostBasis: 147.5,
+      positionTotalCost: 14750,
+      ticker: 'AAPL',
+    }
+
+    const result = validateCallAssignment(input)
+
+    expect(result.breakdown.totalProfit).toBe(0)
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('Break-even assignment')
+    )
+  })
+
+  it('should show opportunity cost when current price is above strike', () => {
+    const input: CallAssignmentInput = {
+      strikePrice: 150,
+      shares: 100,
+      premium: 500,
+      positionCostBasis: 145,
+      positionTotalCost: 14500,
+      currentStockPrice: 160,
+      ticker: 'AAPL',
+    }
+
+    const result = validateCallAssignment(input)
+
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('Current stock price is $160.00')
+    )
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('giving up $1000.00 in potential additional gains')
+    )
+  })
+
+  it('should not show opportunity cost when current price is below or equal to strike', () => {
+    const input: CallAssignmentInput = {
+      strikePrice: 150,
+      shares: 100,
+      premium: 500,
+      positionCostBasis: 145,
+      positionTotalCost: 14500,
+      currentStockPrice: 148,
+      ticker: 'AAPL',
+    }
+
+    const result = validateCallAssignment(input)
+
+    expect(result.warnings).not.toContainEqual(
+      expect.stringContaining('giving up')
+    )
+  })
+
+  it('should include detailed breakdown in warnings', () => {
+    const input: CallAssignmentInput = {
+      strikePrice: 155,
+      shares: 100,
+      premium: 600,
+      positionCostBasis: 147.5,
+      positionTotalCost: 14750,
+      ticker: 'AAPL',
+    }
+
+    const result = validateCallAssignment(input)
+
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('Breakdown: Shares sold at $155.00')
+    )
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('Premium collected ($600.00)')
+    )
+  })
+})
+
+// ============================================================================
+// calculateRecommendedStrikes Tests
+// ============================================================================
+
+describe('calculateRecommendedStrikes', () => {
+  it('should calculate recommended strikes correctly', () => {
+    const costBasis = 150
+
+    const result = calculateRecommendedStrikes(costBasis)
+
+    expect(result.minimum).toBe(150)
+    expect(result.conservative).toBeCloseTo(153, 0)
+    expect(result.aggressive).toBeCloseTo(157.5, 1)
+  })
+
+  it('should handle decimal cost basis', () => {
+    const costBasis = 147.5
+
+    const result = calculateRecommendedStrikes(costBasis)
+
+    expect(result.minimum).toBe(147.5)
+    expect(result.conservative).toBeCloseTo(150.45, 2)
+    expect(result.aggressive).toBeCloseTo(154.88, 2)
+  })
+
+  it('should handle low cost basis', () => {
+    const costBasis = 10
+
+    const result = calculateRecommendedStrikes(costBasis)
+
+    expect(result.minimum).toBe(10)
+    expect(result.conservative).toBe(10.2)
+    expect(result.aggressive).toBe(10.5)
+  })
+
+  it('should handle high cost basis', () => {
+    const costBasis = 1000
+
+    const result = calculateRecommendedStrikes(costBasis)
+
+    expect(result.minimum).toBe(1000)
+    expect(result.conservative).toBe(1020)
+    expect(result.aggressive).toBe(1050)
   })
 })

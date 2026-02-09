@@ -4,6 +4,8 @@ import React, { useState } from 'react'
 import { assignCall } from '@/lib/actions/positions'
 import { formatCurrency, formatPercentage } from '@/lib/utils/position-calculations'
 import { calculateAnnualizedReturn } from '@/lib/calculations/wheel'
+import { ValidationWarnings, BreakdownTable } from '@/components/trades/validation-warnings'
+import type { ValidationResult } from '@/lib/validations/wheel'
 import toast from 'react-hot-toast'
 
 export interface AssignCallDialogProps {
@@ -42,6 +44,7 @@ export function AssignCallDialog({
 }: AssignCallDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showNewPutPrompt, setShowNewPutPrompt] = useState(false)
+  const [validation, setValidation] = useState<ValidationResult | null>(null)
 
   // Calculate P&L components
   const saleProceeds = coveredCall.strikePrice * shares
@@ -60,11 +63,16 @@ export function AssignCallDialog({
 
   const handleAssign = async () => {
     setIsSubmitting(true)
+    setValidation(null) // Clear previous validation
 
     try {
       const result = await assignCall({ tradeId: coveredCall.id })
 
       if (result.success) {
+        // Store validation info if present
+        if (result.validation) {
+          setValidation(result.validation)
+        }
         toast.success('Position closed successfully!')
         onSuccess()
 
@@ -75,6 +83,10 @@ export function AssignCallDialog({
           onClose()
         }
       } else {
+        // Store validation results for display
+        if (result.validation) {
+          setValidation(result.validation)
+        }
         toast.error(result.error || 'Failed to assign covered call')
       }
     } catch (error) {
@@ -207,6 +219,9 @@ export function AssignCallDialog({
 
           {/* Content */}
           <div className="px-6 py-4 space-y-4">
+            {/* Validation warnings/errors */}
+            {validation && <ValidationWarnings validation={validation} title="Assignment Validation" />}
+
             {/* Warning Message */}
             <div className="rounded-md bg-yellow-50 p-4 border border-yellow-200">
               <div className="flex">

@@ -10,14 +10,20 @@ import {
   type AssignCallInput,
   type UpdatePositionInput,
 } from '@/lib/validations/position'
+import {
+  validatePutAssignment,
+  validateCallAssignment,
+  type ValidationResult,
+} from '@/lib/validations/wheel'
+import { getCashBalance } from '@/lib/queries/user'
 import { Prisma } from '@/lib/generated/prisma'
 
 /**
- * Server action result type
+ * Server action result type with optional validation
  */
 type ActionResult<T = unknown> =
-  | { success: true; data: T }
-  | { success: false; error: string; details?: unknown }
+  | { success: true; data: T; validation?: ValidationResult }
+  | { success: false; error: string; details?: unknown; validation?: ValidationResult }
 
 /**
  * Get the current user ID
@@ -119,6 +125,25 @@ export async function assignPut(
     const costBasisPerShare = strikePrice - premium / shares
     const totalCost = costBasisPerShare * shares
 
+    // Validate PUT assignment (cash requirement and cost breakdown)
+    const cashBalance = await getCashBalance()
+    const assignmentValidation = validatePutAssignment({
+      strikePrice,
+      shares,
+      premium,
+      cashBalance: cashBalance ?? 0,
+      ticker: trade.ticker,
+    })
+
+    // If validation fails (insufficient cash), return error
+    if (!assignmentValidation.valid) {
+      return {
+        success: false,
+        error: 'Cannot complete PUT assignment. Please address validation errors.',
+        validation: assignmentValidation,
+      }
+    }
+
     // Create position and update trade in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Update trade status to ASSIGNED
@@ -176,6 +201,7 @@ export async function assignPut(
         positionId: result.position.id,
         tradeId: result.trade.id,
       },
+      validation: assignmentValidation.warnings.length > 0 ? assignmentValidation : undefined,
     }
   } catch (error) {
     console.error('Error assigning PUT:', error)
@@ -282,6 +308,20 @@ export async function assignCall(
     const totalPremiums = putPremium + callPremium
     const realizedGainLoss = saleProceeds + totalPremiums - totalCost
 
+    // Get position cost basis for validation
+    const positionCostBasis = totalCost / shares
+
+    // Validate CALL assignment (profit/loss breakdown)
+    const assignmentValidation = validateCallAssignment({
+      strikePrice,
+      shares,
+      premium: totalPremiums, // Include both PUT and CALL premiums
+      positionCostBasis,
+      positionTotalCost: totalCost,
+      ticker: trade.ticker,
+      // currentStockPrice: undefined, // Could fetch if needed for opportunity cost
+    })
+
     // Close position and update trade in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Update trade status to ASSIGNED
@@ -320,6 +360,7 @@ export async function assignCall(
         tradeId: result.trade.id,
         realizedGainLoss,
       },
+      validation: assignmentValidation.warnings.length > 0 ? assignmentValidation : undefined,
     }
   } catch (error) {
     console.error('Error assigning CALL:', error)

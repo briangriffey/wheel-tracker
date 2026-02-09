@@ -12,14 +12,23 @@ import {
   type UpdateTradeStatusInput,
   type CloseOptionInput,
 } from '@/lib/validations/trade'
+import {
+  validateCashRequirement,
+  validateStrikePrice,
+  validatePositionState,
+  validateWheelContinuity,
+  calculateRecommendedStrikes,
+  type ValidationResult,
+} from '@/lib/validations/wheel'
+import { getCashBalance } from '@/lib/queries/user'
 import { Prisma } from '@/lib/generated/prisma'
 
 /**
- * Server action result type
+ * Server action result type with optional validation warnings
  */
 type ActionResult<T = unknown> =
-  | { success: true; data: T }
-  | { success: false; error: string; details?: unknown }
+  | { success: true; data: T; validation?: ValidationResult }
+  | { success: false; error: string; details?: unknown; validation?: ValidationResult }
 
 /**
  * Get the current user ID
@@ -70,6 +79,103 @@ export async function createTrade(
     // Calculate shares (contracts * 100)
     const shares = validated.contracts * 100
 
+    // Perform comprehensive validation checks
+    const allValidations: ValidationResult = {
+      valid: true,
+      errors: [],
+      warnings: [],
+    }
+
+    // Only validate SELL_TO_OPEN trades (opening new positions)
+    if (validated.action === 'SELL_TO_OPEN') {
+      // 1. Cash requirement validation for PUTs
+      if (validated.type === 'PUT') {
+        const cashBalance = await getCashBalance()
+        if (cashBalance !== null) {
+          const cashValidation = validateCashRequirement({
+            cashBalance,
+            strikePrice: validated.strikePrice,
+            contracts: validated.contracts,
+          })
+          allValidations.valid = allValidations.valid && cashValidation.valid
+          allValidations.errors.push(...cashValidation.errors)
+          allValidations.warnings.push(...cashValidation.warnings)
+        }
+      }
+
+      // 2. Position state and strike price validation for covered CALLs
+      if (validated.type === 'CALL' && validated.positionId) {
+        // Get position details
+        const position = await prisma.position.findUnique({
+          where: { id: validated.positionId },
+          select: {
+            id: true,
+            status: true,
+            costBasis: true,
+            shares: true,
+            coveredCalls: {
+              where: { status: 'OPEN' },
+              select: { id: true },
+            },
+          },
+        })
+
+        if (position) {
+          // Validate position state (no duplicate open CALLs)
+          const positionStateValidation = validatePositionState({
+            positionId: position.id,
+            positionStatus: position.status,
+            openCallsCount: position.coveredCalls.length,
+          })
+          allValidations.valid = allValidations.valid && positionStateValidation.valid
+          allValidations.errors.push(...positionStateValidation.errors)
+          allValidations.warnings.push(...positionStateValidation.warnings)
+
+          // Validate strike price vs cost basis
+          const strikePriceValidation = validateStrikePrice({
+            callStrike: validated.strikePrice,
+            positionCostBasis: Number(position.costBasis),
+          })
+          allValidations.warnings.push(...strikePriceValidation.warnings)
+
+          // Add recommended strike prices
+          const recommended = calculateRecommendedStrikes(Number(position.costBasis))
+          allValidations.warnings.push(
+            `Recommended strikes: Minimum: $${recommended.minimum.toFixed(2)}, Conservative: $${recommended.conservative.toFixed(2)} (+2%), Aggressive: $${recommended.aggressive.toFixed(2)} (+5%)`
+          )
+        }
+      }
+
+      // 3. Wheel continuity validation (warning only, doesn't block)
+      if (validated.ticker) {
+        // Check if there's an active wheel for this ticker
+        const activeWheel = await prisma.wheel.findFirst({
+          where: {
+            userId,
+            ticker: validated.ticker,
+            status: 'ACTIVE',
+          },
+          select: { id: true },
+        })
+
+        const wheelValidation = validateWheelContinuity({
+          ticker: validated.ticker,
+          wheelId: undefined, // New trade doesn't have a wheel yet
+          activeWheelId: activeWheel?.id,
+        })
+        allValidations.warnings.push(...wheelValidation.warnings)
+      }
+    }
+
+    // If there are blocking errors, return early
+    if (!allValidations.valid) {
+      return {
+        success: false,
+        error: 'Validation failed. Please address the errors before proceeding.',
+        validation: allValidations,
+      }
+    }
+
     // Create trade
     const trade = await prisma.trade.create({
       data: {
@@ -93,7 +199,12 @@ export async function createTrade(
     revalidatePath('/dashboard')
     revalidatePath('/positions')
 
-    return { success: true, data: { id: trade.id } }
+    // Return success with validation warnings (if any)
+    return {
+      success: true,
+      data: { id: trade.id },
+      validation: allValidations.warnings.length > 0 ? allValidations : undefined,
+    }
   } catch (error) {
     console.error('Error creating trade:', error)
 

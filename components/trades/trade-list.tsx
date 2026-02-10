@@ -192,10 +192,10 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
 
     if (trade.type === 'PUT') {
       // For selling a put: OTM when strike > current, ITM when strike < current
-      return strikePrice > currentPrice ? 'otm' : 'itm'
+      return strikePrice < currentPrice ? 'otm' : 'itm'
     } else {
       // For selling a call: OTM when strike < current, ITM when strike > current
-      return strikePrice < currentPrice ? 'otm' : 'itm'
+      return strikePrice > currentPrice ? 'otm' : 'itm'
     }
   }
 

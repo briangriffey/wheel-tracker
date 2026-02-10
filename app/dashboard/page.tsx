@@ -46,9 +46,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <PLExportButton />
-        </div>
+
 
         {/* Alerts Widget */}
         <div className="mb-6">
@@ -65,6 +63,9 @@ export default async function DashboardPage() {
           initialPLByTicker={plByTicker}
           initialWinRateData={winRateData}
         />
+        <div className="mb-6">
+          <PLExportButton />
+        </div>
       </div>
     </div>
   )

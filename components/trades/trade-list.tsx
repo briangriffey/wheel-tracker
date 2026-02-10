@@ -8,15 +8,18 @@ import { Prisma } from '@/lib/generated/prisma'
 import { deleteTrade, updateTradeStatus } from '@/lib/actions/trades'
 import { getStatusColor } from '@/lib/design/colors'
 import { Button } from '@/components/design-system/button/button'
+import type { StockPriceResult } from '@/lib/services/market-data'
+import { TradeActionsDialog } from './trade-actions-dialog'
 
 interface TradeListProps {
   initialTrades: Trade[]
+  prices: Map<string, StockPriceResult>
 }
 
 type SortField = 'expirationDate' | 'ticker' | 'premium'
 type SortDirection = 'asc' | 'desc'
 
-export function TradeList({ initialTrades }: TradeListProps) {
+export function TradeList({ initialTrades, prices }: TradeListProps) {
   const router = useRouter()
   const [trades, setTrades] = useState<Trade[]>(initialTrades)
 
@@ -32,6 +35,9 @@ export function TradeList({ initialTrades }: TradeListProps) {
   const [sortField, setSortField] = useState<SortField>('expirationDate')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
+  const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
   // Filter and sort trades
   const filteredTrades = useMemo(() => {
@@ -174,6 +180,42 @@ export function TradeList({ initialTrades }: TradeListProps) {
     return type === 'PUT' ? 'bg-orange-100 text-orange-800' : 'bg-indigo-100 text-indigo-800'
   }
 
+  // Check if price is stale (older than 1 day)
+  const isPriceStale = (date: Date) => {
+    const dayInMs = 24 * 60 * 60 * 1000
+    return Date.now() - new Date(date).getTime() > dayInMs
+  }
+
+  // Handle refresh prices
+  const handleRefreshPrices = async () => {
+    setIsRefreshing(true)
+    try {
+      const response = await fetch('/api/market-data/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success(`Refreshed ${data.summary.successful} prices`)
+        router.refresh()
+      } else {
+        toast.error('Failed to refresh prices')
+      }
+    } catch {
+      toast.error('Error refreshing prices')
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = () => setOpenDropdown(null)
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [])
+
   return (
     <div className="w-full">
       {/* Filters */}
@@ -260,24 +302,52 @@ export function TradeList({ initialTrades }: TradeListProps) {
           </div>
         </div>
 
-        {/* Clear Filters Button */}
-        {(tickerFilter || statusFilter !== 'ALL' || typeFilter !== 'ALL' || dateRangeStart || dateRangeEnd) && (
+        {/* Actions Row */}
+        <div className="flex items-center gap-2 mt-4">
+          {/* Clear Filters Button */}
+          {(tickerFilter || statusFilter !== 'ALL' || typeFilter !== 'ALL' || dateRangeStart || dateRangeEnd) && (
+            <Button
+              onClick={() => {
+                setTickerFilter('')
+                setStatusFilter('ALL')
+                setTypeFilter('ALL')
+                setDateRangeStart('')
+                setDateRangeEnd('')
+              }}
+              variant="ghost"
+              size="sm"
+              aria-label="Clear all filters and show all trades"
+            >
+              Clear all filters
+            </Button>
+          )}
+
+          {/* Refresh Prices Button */}
           <Button
-            onClick={() => {
-              setTickerFilter('')
-              setStatusFilter('ALL')
-              setTypeFilter('ALL')
-              setDateRangeStart('')
-              setDateRangeEnd('')
-            }}
-            variant="ghost"
+            onClick={handleRefreshPrices}
+            disabled={isRefreshing}
+            variant="outline"
             size="sm"
-            className="mt-4"
-            aria-label="Clear all filters and show all trades"
+            aria-label="Refresh stock prices"
           >
-            Clear all filters
+            {isRefreshing ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh Prices
+              </>
+            )}
           </Button>
-        )}
+        </div>
       </div>
 
       {/* Results Count */}
@@ -336,6 +406,9 @@ export function TradeList({ initialTrades }: TradeListProps) {
                   </div>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Current Price
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Type
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -380,98 +453,140 @@ export function TradeList({ initialTrades }: TradeListProps) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTrades.map((trade) => (
-                <tr key={trade.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {trade.ticker}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
-                      {trade.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatDate(trade.expirationDate)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
-                      {trade.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      {/* View Details Button */}
-                      <Button
-                        onClick={() => router.push(`/trades/${trade.id}`)}
-                        disabled={loadingAction === trade.id}
-                        variant="ghost"
-                        size="sm"
-                        aria-label={`View ${trade.ticker} trade details`}
-                      >
-                        View
-                      </Button>
-
-                      {/* Close Early - Only for OPEN trades */}
-                      {trade.status === 'OPEN' && (
-                        <Button
-                          onClick={() => router.push(`/trades/${trade.id}`)}
-                          disabled={loadingAction === trade.id}
-                          variant="outline"
-                          size="sm"
-                          aria-label={`Close ${trade.ticker} trade early`}
-                        >
-                          Close
-                        </Button>
+              {filteredTrades.map((trade) => {
+                const currentPrice = prices.get(trade.ticker)
+                return (
+                  <tr
+                    key={trade.id}
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setSelectedTrade(trade)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {trade.ticker}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {currentPrice ? (
+                        <div>
+                          <div className={isPriceStale(currentPrice.date) ? 'text-gray-500' : ''}>
+                            ${currentPrice.price.toFixed(2)}
+                          </div>
+                          {isPriceStale(currentPrice.date) && (
+                            <div className="text-xs text-gray-400">stale</div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
                       )}
-
-                      {/* Mark Expired - Only for OPEN trades */}
-                      {trade.status === 'OPEN' && (
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
+                        {trade.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatDate(trade.expirationDate)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
+                        {trade.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+                      <div className="relative inline-block text-left">
                         <Button
-                          onClick={() => handleStatusUpdate(trade.id, 'EXPIRED')}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setOpenDropdown(openDropdown === trade.id ? null : trade.id)
+                          }}
                           disabled={loadingAction === trade.id}
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          aria-label={`Mark ${trade.ticker} trade as expired`}
+                          aria-label={`Actions for ${trade.ticker} trade`}
                         >
-                          Expired
+                          Actions
+                          <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
                         </Button>
-                      )}
 
-                      {/* Mark Assigned - Only for OPEN trades */}
-                      {trade.status === 'OPEN' && (
-                        <Button
-                          onClick={() => handleStatusUpdate(trade.id, 'ASSIGNED')}
-                          disabled={loadingAction === trade.id}
-                          variant="outline"
-                          size="sm"
-                          aria-label={`Mark ${trade.ticker} trade as assigned`}
-                        >
-                          Assigned
-                        </Button>
-                      )}
+                        {openDropdown === trade.id && (
+                          <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                            <div className="py-1" role="menu">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  router.push(`/trades/${trade.id}`)
+                                  setOpenDropdown(null)
+                                }}
+                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                role="menuitem"
+                              >
+                                View Details
+                              </button>
 
-                      {/* Delete - Only for OPEN trades */}
-                      {trade.status === 'OPEN' && (
-                        <Button
-                          onClick={() => handleDelete(trade.id)}
-                          disabled={loadingAction === trade.id}
-                          variant="destructive"
-                          size="sm"
-                          aria-label={`Delete ${trade.ticker} trade`}
-                        >
-                          Delete
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                              {trade.status === 'OPEN' && (
+                                <>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      router.push(`/trades/${trade.id}`)
+                                      setOpenDropdown(null)
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    role="menuitem"
+                                  >
+                                    Close Early
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleStatusUpdate(trade.id, 'EXPIRED')
+                                      setOpenDropdown(null)
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    role="menuitem"
+                                  >
+                                    Mark as Expired
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleStatusUpdate(trade.id, 'ASSIGNED')
+                                      setOpenDropdown(null)
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    role="menuitem"
+                                  >
+                                    Mark as Assigned
+                                  </button>
+                                  <div className="border-t border-gray-100"></div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleDelete(trade.id)
+                                      setOpenDropdown(null)
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                                    role="menuitem"
+                                  >
+                                    Delete
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -480,110 +595,79 @@ export function TradeList({ initialTrades }: TradeListProps) {
       {/* Mobile Card View */}
       {filteredTrades.length > 0 && (
         <div className="md:hidden space-y-4">
-          {filteredTrades.map((trade) => (
-            <div key={trade.id} className="bg-white rounded-lg shadow p-4">
-              {/* Header */}
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
-                  <div className="flex gap-2 mt-1">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
-                      {trade.type}
-                    </span>
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
-                      {trade.status}
-                    </span>
+          {filteredTrades.map((trade) => {
+            const currentPrice = prices.get(trade.ticker)
+            return (
+              <div
+                key={trade.id}
+                className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setSelectedTrade(trade)}
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
+                    {currentPrice && (
+                      <div className={`text-sm mt-1 ${isPriceStale(currentPrice.date) ? 'text-gray-500' : 'text-gray-700'}`}>
+                        ${currentPrice.price.toFixed(2)}
+                        {isPriceStale(currentPrice.date) && <span className="text-xs"> (stale)</span>}
+                      </div>
+                    )}
+                    <div className="flex gap-2 mt-1">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
+                        {trade.type}
+                      </span>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
+                        {trade.status}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Details */}
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Strike Price:</span>
-                  <span className="font-medium text-gray-900">
-                    {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
-                  </span>
+                {/* Details */}
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Strike Price:</span>
+                    <span className="font-medium text-gray-900">
+                      {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Premium:</span>
+                    <span className="font-medium text-gray-900">
+                      {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Expiration:</span>
+                    <span className="font-medium text-gray-900">
+                      {formatDate(trade.expirationDate)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Contracts:</span>
+                    <span className="font-medium text-gray-900">{trade.contracts}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Premium:</span>
-                  <span className="font-medium text-gray-900">
-                    {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Expiration:</span>
-                  <span className="font-medium text-gray-900">
-                    {formatDate(trade.expirationDate)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Contracts:</span>
-                  <span className="font-medium text-gray-900">{trade.contracts}</span>
+
+                {/* Tap to view hint */}
+                <div className="mt-4 text-center text-xs text-gray-500">
+                  Tap to view actions
                 </div>
               </div>
-
-              {/* Actions */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Button
-                  onClick={() => router.push(`/trades/${trade.id}`)}
-                  disabled={loadingAction === trade.id}
-                  variant="ghost"
-                  size="sm"
-                  className="flex-1"
-                  aria-label={`View ${trade.ticker} trade details`}
-                >
-                  View Details
-                </Button>
-
-                {trade.status === 'OPEN' && (
-                  <>
-                    <Button
-                      onClick={() => router.push(`/trades/${trade.id}`)}
-                      disabled={loadingAction === trade.id}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      aria-label={`Close ${trade.ticker} trade early`}
-                    >
-                      Close
-                    </Button>
-                    <Button
-                      onClick={() => handleStatusUpdate(trade.id, 'EXPIRED')}
-                      disabled={loadingAction === trade.id}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      aria-label={`Mark ${trade.ticker} trade as expired`}
-                    >
-                      Expired
-                    </Button>
-                    <Button
-                      onClick={() => handleStatusUpdate(trade.id, 'ASSIGNED')}
-                      disabled={loadingAction === trade.id}
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      aria-label={`Mark ${trade.ticker} trade as assigned`}
-                    >
-                      Assigned
-                    </Button>
-                    <Button
-                      onClick={() => handleDelete(trade.id)}
-                      disabled={loadingAction === trade.id}
-                      variant="destructive"
-                      size="sm"
-                      className="flex-1"
-                      aria-label={`Delete ${trade.ticker} trade`}
-                    >
-                      Delete
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
+      )}
+
+      {/* Trade Actions Dialog */}
+      {selectedTrade && (
+        <TradeActionsDialog
+          trade={selectedTrade}
+          isOpen={!!selectedTrade}
+          onClose={() => setSelectedTrade(null)}
+          currentPrice={prices.get(selectedTrade.ticker)}
+        />
       )}
     </div>
   )

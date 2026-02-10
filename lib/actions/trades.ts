@@ -13,6 +13,7 @@ import {
   type CloseOptionInput,
 } from '@/lib/validations/trade'
 import { Prisma } from '@/lib/generated/prisma'
+import { auth } from '@/lib/auth'
 
 /**
  * Server action result type
@@ -22,17 +23,11 @@ type ActionResult<T = unknown> =
   | { success: false; error: string; details?: unknown }
 
 /**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
+ * Get the current user ID from NextAuth session
  */
-async function getCurrentUserId(): Promise<string> {
-  // This is a placeholder - in production, get this from NextAuth session
-  // For now, return a test user ID
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -66,6 +61,9 @@ export async function createTrade(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized. Please log in.' }
+    }
 
     // Calculate shares (contracts * 100)
     const shares = validated.contracts * 100
@@ -126,6 +124,9 @@ export async function updateTrade(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized. Please log in.' }
+    }
 
     // Verify trade exists and belongs to user
     const existingTrade = await prisma.trade.findUnique({
@@ -227,6 +228,9 @@ export async function updateTradeStatus(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized. Please log in.' }
+    }
 
     // Verify trade exists and belongs to user
     const existingTrade = await prisma.trade.findUnique({
@@ -321,6 +325,9 @@ export async function closeOption(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized. Please log in.' }
+    }
 
     // Verify trade exists and get details (including position and wheel relationship)
     const trade = await prisma.trade.findUnique({
@@ -450,6 +457,9 @@ export async function deleteTrade(id: string): Promise<ActionResult<{ id: string
   try {
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized. Please log in.' }
+    }
 
     // Verify trade exists and belongs to user
     const existingTrade = await prisma.trade.findUnique({

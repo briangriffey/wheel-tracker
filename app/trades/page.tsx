@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getTrades } from '@/lib/queries/trades'
+import { getLatestPrices } from '@/lib/services/market-data'
 import { TradeList, NewTradeButton } from '@/components/trades'
 
 export default async function TradesPage() {
@@ -12,6 +13,12 @@ export default async function TradesPage() {
 
   // Fetch all trades for the current user
   const trades = await getTrades()
+
+  // Get unique tickers from trades
+  const uniqueTickers = [...new Set(trades.map((trade) => trade.ticker))]
+
+  // Fetch latest prices for all tickers
+  const prices = await getLatestPrices(uniqueTickers)
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -30,7 +37,7 @@ export default async function TradesPage() {
         </div>
 
         {/* Trade List Component */}
-        <TradeList initialTrades={trades} />
+        <TradeList initialTrades={trades} prices={prices} />
       </div>
     </div>
   )

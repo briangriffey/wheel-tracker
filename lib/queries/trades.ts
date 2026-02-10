@@ -1,17 +1,13 @@
 import { prisma } from '@/lib/db'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
+import { auth } from '@/lib/auth'
 
 /**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
+ * Get the current user ID from NextAuth session
  */
-async function getCurrentUserId(): Promise<string> {
-  // This is a placeholder - in production, get this from NextAuth session
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -45,7 +41,10 @@ export async function getTrades(options: GetTradesOptions = {}): Promise<Trade[]
     } = options
 
     // Build where clause
-    const where: Record<string, unknown> = { userId }
+    const where: Record<string, unknown> = {}
+    if (userId) {
+      where.userId = userId
+    }
 
     if (status) {
       if (Array.isArray(status)) {
@@ -95,11 +94,13 @@ export async function getTrade(id: string) {
   try {
     const userId = await getCurrentUserId()
 
+    const where: Record<string, unknown> = { id }
+    if (userId) {
+      where.userId = userId
+    }
+
     const trade = await prisma.trade.findFirst({
-      where: {
-        id,
-        userId,
-      },
+      where,
       include: {
         position: {
           select: {
@@ -143,11 +144,13 @@ export async function getOpenTrades(): Promise<Trade[]> {
   try {
     const userId = await getCurrentUserId()
 
+    const where: Record<string, unknown> = { status: 'OPEN' }
+    if (userId) {
+      where.userId = userId
+    }
+
     const trades = await prisma.trade.findMany({
-      where: {
-        userId,
-        status: 'OPEN',
-      },
+      where,
       orderBy: {
         expirationDate: 'asc',
       },
@@ -199,21 +202,26 @@ export async function getTradeStats() {
   try {
     const userId = await getCurrentUserId()
 
+    const where: Record<string, unknown> = {}
+    if (userId) {
+      where.userId = userId
+    }
+
     const [totalTrades, openTrades, closedTrades, expiredTrades, assignedTrades, totalPremium] =
       await Promise.all([
         // Total trades
-        prisma.trade.count({ where: { userId } }),
+        prisma.trade.count({ where }),
         // Open trades
-        prisma.trade.count({ where: { userId, status: 'OPEN' } }),
+        prisma.trade.count({ where: { ...where, status: 'OPEN' } }),
         // Closed trades
-        prisma.trade.count({ where: { userId, status: 'CLOSED' } }),
+        prisma.trade.count({ where: { ...where, status: 'CLOSED' } }),
         // Expired trades
-        prisma.trade.count({ where: { userId, status: 'EXPIRED' } }),
+        prisma.trade.count({ where: { ...where, status: 'EXPIRED' } }),
         // Assigned trades
-        prisma.trade.count({ where: { userId, status: 'ASSIGNED' } }),
+        prisma.trade.count({ where: { ...where, status: 'ASSIGNED' } }),
         // Total premium collected
         prisma.trade.aggregate({
-          where: { userId },
+          where,
           _sum: { premium: true },
         }),
       ])

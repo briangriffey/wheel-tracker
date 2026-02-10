@@ -4,7 +4,6 @@ import {
   calculateCallMoneyness,
   calculateOptionMoneyness,
   getMoneynessColor,
-  type MoneynessStatus,
 } from './option-moneyness'
 
 describe('calculatePutMoneyness', () => {

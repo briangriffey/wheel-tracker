@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { assignPut } from '@/lib/actions/positions'
 import { fetchCurrentStockPrice } from '@/lib/actions/stock-price'
-import { formatCurrency, formatPercentage } from '@/lib/utils/position-calculations'
+import { formatCurrency, formatPercentage } from '@/lib/utils/format'
 import toast from 'react-hot-toast'
 
 export interface AssignPutDialogProps {

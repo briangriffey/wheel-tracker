@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatCurrency } from '@/lib/utils/position-calculations'
+import { formatCurrency } from '@/lib/utils/format'
 import { Card, CardContent } from '@/components/design-system'
 
 interface StatCardProps {

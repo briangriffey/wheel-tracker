@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AssignPutDialog } from '@/components/trades/assign-put-dialog'
 import { CloseOptionDialog } from '@/components/trades/close-option-dialog'
-import { formatCurrency } from '@/lib/utils/position-calculations'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface Trade {
   id: string

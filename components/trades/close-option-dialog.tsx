@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { closeOption } from '@/lib/actions/trades'
-import { formatCurrency } from '@/lib/utils/position-calculations'
+import { formatCurrency } from '@/lib/utils/format'
 import toast from 'react-hot-toast'
 
 export interface CloseOptionDialogProps {

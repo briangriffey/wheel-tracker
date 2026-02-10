@@ -6,7 +6,7 @@ import { BenchmarkComparisonChart, type ComparisonDataPoint } from './benchmark-
 import { getComparison } from '@/lib/actions/benchmarks'
 import type { BenchmarkComparison } from '@/lib/calculations/benchmark'
 import type { TimeRange } from '@/lib/queries/dashboard'
-import { formatCurrency } from '@/lib/utils/position-calculations'
+import { formatCurrency } from '@/lib/utils/format'
 import { getPnLColorClass } from '@/lib/design/colors'
 import { Card, CardHeader, CardTitle, CardContent, Button, Alert, AlertDescription } from '@/components/design-system'
 

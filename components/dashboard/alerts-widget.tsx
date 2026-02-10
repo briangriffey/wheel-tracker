@@ -12,7 +12,7 @@ import type {
   ITMNotification,
   PositionWithoutCallNotification,
 } from '@/lib/actions/notifications'
-import { formatCurrency } from '@/lib/utils/position-calculations'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface AlertsWidgetProps {
   upcomingExpirations: ExpirationNotification[]

@@ -1,15 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import {
-  calculateUnrealizedPnL,
-  calculateUnrealizedPnLPercentage,
-  calculateCurrentPrice,
-  calculateDaysHeld,
-  calculateTotalCoveredCallPremium,
-  formatCurrency,
-  formatPercentage,
-} from '@/lib/utils/position-calculations'
+import { formatCurrency, formatPercentage } from '@/lib/utils/format'
 import { getPnLColorClass, getPnLBackgroundClass, getStatusColor } from '@/lib/design/colors'
 import { refreshSinglePositionPrice, type PriceData } from '@/lib/actions/prices'
 import { AssignCallDialog } from './assign-call-dialog'
@@ -163,21 +155,36 @@ export function PositionCard({
   }
 
   // Calculate derived values
-  const currentPrice = position.currentValue
-    ? calculateCurrentPrice(position.currentValue, position.shares)
+  const currentPrice = position.currentValue && position.shares > 0
+    ? toDecimalNumber(position.currentValue) / position.shares
     : null
-  const unrealizedPnL = position.currentValue
-    ? calculateUnrealizedPnL(position.currentValue, position.totalCost)
-    : null
-  const unrealizedPnLPercent = position.currentValue
-    ? calculateUnrealizedPnLPercentage(position.currentValue, position.totalCost)
-    : null
-  const daysHeld = calculateDaysHeld(position.acquiredDate, position.closedDate)
-  const totalCoveredCallPremium = position.coveredCalls
-    ? calculateTotalCoveredCallPremium(
-      position.coveredCalls.map((call) => ({ premium: call.premium }))
-    )
-    : 0
+
+  // Use pre-calculated values if available (from PositionWithCalculations), otherwise calculate inline
+  const unrealizedPnL = 'unrealizedPL' in position && position.unrealizedPL != null
+    ? position.unrealizedPL
+    : position.currentValue
+      ? toDecimalNumber(position.currentValue) - toDecimalNumber(position.totalCost)
+      : null
+
+  const unrealizedPnLPercent = 'unrealizedPLPercent' in position && position.unrealizedPLPercent != null
+    ? position.unrealizedPLPercent
+    : position.currentValue && toDecimalNumber(position.totalCost) > 0
+      ? ((toDecimalNumber(position.currentValue) - toDecimalNumber(position.totalCost)) / toDecimalNumber(position.totalCost)) * 100
+      : null
+
+  const daysHeld = 'daysHeld' in position && position.daysHeld != null
+    ? position.daysHeld
+    : (() => {
+        const endDate = position.closedDate ?? new Date()
+        const diffTime = Math.abs(endDate.getTime() - position.acquiredDate.getTime())
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      })()
+
+  const totalCoveredCallPremium = 'coveredCallsPremium' in position && position.coveredCallsPremium != null
+    ? position.coveredCallsPremium
+    : position.coveredCalls
+      ? position.coveredCalls.reduce((sum, call) => sum + toDecimalNumber(call.premium), 0)
+      : 0
 
   // Determine P&L color classes
   const pnlColorClass = unrealizedPnL !== null ? getPnLColorClass(unrealizedPnL) : 'text-gray-600'

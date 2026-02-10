@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { assignCall } from '@/lib/actions/positions'
-import { formatCurrency, formatPercentage } from '@/lib/utils/position-calculations'
+import { formatCurrency, formatPercentage } from '@/lib/utils/format'
 import { calculateAnnualizedReturn } from '@/lib/calculations/wheel'
 import toast from 'react-hot-toast'
 

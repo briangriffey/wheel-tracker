@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatCurrency } from '@/lib/utils/position-calculations'
+import { formatCurrency } from '@/lib/utils/format'
 import { getPnLColorClass } from '@/lib/design/colors'
 import { Card, CardContent } from '@/components/design-system'
 

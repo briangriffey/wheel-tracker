@@ -3,7 +3,6 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { PositionsList } from '../positions-list'
 import type { PositionWithCalculations } from '@/lib/queries/positions'
-import { Prisma } from '@/lib/generated/prisma'
 
 // Mock dependencies
 vi.mock('react-hot-toast', () => ({

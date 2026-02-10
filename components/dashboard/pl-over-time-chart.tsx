@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import type { PLOverTimeDataPoint } from '@/lib/queries/dashboard'
-import { formatCurrency } from '@/lib/utils/position-calculations'
+import { formatCurrency } from '@/lib/utils/format'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/design-system'
 
 interface PLOverTimeChartProps {

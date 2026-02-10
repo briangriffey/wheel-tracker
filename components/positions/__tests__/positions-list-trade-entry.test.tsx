@@ -156,8 +156,8 @@ describe('PositionsList Trade Entry Feature', () => {
 
     const newTradeButton = screen.getByRole('button', { name: /new trade/i })
 
-    // Check if button has the blue background class (primary button)
-    expect(newTradeButton.className).toContain('bg-blue-600')
+    // Check if button has the primary background class (design system primary button)
+    expect(newTradeButton.className).toContain('bg-primary-500')
   })
 
   it('should display an icon in the "New Trade" button', () => {

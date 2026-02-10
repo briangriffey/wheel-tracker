@@ -1,6 +1,7 @@
 'use client'
 
 import { signOut } from 'next-auth/react'
+import { Button } from '@/components/design-system/button/button'
 
 interface UserMenuProps {
   user: {
@@ -17,13 +18,14 @@ export function UserMenu({ user }: UserMenuProps) {
       <span className="text-sm text-gray-700" aria-label={`Logged in as ${userName}`}>
         {userName}
       </span>
-      <button
+      <Button
         onClick={() => signOut({ callbackUrl: '/' })}
-        className="text-sm px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        variant="destructive"
+        size="sm"
         aria-label={`Sign out ${userName}`}
       >
         Sign Out
-      </button>
+      </Button>
     </div>
   )
 }

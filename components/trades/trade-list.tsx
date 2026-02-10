@@ -7,6 +7,7 @@ import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
 import { deleteTrade, updateTradeStatus } from '@/lib/actions/trades'
 import { getStatusColor } from '@/lib/design/colors'
+import { Button } from '@/components/design-system/button/button'
 
 interface TradeListProps {
   initialTrades: Trade[]
@@ -18,6 +19,11 @@ type SortDirection = 'asc' | 'desc'
 export function TradeList({ initialTrades }: TradeListProps) {
   const router = useRouter()
   const [trades, setTrades] = useState<Trade[]>(initialTrades)
+
+  // Sync state with props
+  React.useEffect(() => {
+    setTrades(initialTrades)
+  }, [initialTrades])
   const [tickerFilter, setTickerFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<TradeStatus | 'ALL'>('ALL')
   const [typeFilter, setTypeFilter] = useState<TradeType | 'ALL'>('ALL')
@@ -256,7 +262,7 @@ export function TradeList({ initialTrades }: TradeListProps) {
 
         {/* Clear Filters Button */}
         {(tickerFilter || statusFilter !== 'ALL' || typeFilter !== 'ALL' || dateRangeStart || dateRangeEnd) && (
-          <button
+          <Button
             onClick={() => {
               setTickerFilter('')
               setStatusFilter('ALL')
@@ -264,11 +270,13 @@ export function TradeList({ initialTrades }: TradeListProps) {
               setDateRangeStart('')
               setDateRangeEnd('')
             }}
-            className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+            variant="ghost"
+            size="sm"
+            className="mt-4"
             aria-label="Clear all filters and show all trades"
           >
             Clear all filters
-          </button>
+          </Button>
         )}
       </div>
 
@@ -399,61 +407,66 @@ export function TradeList({ initialTrades }: TradeListProps) {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end gap-2">
                       {/* View Details Button */}
-                      <button
+                      <Button
                         onClick={() => router.push(`/trades/${trade.id}`)}
                         disabled={loadingAction === trade.id}
-                        className="text-blue-600 hover:text-blue-900 disabled:opacity-50"
+                        variant="ghost"
+                        size="sm"
                         aria-label={`View ${trade.ticker} trade details`}
                       >
                         View
-                      </button>
+                      </Button>
 
                       {/* Close Early - Only for OPEN trades */}
                       {trade.status === 'OPEN' && (
-                        <button
+                        <Button
                           onClick={() => router.push(`/trades/${trade.id}`)}
                           disabled={loadingAction === trade.id}
-                          className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                          variant="outline"
+                          size="sm"
                           aria-label={`Close ${trade.ticker} trade early`}
                         >
                           Close
-                        </button>
+                        </Button>
                       )}
 
                       {/* Mark Expired - Only for OPEN trades */}
                       {trade.status === 'OPEN' && (
-                        <button
+                        <Button
                           onClick={() => handleStatusUpdate(trade.id, 'EXPIRED')}
                           disabled={loadingAction === trade.id}
-                          className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
+                          variant="outline"
+                          size="sm"
                           aria-label={`Mark ${trade.ticker} trade as expired`}
                         >
                           Expired
-                        </button>
+                        </Button>
                       )}
 
                       {/* Mark Assigned - Only for OPEN trades */}
                       {trade.status === 'OPEN' && (
-                        <button
+                        <Button
                           onClick={() => handleStatusUpdate(trade.id, 'ASSIGNED')}
                           disabled={loadingAction === trade.id}
-                          className="text-purple-600 hover:text-purple-900 disabled:opacity-50"
+                          variant="outline"
+                          size="sm"
                           aria-label={`Mark ${trade.ticker} trade as assigned`}
                         >
                           Assigned
-                        </button>
+                        </Button>
                       )}
 
                       {/* Delete - Only for OPEN trades */}
                       {trade.status === 'OPEN' && (
-                        <button
+                        <Button
                           onClick={() => handleDelete(trade.id)}
                           disabled={loadingAction === trade.id}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          variant="destructive"
+                          size="sm"
                           aria-label={`Delete ${trade.ticker} trade`}
                         >
                           Delete
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </td>
@@ -512,49 +525,59 @@ export function TradeList({ initialTrades }: TradeListProps) {
 
               {/* Actions */}
               <div className="mt-4 flex flex-wrap gap-2">
-                <button
+                <Button
                   onClick={() => router.push(`/trades/${trade.id}`)}
                   disabled={loadingAction === trade.id}
-                  className="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 disabled:opacity-50"
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1"
                   aria-label={`View ${trade.ticker} trade details`}
                 >
                   View Details
-                </button>
+                </Button>
 
                 {trade.status === 'OPEN' && (
                   <>
-                    <button
+                    <Button
                       onClick={() => router.push(`/trades/${trade.id}`)}
                       disabled={loadingAction === trade.id}
-                      className="flex-1 px-3 py-2 text-sm font-medium text-green-600 bg-green-50 rounded hover:bg-green-100 disabled:opacity-50"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
                       aria-label={`Close ${trade.ticker} trade early`}
                     >
                       Close
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleStatusUpdate(trade.id, 'EXPIRED')}
                       disabled={loadingAction === trade.id}
-                      className="flex-1 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded hover:bg-indigo-100 disabled:opacity-50"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
                       aria-label={`Mark ${trade.ticker} trade as expired`}
                     >
                       Expired
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleStatusUpdate(trade.id, 'ASSIGNED')}
                       disabled={loadingAction === trade.id}
-                      className="flex-1 px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 rounded hover:bg-purple-100 disabled:opacity-50"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
                       aria-label={`Mark ${trade.ticker} trade as assigned`}
                     >
                       Assigned
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleDelete(trade.id)}
                       disabled={loadingAction === trade.id}
-                      className="flex-1 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 disabled:opacity-50"
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1"
                       aria-label={`Delete ${trade.ticker} trade`}
                     >
                       Delete
-                    </button>
+                    </Button>
                   </>
                 )}
               </div>

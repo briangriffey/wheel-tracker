@@ -112,7 +112,7 @@ export const getDashboardMetrics = cache(async (
     const dateFilter = dateThreshold ? { gte: dateThreshold } : undefined
 
     // Fetch all data in parallel with optimized queries
-    const [positionStats, tradeStats, openPositions, openTrades, closedPositions, assignedTrades, activePositionsCount] = await Promise.all([
+    const [positionStats, trades, openPositions, openTrades, closedPositions, activePositionsCount] = await Promise.all([
       // Position aggregates
       prisma.position.aggregate({
         where: {
@@ -125,17 +125,16 @@ export const getDashboardMetrics = cache(async (
           totalCost: true,
         },
       }),
-      // Trade statistics
-      prisma.trade.aggregate({
+      // Trades for premium calculation and assignment rate
+      prisma.trade.findMany({
         where: {
           userId,
           ...(dateFilter && { openDate: dateFilter }),
         },
-        _sum: {
+        select: {
           premium: true,
-        },
-        _count: {
-          id: true,
+          contracts: true,
+          status: true,
         },
       }),
       // Open positions for unrealized P&L (select only needed fields)
@@ -174,14 +173,6 @@ export const getDashboardMetrics = cache(async (
           realizedGainLoss: true,
         },
       }),
-      // Assigned trades count
-      prisma.trade.count({
-        where: {
-          userId,
-          status: 'ASSIGNED',
-          ...(dateFilter && { closeDate: dateFilter }),
-        },
-      }),
       // Active positions count (no date filter for current state)
       prisma.position.count({
         where: {
@@ -213,8 +204,10 @@ export const getDashboardMetrics = cache(async (
     // Calculate total P&L
     const totalPL = realizedPL + unrealizedPL
 
-    // Calculate total premium collected
-    const totalPremiumCollected = tradeStats._sum.premium?.toNumber() || 0
+    // Calculate total premium collected: contracts × premium × 100 for each trade
+    const totalPremiumCollected = trades.reduce((sum, trade) => {
+      return sum + (trade.premium.toNumber() * trade.contracts * 100)
+    }, 0)
 
     // Calculate win rate from already-fetched data
     const winners = closedPositions.filter(
@@ -225,9 +218,10 @@ export const getDashboardMetrics = cache(async (
     const winRate = totalClosedTrades > 0 ? (winners / totalClosedTrades) * 100 : 0
 
     // Calculate assignment rate from already-fetched data
-    const totalTradesForAssignment = tradeStats._count.id
+    const assignedTradesCount = trades.filter(t => t.status === 'ASSIGNED').length
+    const totalTradesForAssignment = trades.length
     const assignmentRate =
-      totalTradesForAssignment > 0 ? (assignedTrades / totalTradesForAssignment) * 100 : 0
+      totalTradesForAssignment > 0 ? (assignedTradesCount / totalTradesForAssignment) * 100 : 0
 
     return {
       totalPL,

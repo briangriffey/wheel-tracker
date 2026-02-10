@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/modal'
 import { TradeEntryForm } from '@/components/forms/trade-entry-form'
 import { getPnLColorClass } from '@/lib/design/colors'
+import { Button } from '@/components/design-system/button/button'
 
 interface PositionsListProps {
   initialPositions: PositionWithCalculations[]
@@ -21,7 +22,12 @@ type PLFilter = 'ALL' | 'PROFIT' | 'LOSS' | 'BREAKEVEN'
 
 export function PositionsList({ initialPositions }: PositionsListProps) {
   const router = useRouter()
-  const [positions] = useState<PositionWithCalculations[]>(initialPositions)
+  const [positions, setPositions] = useState<PositionWithCalculations[]>(initialPositions)
+
+  // Sync state with props
+  useEffect(() => {
+    setPositions(initialPositions)
+  }, [initialPositions])
   const [tickerFilter, setTickerFilter] = useState('')
   const [plFilter, setPLFilter] = useState<PLFilter>('ALL')
   const [sortField, setSortField] = useState<SortField>('ticker')
@@ -270,52 +276,59 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               <span>Auto-refresh (5m)</span>
             </label>
             {/* New Trade button */}
-            <button
+            <Button
               onClick={() => setIsTradeModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              variant="primary"
+              size="sm"
+              leftIcon={
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              }
               aria-label="Create new trade"
             >
-              <svg
-                className="h-4 w-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
               New Trade
-            </button>
+            </Button>
             {/* Manual refresh button */}
-            <button
+            <Button
               onClick={handleRefreshAll}
               disabled={isRefreshing}
-              className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              loading={isRefreshing}
+              variant="outline"
+              size="sm"
+              leftIcon={
+                !isRefreshing ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                ) : undefined
+              }
               aria-label="Refresh all prices"
             >
-              <svg
-                className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
               {isRefreshing ? 'Refreshing...' : 'Refresh Prices'}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -396,15 +409,17 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
 
         {/* Clear Filters Button */}
         {(tickerFilter || plFilter !== 'ALL') && (
-          <button
+          <Button
             onClick={() => {
               setTickerFilter('')
               setPLFilter('ALL')
             }}
-            className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
+            variant="ghost"
+            size="sm"
+            className="mt-4"
           >
             Clear all filters
-          </button>
+          </Button>
         )}
       </div>
 

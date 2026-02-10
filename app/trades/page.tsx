@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getTrades } from '@/lib/queries/trades'
 import { getLatestPrices } from '@/lib/services/market-data'
-import { TradeList, NewTradeButton } from '@/components/trades'
+import { TradeList, NewTradeButton, RefreshPricesButton } from '@/components/trades'
 
 export default async function TradesPage() {
   const session = await auth()
@@ -31,7 +31,8 @@ export default async function TradesPage() {
               View and manage your options trades
             </p>
           </div>
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex gap-3">
+            <RefreshPricesButton />
             <NewTradeButton />
           </div>
         </div>

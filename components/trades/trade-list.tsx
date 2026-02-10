@@ -36,8 +36,6 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
   // Filter and sort trades
   const filteredTrades = useMemo(() => {
@@ -186,35 +184,28 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
     return Date.now() - new Date(date).getTime() > dayInMs
   }
 
-  // Handle refresh prices
-  const handleRefreshPrices = async () => {
-    setIsRefreshing(true)
-    try {
-      const response = await fetch('/api/market-data/refresh', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      })
-      const data = await response.json()
+  // Calculate if a trade is in the money or out of the money
+  const getMoneyStatus = (trade: Trade, currentPrice: number | undefined) => {
+    if (!currentPrice) return null
 
-      if (data.success) {
-        toast.success(`Refreshed ${data.summary.successful} prices`)
-        router.refresh()
-      } else {
-        toast.error('Failed to refresh prices')
-      }
-    } catch {
-      toast.error('Error refreshing prices')
-    } finally {
-      setIsRefreshing(false)
+    const strikePrice = toDecimalNumber(trade.strikePrice as unknown as Prisma.Decimal | string | number)
+
+    if (trade.type === 'PUT') {
+      // For selling a put: OTM when strike > current, ITM when strike < current
+      return strikePrice > currentPrice ? 'otm' : 'itm'
+    } else {
+      // For selling a call: OTM when strike < current, ITM when strike > current
+      return strikePrice < currentPrice ? 'otm' : 'itm'
     }
   }
 
-  // Close dropdown when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = () => setOpenDropdown(null)
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
-  }, [])
+  // Get row background color based on money status
+  const getRowBgColor = (trade: Trade, currentPrice: number | undefined) => {
+    const status = getMoneyStatus(trade, currentPrice)
+    if (status === 'otm') return 'bg-green-50'
+    if (status === 'itm') return 'bg-red-50'
+    return ''
+  }
 
   return (
     <div className="w-full">
@@ -303,9 +294,8 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
         </div>
 
         {/* Actions Row */}
-        <div className="flex items-center gap-2 mt-4">
-          {/* Clear Filters Button */}
-          {(tickerFilter || statusFilter !== 'ALL' || typeFilter !== 'ALL' || dateRangeStart || dateRangeEnd) && (
+        {(tickerFilter || statusFilter !== 'ALL' || typeFilter !== 'ALL' || dateRangeStart || dateRangeEnd) && (
+          <div className="mt-4">
             <Button
               onClick={() => {
                 setTickerFilter('')
@@ -320,34 +310,8 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
             >
               Clear all filters
             </Button>
-          )}
-
-          {/* Refresh Prices Button */}
-          <Button
-            onClick={handleRefreshPrices}
-            disabled={isRefreshing}
-            variant="outline"
-            size="sm"
-            aria-label="Refresh stock prices"
-          >
-            {isRefreshing ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-                Refreshing...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Refresh Prices
-              </>
-            )}
-          </Button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Results Count */}
@@ -455,10 +419,11 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredTrades.map((trade) => {
                 const currentPrice = prices.get(trade.ticker)
+                const rowBgColor = getRowBgColor(trade, currentPrice?.price)
                 return (
                   <tr
                     key={trade.id}
-                    className="hover:bg-gray-50 cursor-pointer"
+                    className={`hover:bg-gray-100 cursor-pointer transition-colors ${rowBgColor}`}
                     onClick={() => setSelectedTrade(trade)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -498,91 +463,17 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
-                      <div className="relative inline-block text-left">
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setOpenDropdown(openDropdown === trade.id ? null : trade.id)
-                          }}
-                          disabled={loadingAction === trade.id}
-                          variant="ghost"
-                          size="sm"
-                          aria-label={`Actions for ${trade.ticker} trade`}
-                        >
-                          Actions
-                          <svg className="ml-1 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </Button>
-
-                        {openDropdown === trade.id && (
-                          <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-                            <div className="py-1" role="menu">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  router.push(`/trades/${trade.id}`)
-                                  setOpenDropdown(null)
-                                }}
-                                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                role="menuitem"
-                              >
-                                View Details
-                              </button>
-
-                              {trade.status === 'OPEN' && (
-                                <>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      router.push(`/trades/${trade.id}`)
-                                      setOpenDropdown(null)
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    role="menuitem"
-                                  >
-                                    Close Early
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleStatusUpdate(trade.id, 'EXPIRED')
-                                      setOpenDropdown(null)
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    role="menuitem"
-                                  >
-                                    Mark as Expired
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleStatusUpdate(trade.id, 'ASSIGNED')
-                                      setOpenDropdown(null)
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                    role="menuitem"
-                                  >
-                                    Mark as Assigned
-                                  </button>
-                                  <div className="border-t border-gray-100"></div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation()
-                                      handleDelete(trade.id)
-                                      setOpenDropdown(null)
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-                                    role="menuitem"
-                                  >
-                                    Delete
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedTrade(trade)
+                        }}
+                        variant="outline"
+                        size="sm"
+                        aria-label={`Open actions for ${trade.ticker} trade`}
+                      >
+                        Action
+                      </Button>
                     </td>
                   </tr>
                 )
@@ -597,10 +488,11 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
         <div className="md:hidden space-y-4">
           {filteredTrades.map((trade) => {
             const currentPrice = prices.get(trade.ticker)
+            const rowBgColor = getRowBgColor(trade, currentPrice?.price)
             return (
               <div
                 key={trade.id}
-                className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow"
+                className={`bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow ${rowBgColor}`}
                 onClick={() => setSelectedTrade(trade)}
               >
                 {/* Header */}

@@ -61,6 +61,13 @@ export function PositionCard({
   priceData = null,
   onPriceRefresh,
 }: PositionCardProps) {
+  // Helper to safely convert Prisma Decimal (or serialized string/number) to number
+  const toDecimalNumber = (value: Prisma.Decimal | number | string): number => {
+    if (value && typeof value === 'object' && 'toNumber' in value) {
+      return (value as Prisma.Decimal).toNumber()
+    }
+    return Number(value)
+  }
   const [isExpanded, setIsExpanded] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState<string | null>(null)
@@ -110,8 +117,8 @@ export function PositionCard({
     // Convert Decimals to numbers for the dialog
     setSelectedCall({
       id: call.id,
-      strikePrice: typeof call.strikePrice === 'number' ? call.strikePrice : call.strikePrice.toNumber(),
-      premium: typeof call.premium === 'number' ? call.premium : call.premium.toNumber(),
+      strikePrice: toDecimalNumber(call.strikePrice),
+      premium: toDecimalNumber(call.premium),
       expirationDate: call.expirationDate,
       status: call.status,
       contracts: 1, // Covered calls are typically 1 contract per position
@@ -130,8 +137,8 @@ export function PositionCard({
     // Convert Decimals to numbers for the dialog
     setSelectedCall({
       id: call.id,
-      strikePrice: typeof call.strikePrice === 'number' ? call.strikePrice : call.strikePrice.toNumber(),
-      premium: typeof call.premium === 'number' ? call.premium : call.premium.toNumber(),
+      strikePrice: toDecimalNumber(call.strikePrice),
+      premium: toDecimalNumber(call.premium),
       expirationDate: call.expirationDate,
       status: call.status,
       contracts: 1, // Covered calls are typically 1 contract per position
@@ -168,8 +175,8 @@ export function PositionCard({
   const daysHeld = calculateDaysHeld(position.acquiredDate, position.closedDate)
   const totalCoveredCallPremium = position.coveredCalls
     ? calculateTotalCoveredCallPremium(
-        position.coveredCalls.map((call) => ({ premium: call.premium }))
-      )
+      position.coveredCalls.map((call) => ({ premium: call.premium }))
+    )
     : 0
 
   // Determine P&L color classes
@@ -465,8 +472,8 @@ export function PositionCard({
                 </h4>
                 <div className="space-y-2">
                   {position.coveredCalls.map((call) => {
-                    const strikePrice = typeof call.strikePrice === 'number' ? call.strikePrice : call.strikePrice.toNumber()
-                    const premium = typeof call.premium === 'number' ? call.premium : call.premium.toNumber()
+                    const strikePrice = toDecimalNumber(call.strikePrice)
+                    const premium = toDecimalNumber(call.premium)
                     const statusColors = getStatusColor(call.status as 'OPEN' | 'CLOSED' | 'EXPIRED' | 'ASSIGNED')
 
                     return (
@@ -557,8 +564,8 @@ export function PositionCard({
             positionId={position.id}
             ticker={position.ticker}
             shares={position.shares}
-            costBasis={typeof position.costBasis === 'number' ? position.costBasis : position.costBasis.toNumber()}
-            totalCost={typeof position.totalCost === 'number' ? position.totalCost : position.totalCost.toNumber()}
+            costBasis={toDecimalNumber(position.costBasis)}
+            totalCost={toDecimalNumber(position.totalCost)}
             acquiredDate={position.acquiredDate}
             coveredCall={{
               id: selectedCall.id,
@@ -569,9 +576,7 @@ export function PositionCard({
             }}
             putPremium={
               position.assignmentTrade?.premium
-                ? typeof position.assignmentTrade.premium === 'number'
-                  ? position.assignmentTrade.premium
-                  : position.assignmentTrade.premium.toNumber()
+                ? toDecimalNumber(position.assignmentTrade.premium)
                 : 0
             }
             isOpen={assignDialogOpen}

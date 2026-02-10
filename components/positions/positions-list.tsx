@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import toast from 'react-hot-toast'
 import type { PositionWithCalculations } from '@/lib/queries/positions'
+import { Prisma } from '@/lib/generated/prisma'
 import { PositionCard } from './position-card'
 import { refreshPositionPrices, getLatestPrices, type PriceData } from '@/lib/actions/prices'
 import { useRouter } from 'next/navigation'
@@ -30,6 +31,14 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
   const [refreshError, setRefreshError] = useState<string | null>(null)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false)
+
+  // Helper to safely convert Prisma Decimal (or serialized string/number) to number
+  const toDecimalNumber = (value: Prisma.Decimal | number | string): number => {
+    if (value && typeof value === 'object' && 'toNumber' in value) {
+      return (value as Prisma.Decimal).toNumber()
+    }
+    return Number(value)
+  }
 
   // Fetch price data for all positions
   const fetchPriceData = useCallback(async () => {
@@ -176,7 +185,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
   const stats = useMemo(() => {
     const totalPositions = positions.length
     const totalPL = positions.reduce((sum, pos) => sum + (pos.unrealizedPL ?? 0), 0)
-    const totalCapital = positions.reduce((sum, pos) => sum + pos.totalCost.toNumber(), 0)
+    const totalCapital = positions.reduce((sum, pos) => sum + toDecimalNumber(pos.totalCost), 0)
 
     return {
       totalPositions,
@@ -195,9 +204,11 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
     }
   }
 
+
+
   // Format currency
-  const formatCurrency = (value: number) => {
-    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const formatCurrency = (value: number | Prisma.Decimal | string) => {
+    return `$${toDecimalNumber(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }
 
   // Handle quick actions

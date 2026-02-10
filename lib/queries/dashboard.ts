@@ -112,7 +112,7 @@ export const getDashboardMetrics = cache(async (
     const dateFilter = dateThreshold ? { gte: dateThreshold } : undefined
 
     // Fetch all data in parallel with optimized queries
-    const [positionStats, trades, openPositions, openTrades, closedPositions, activePositionsCount] = await Promise.all([
+    const [positionStats, trades, openPositions, closedPositions, activePositionsCount] = await Promise.all([
       // Position aggregates
       prisma.position.aggregate({
         where: {
@@ -125,7 +125,7 @@ export const getDashboardMetrics = cache(async (
           totalCost: true,
         },
       }),
-      // Trades for premium calculation and assignment rate
+      // Trades for premium calculation, assignment rate, and open contracts count
       prisma.trade.findMany({
         where: {
           userId,
@@ -152,14 +152,6 @@ export const getDashboardMetrics = cache(async (
               premium: true,
             },
           },
-        },
-      }),
-      // Open trades count
-      prisma.trade.count({
-        where: {
-          userId,
-          status: 'OPEN',
-          ...(dateFilter && { openDate: dateFilter }),
         },
       }),
       // Closed positions for win rate (select only needed field)
@@ -223,6 +215,11 @@ export const getDashboardMetrics = cache(async (
     const assignmentRate =
       totalTradesForAssignment > 0 ? (assignedTradesCount / totalTradesForAssignment) * 100 : 0
 
+    // Calculate total open contracts from already-fetched trades
+    const openContractsCount = trades
+      .filter(t => t.status === 'OPEN')
+      .reduce((sum, trade) => sum + trade.contracts, 0)
+
     return {
       totalPL,
       realizedPL,
@@ -232,7 +229,7 @@ export const getDashboardMetrics = cache(async (
       winRate,
       assignmentRate,
       activePositions: activePositionsCount,
-      openContracts: openTrades,
+      openContracts: openContractsCount,
     }
   } catch (error) {
     console.error('Error fetching dashboard metrics:', error)

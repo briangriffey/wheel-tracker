@@ -17,7 +17,6 @@ vi.mock('@/lib/db', () => ({
     },
     trade: {
       findMany: vi.fn(),
-      count: vi.fn(),
     },
   },
 }))
@@ -86,8 +85,6 @@ describe('getDashboardMetrics', () => {
 
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
 
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
-
       vi.mocked(prisma.position.count).mockResolvedValue(0)
 
       const result = await getDashboardMetrics('All')
@@ -121,7 +118,6 @@ describe('getDashboardMetrics', () => {
 
       vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as unknown as Trade[])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
       vi.mocked(prisma.position.count).mockResolvedValue(0)
 
       const result = await getDashboardMetrics('All')
@@ -144,7 +140,6 @@ describe('getDashboardMetrics', () => {
 
       vi.mocked(prisma.trade.findMany).mockResolvedValue([])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
       vi.mocked(prisma.position.count).mockResolvedValue(0)
 
       const result = await getDashboardMetrics('All')
@@ -171,7 +166,6 @@ describe('getDashboardMetrics', () => {
 
       vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as Trade[])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
       vi.mocked(prisma.position.count).mockResolvedValue(0)
 
       const result = await getDashboardMetrics('All')
@@ -212,7 +206,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.position.findMany)
         .mockResolvedValueOnce(mockOpenPositions as unknown as Position[])
         .mockResolvedValueOnce([])
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
       vi.mocked(prisma.position.count).mockResolvedValue(2)
 
       const result = await getDashboardMetrics('All')
@@ -248,7 +241,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.position.findMany)
         .mockResolvedValueOnce(mockOpenPositions as unknown as Position[])
         .mockResolvedValueOnce([])
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
       vi.mocked(prisma.position.count).mockResolvedValue(1)
 
       const result = await getDashboardMetrics('All')
@@ -284,7 +276,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.position.findMany)
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce(mockClosedPositions as unknown as Position[])
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
       vi.mocked(prisma.position.count).mockResolvedValue(0)
 
       const result = await getDashboardMetrics('All')
@@ -308,7 +299,6 @@ describe('getDashboardMetrics', () => {
 
       vi.mocked(prisma.trade.findMany).mockResolvedValue([])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
       vi.mocked(prisma.position.count).mockResolvedValue(0)
 
       const result = await getDashboardMetrics('All')
@@ -341,7 +331,6 @@ describe('getDashboardMetrics', () => {
 
       vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as unknown as Trade[])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
-      vi.mocked(prisma.trade.count).mockResolvedValue(1) // open trades
       vi.mocked(prisma.position.count).mockResolvedValue(0)
 
       const result = await getDashboardMetrics('All')
@@ -365,7 +354,6 @@ describe('getDashboardMetrics', () => {
 
       vi.mocked(prisma.trade.findMany).mockResolvedValue([])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
       vi.mocked(prisma.position.count).mockResolvedValue(0)
 
       const result = await getDashboardMetrics('All')
@@ -424,7 +412,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.position.findMany)
         .mockResolvedValueOnce(mockOpenPositions as unknown as Position[])
         .mockResolvedValueOnce(mockClosedPositions as unknown as Position[])
-      vi.mocked(prisma.trade.count).mockResolvedValue(1) // 1 open trade
       vi.mocked(prisma.position.count).mockResolvedValue(2) // 2 active positions
 
       const result = await getDashboardMetrics('All')
@@ -452,8 +439,8 @@ describe('getDashboardMetrics', () => {
       // Active positions: 2
       expect(result.activePositions).toBe(2)
 
-      // Open contracts: 1
-      expect(result.openContracts).toBe(1)
+      // Open contracts: 3 (1 OPEN trade with 3 contracts)
+      expect(result.openContracts).toBe(3)
 
       // vsSPY not implemented yet
       expect(result.vsSPY).toBe(null)

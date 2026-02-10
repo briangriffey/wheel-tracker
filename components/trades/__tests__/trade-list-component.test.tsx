@@ -3,6 +3,7 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { TradeList } from '../trade-list'
 import type { Trade } from '@/lib/generated/prisma'
+import type { StockPriceResult } from '@/lib/services/market-data'
 
 // Mock dependencies
 vi.mock('react-hot-toast', () => ({
@@ -15,6 +16,13 @@ vi.mock('react-hot-toast', () => ({
 vi.mock('@/lib/actions/trades', () => ({
     deleteTrade: vi.fn(),
     updateTradeStatus: vi.fn(),
+}))
+
+vi.mock('next/navigation', () => ({
+    useRouter: () => ({
+        push: vi.fn(),
+        refresh: vi.fn(),
+    }),
 }))
 
 describe('TradeList Component Reproduction', () => {
@@ -63,8 +71,14 @@ describe('TradeList Component Reproduction', () => {
             }
         ] as unknown as Trade[]
 
+        // Create mock prices map
+        const mockPrices = new Map<string, StockPriceResult>([
+            ['AAPL', { ticker: 'AAPL', success: true, price: 155.0, date: new Date() }],
+            ['TSLA', { ticker: 'TSLA', success: true, price: 210.0, date: new Date() }],
+        ])
+
         // This should now succeed
-        expect(() => render(<TradeList initialTrades={serializedTrades} />)).not.toThrow()
+        expect(() => render(<TradeList initialTrades={serializedTrades} prices={mockPrices} />)).not.toThrow()
 
         // Check if values are formatted correctly
         expect(screen.getAllByText('$150.00')).toBeDefined()

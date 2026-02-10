@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { TradeList } from '../trade-list'
-import { Trade } from '@/lib/generated/prisma'
+import type { Trade } from '@/lib/generated/prisma'
 
 // Mock dependencies
 vi.mock('next/navigation', () => ({
@@ -10,6 +10,11 @@ vi.mock('next/navigation', () => ({
         push: vi.fn(),
         refresh: vi.fn(),
     }),
+}))
+
+vi.mock('@/lib/actions/trades', () => ({
+    deleteTrade: vi.fn(),
+    updateTradeStatus: vi.fn(),
 }))
 
 vi.mock('react-hot-toast', () => ({
@@ -45,7 +50,7 @@ describe('TradeList Component Update', () => {
 
     it('updates when initialTrades prop changes', () => {
         // Initial render
-        const { rerender } = render(<TradeList initialTrades={mockTrades} />)
+        const { rerender } = render(<TradeList initialTrades={mockTrades} prices={new Map()} />)
 
         // Multiple elements might match in responsive view (desktop table + mobile card)
         expect(screen.getAllByText('AAPL').length).toBeGreaterThan(0)
@@ -77,7 +82,7 @@ describe('TradeList Component Update', () => {
         ] as unknown as Trade[]
 
         // Rerender with new props
-        rerender(<TradeList initialTrades={updatedTrades} />)
+        rerender(<TradeList initialTrades={updatedTrades} prices={new Map()} />)
 
         // Verify both trades are present
         expect(screen.getAllByText('AAPL').length).toBeGreaterThan(0)

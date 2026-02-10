@@ -1,5 +1,6 @@
+import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { TradeActionsDialog } from '../trade-actions-dialog'
 import { Prisma } from '@/lib/generated/prisma'
@@ -30,7 +31,7 @@ vi.mock('@/lib/actions/trades', () => ({
 }))
 
 vi.mock('@/lib/design/colors', () => ({
-  getStatusColor: (status: string) => ({
+  getStatusColor: () => ({
     bg: 'bg-green-100',
     text: 'text-green-800',
   }),
@@ -47,6 +48,8 @@ const mockOpenTrade: Trade = {
   status: 'OPEN',
   strikePrice: new Prisma.Decimal(150),
   premium: new Prisma.Decimal(500),
+  closePremium: null,
+  realizedGainLoss: null,
   contracts: 5,
   shares: 500,
   expirationDate: new Date('2026-03-15'),
@@ -332,10 +335,10 @@ describe('TradeActionsDialog - User Interactions', () => {
       />
     )
 
-    // Click the backdrop (find by role and check it's not the dialog itself)
-    const backdrop = screen.getByRole('dialog').parentElement
+    // Click the backdrop (sibling of the dialog)
+    const backdrop = screen.getByRole('dialog').previousElementSibling
     if (backdrop) {
-      await user.click(backdrop)
+      fireEvent.click(backdrop)
       expect(onClose).toHaveBeenCalled()
     }
   })

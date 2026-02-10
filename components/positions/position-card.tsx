@@ -175,10 +175,10 @@ export function PositionCard({
   const daysHeld = 'daysHeld' in position && position.daysHeld != null
     ? position.daysHeld
     : (() => {
-        const endDate = position.closedDate ?? new Date()
-        const diffTime = Math.abs(endDate.getTime() - position.acquiredDate.getTime())
-        return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      })()
+      const endDate = position.closedDate ?? new Date()
+      const diffTime = Math.abs(endDate.getTime() - position.acquiredDate.getTime())
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    })()
 
   const totalCoveredCallPremium = 'coveredCallsPremium' in position && position.coveredCallsPremium != null
     ? position.coveredCallsPremium
@@ -333,7 +333,7 @@ export function PositionCard({
               Cost Basis
             </dt>
             <dd className="mt-1 text-sm font-semibold text-gray-900">
-              {formatCurrency(position.costBasis)}
+              {formatCurrency(toDecimalNumber(position.costBasis))}
             </dd>
           </div>
 
@@ -380,7 +380,7 @@ export function PositionCard({
           <div>
             <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Cost</dt>
             <dd className="mt-1 text-sm font-semibold text-gray-900">
-              {formatCurrency(position.totalCost)}
+              {formatCurrency(toDecimalNumber(position.totalCost))}
             </dd>
           </div>
 
@@ -393,7 +393,7 @@ export function PositionCard({
               {isLoadingPrice ? (
                 <span className="text-gray-400">Loading...</span>
               ) : position.currentValue !== null ? (
-                formatCurrency(position.currentValue)
+                formatCurrency(toDecimalNumber(position.currentValue))
               ) : (
                 <span className="text-gray-400">N/A</span>
               )}

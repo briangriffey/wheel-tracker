@@ -1,11 +1,8 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
-import toast from 'react-hot-toast'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
-import { deleteTrade, updateTradeStatus } from '@/lib/actions/trades'
 import { getStatusColor } from '@/lib/design/colors'
 import { Button } from '@/components/design-system/button/button'
 import type { StockPriceResult } from '@/lib/services/market-data'
@@ -20,7 +17,6 @@ type SortField = 'expirationDate' | 'ticker' | 'premium'
 type SortDirection = 'asc' | 'desc'
 
 export function TradeList({ initialTrades, prices }: TradeListProps) {
-  const router = useRouter()
   const [trades, setTrades] = useState<Trade[]>(initialTrades)
 
   // Sync state with props
@@ -34,7 +30,6 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
   const [dateRangeEnd, setDateRangeEnd] = useState('')
   const [sortField, setSortField] = useState<SortField>('expirationDate')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
-  const [loadingAction, setLoadingAction] = useState<string | null>(null)
   const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null)
 
   // Filter and sort trades
@@ -105,51 +100,6 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
     }
   }
 
-  // Handle delete
-  const handleDelete = async (tradeId: string) => {
-    if (!confirm('Are you sure you want to delete this trade?')) {
-      return
-    }
-
-    setLoadingAction(tradeId)
-    try {
-      const result = await deleteTrade(tradeId)
-      if (result.success) {
-        setTrades(trades.filter((t) => t.id !== tradeId))
-        toast.success('Trade deleted successfully')
-      } else {
-        toast.error(result.error || 'Failed to delete trade')
-      }
-    } catch {
-      toast.error('An unexpected error occurred')
-    } finally {
-      setLoadingAction(null)
-    }
-  }
-
-  // Handle status update
-  const handleStatusUpdate = async (tradeId: string, status: TradeStatus) => {
-    setLoadingAction(tradeId)
-    try {
-      const result = await updateTradeStatus({ id: tradeId, status })
-      if (result.success) {
-        setTrades(
-          trades.map((t) =>
-            t.id === tradeId
-              ? { ...t, status, closeDate: status !== 'OPEN' ? new Date() : t.closeDate }
-              : t
-          )
-        )
-        toast.success(`Trade marked as ${status.toLowerCase()}`)
-      } else {
-        toast.error(result.error || 'Failed to update trade status')
-      }
-    } catch {
-      toast.error('An unexpected error occurred')
-    } finally {
-      setLoadingAction(null)
-    }
-  }
 
   // Helper to safely convert Prisma Decimal (or serialized string/number) to number
   const toDecimalNumber = (value: Prisma.Decimal | number | string): number => {

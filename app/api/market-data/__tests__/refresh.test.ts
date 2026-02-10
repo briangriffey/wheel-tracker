@@ -162,7 +162,7 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
       })
 
       const response = await POST(request)
-      const data = await response.json()
+      await response.json()
 
       // Should fall back to getting active tickers
       expect(response.status).toBe(200)

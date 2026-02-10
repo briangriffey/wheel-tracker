@@ -1,3 +1,4 @@
+import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -27,7 +28,7 @@ vi.mock('@/lib/actions/trades', () => ({
 }))
 
 vi.mock('@/lib/design/colors', () => ({
-  getStatusColor: (status: string) => ({
+  getStatusColor: () => ({
     bg: 'bg-green-100',
     text: 'text-green-800',
   }),
@@ -46,6 +47,8 @@ const mockTrades: Trade[] = [
     status: 'OPEN',
     strikePrice: new Prisma.Decimal(150),
     premium: new Prisma.Decimal(500),
+    closePremium: null,
+    realizedGainLoss: null,
     contracts: 5,
     shares: 500,
     expirationDate: new Date('2026-03-15'),
@@ -67,6 +70,8 @@ const mockTrades: Trade[] = [
     status: 'EXPIRED',
     strikePrice: new Prisma.Decimal(200),
     premium: new Prisma.Decimal(750),
+    closePremium: null,
+    realizedGainLoss: null,
     contracts: 3,
     shares: 300,
     expirationDate: new Date('2026-02-20'),
@@ -114,10 +119,10 @@ describe('TradeList - Price Display', () => {
     expect(screen.getByText('Current Price')).toBeInTheDocument()
 
     // Check AAPL price is displayed
-    expect(screen.getByText('$152.45')).toBeInTheDocument()
+    expect(screen.getAllByText('$152.45').length).toBeGreaterThan(0)
 
     // Check TSLA price is displayed
-    expect(screen.getByText('$198.75')).toBeInTheDocument()
+    expect(screen.getAllByText('$198.75').length).toBeGreaterThan(0)
   })
 
   it('should mark stale prices with indicator', () => {
@@ -158,7 +163,7 @@ describe('TradeList - Price Display', () => {
     render(<TradeList initialTrades={[mockTrades[0]]} prices={pricesWithWholeNumber} />)
 
     // Should show .00 even for whole numbers
-    expect(screen.getByText('$150.00')).toBeInTheDocument()
+    expect(screen.getAllByText('$150.00').length).toBeGreaterThan(0)
   })
 })
 
@@ -183,7 +188,7 @@ describe('TradeList - Dropdown Menu', () => {
 
     // Menu should open and show options
     await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument()
+      expect(screen.getAllByText('View Details').length).toBeGreaterThan(0)
     })
   })
 
@@ -196,11 +201,11 @@ describe('TradeList - Dropdown Menu', () => {
     await user.click(actionButtons[0])
 
     await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument()
-      expect(screen.getByText('Close Early')).toBeInTheDocument()
-      expect(screen.getByText('Mark as Expired')).toBeInTheDocument()
-      expect(screen.getByText('Mark as Assigned')).toBeInTheDocument()
-      expect(screen.getByText('Delete')).toBeInTheDocument()
+      expect(screen.getAllByText('View Details').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Close Early').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Mark as Expired').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Mark as Assigned').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('Delete').length).toBeGreaterThan(0)
     })
   })
 
@@ -213,7 +218,7 @@ describe('TradeList - Dropdown Menu', () => {
     await user.click(actionButtons[1])
 
     await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument()
+      expect(screen.getAllByText('View Details').length).toBeGreaterThan(0)
       // These should not be present for EXPIRED trades
       expect(screen.queryByText('Close Early')).not.toBeInTheDocument()
       expect(screen.queryByText('Mark as Expired')).not.toBeInTheDocument()
@@ -246,8 +251,9 @@ describe('TradeList - Row Click Dialog', () => {
     const user = userEvent.setup()
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const appleCell = screen.getByText('AAPL')
-    await user.click(appleCell)
+    // Open dialog by clicking the card or row
+    const appleCells = screen.getAllByText('AAPL')
+    await user.click(appleCells[0])
 
     await waitFor(() => {
       // Should show "Current Price:" label in dialog
@@ -262,8 +268,8 @@ describe('TradeList - Row Click Dialog', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
     // Open dialog
-    const appleCell = screen.getByText('AAPL')
-    await user.click(appleCell)
+    const appleCells = screen.getAllByText('AAPL')
+    await user.click(appleCells[0])
 
     await waitFor(() => {
       expect(screen.getByText('Current Price:')).toBeInTheDocument()
@@ -288,7 +294,7 @@ describe('TradeList - Row Click Dialog', () => {
 
     // Dropdown menu should open
     await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument()
+      expect(screen.getAllByText('View Details').length).toBeGreaterThan(0)
     })
 
     // Dialog should NOT open (no "Current Price:" text which is unique to dialog)
@@ -326,8 +332,8 @@ describe('TradeList - Refresh Prices', () => {
 
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const refreshButton = screen.getByText('Refresh Prices')
-    await user.click(refreshButton)
+    const refreshButton = screen.getAllByRole('button').find(b => b.textContent === 'Refresh Prices')
+    await user.click(refreshButton!)
 
     // Should call the API
     await waitFor(() => {
@@ -359,8 +365,8 @@ describe('TradeList - Refresh Prices', () => {
 
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const refreshButton = screen.getByText('Refresh Prices')
-    await user.click(refreshButton)
+    const refreshButton = screen.getAllByRole('button').find(b => b.textContent === 'Refresh Prices')
+    await user.click(refreshButton!)
 
     // Should show loading text
     await waitFor(() => {
@@ -401,8 +407,8 @@ describe('TradeList - Refresh Prices', () => {
 
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const refreshButton = screen.getByText('Refresh Prices')
-    await user.click(refreshButton)
+    const refreshButton = screen.getAllByRole('button').find(b => b.textContent === 'Refresh Prices')
+    await user.click(refreshButton!)
 
     // Should show error toast
     await waitFor(() => {
@@ -448,8 +454,8 @@ describe('TradeList - Mobile Card View', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
     // Should show both prices in the document
-    expect(screen.getByText('$152.45')).toBeInTheDocument()
-    expect(screen.getByText('$198.75')).toBeInTheDocument()
+    expect(screen.getAllByText('$152.45').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('$198.75').length).toBeGreaterThan(0)
   })
 
   it('should show tap hint on mobile cards', () => {

@@ -372,12 +372,14 @@ export async function closeOption(
 
     // Close trade and update position (if covered call) in a transaction
     await prisma.$transaction(async (tx) => {
-      // Update trade status to CLOSED
+      // Update trade status to CLOSED and save closing data
       await tx.trade.update({
         where: { id: tradeId },
         data: {
           status: 'CLOSED',
           closeDate: new Date(),
+          closePremium: new Prisma.Decimal(closePremium),
+          realizedGainLoss: new Prisma.Decimal(netPL),
         },
       })
 

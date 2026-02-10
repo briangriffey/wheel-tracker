@@ -106,6 +106,8 @@ model Trade {
   status          TradeStatus @default(OPEN)
   strikePrice     Decimal     @db.Decimal(10, 2)
   premium         Decimal     @db.Decimal(10, 2) // Total premium collected/paid
+  closePremium    Decimal?    @db.Decimal(10, 2) // Premium paid to close early (BUY_TO_CLOSE)
+  realizedGainLoss Decimal?   @db.Decimal(10, 2) // Net P/L when closed early (premium - closePremium)
   contracts       Int         // Number of contracts
   shares          Int         // contracts * 100
   expirationDate  DateTime

@@ -131,6 +131,7 @@ function getTimeframeDate(timeframe: Timeframe): Date {
  *
  * Includes:
  * - Realized gain/loss from closed positions
+ * - Realized gain/loss from closed trades (options closed early)
  * - Premiums from expired/closed trades
  *
  * @param userId - User ID to calculate for
@@ -143,7 +144,7 @@ export async function calculateRealizedPnL(
 ): Promise<RealizedPnL> {
   const { ticker, startDate, endDate } = options
 
-  // Build where clause for filtering
+  // Build where clause for filtering positions
   const positionWhere: Record<string, unknown> = {
     userId,
     status: 'CLOSED',
@@ -163,19 +164,52 @@ export async function calculateRealizedPnL(
     }
   }
 
-  // Query closed positions with realized gains/losses
-  const closedPositions = await prisma.position.findMany({
-    where: positionWhere,
-    select: {
-      ticker: true,
-      realizedGainLoss: true,
+  // Build where clause for filtering trades
+  const tradeWhere: Record<string, unknown> = {
+    userId,
+    status: 'CLOSED',
+    realizedGainLoss: {
+      not: null,
     },
-  })
+  }
+
+  if (ticker) {
+    tradeWhere.ticker = ticker
+  }
+
+  if (startDate || endDate) {
+    tradeWhere.closeDate = {}
+    if (startDate) {
+      (tradeWhere.closeDate as Record<string, unknown>).gte = startDate
+    }
+    if (endDate) {
+      (tradeWhere.closeDate as Record<string, unknown>).lte = endDate
+    }
+  }
+
+  // Query closed positions and trades in parallel
+  const [closedPositions, closedTrades] = await Promise.all([
+    prisma.position.findMany({
+      where: positionWhere,
+      select: {
+        ticker: true,
+        realizedGainLoss: true,
+      },
+    }),
+    prisma.trade.findMany({
+      where: tradeWhere,
+      select: {
+        ticker: true,
+        realizedGainLoss: true,
+      },
+    }),
+  ])
 
   // Aggregate by ticker
   const byTicker = new Map<string, number>()
   let total = 0
 
+  // Add realized P&L from closed positions
   for (const position of closedPositions) {
     const pnl = position.realizedGainLoss ? Number(position.realizedGainLoss) : 0
     total += pnl
@@ -184,10 +218,19 @@ export async function calculateRealizedPnL(
     byTicker.set(position.ticker, current + pnl)
   }
 
+  // Add realized P&L from closed trades (options closed early)
+  for (const trade of closedTrades) {
+    const pnl = trade.realizedGainLoss ? Number(trade.realizedGainLoss) : 0
+    total += pnl
+
+    const current = byTicker.get(trade.ticker) || 0
+    byTicker.set(trade.ticker, current + pnl)
+  }
+
   return {
     total,
     byTicker,
-    count: closedPositions.length,
+    count: closedPositions.length + closedTrades.length,
   }
 }
 

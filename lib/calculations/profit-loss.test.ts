@@ -35,25 +35,33 @@ describe('calculateRealizedPnL', () => {
     vi.clearAllMocks()
   })
 
-  it('should calculate total realized P&L from closed positions', async () => {
+  it('should calculate total realized P&L from closed positions and trades', async () => {
     const mockPositions = [
       { ticker: 'AAPL', realizedGainLoss: 500 },
       { ticker: 'MSFT', realizedGainLoss: 300 },
       { ticker: 'AAPL', realizedGainLoss: 200 },
     ]
 
+    const mockTrades = [
+      { ticker: 'AAPL', realizedGainLoss: 100 },
+      { ticker: 'TSLA', realizedGainLoss: 50 },
+    ]
+
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
+    vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
 
     const result = await calculateRealizedPnL(TEST_USER_ID)
 
-    expect(result.total).toBe(1000)
-    expect(result.count).toBe(3)
-    expect(result.byTicker.get('AAPL')).toBe(700)
+    expect(result.total).toBe(1150) // 1000 from positions + 150 from trades
+    expect(result.count).toBe(5) // 3 positions + 2 trades
+    expect(result.byTicker.get('AAPL')).toBe(800) // 700 from positions + 100 from trades
     expect(result.byTicker.get('MSFT')).toBe(300)
+    expect(result.byTicker.get('TSLA')).toBe(50)
   })
 
   it('should handle empty portfolio', async () => {
     vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
 
     const result = await calculateRealizedPnL(TEST_USER_ID)
 
@@ -69,6 +77,7 @@ describe('calculateRealizedPnL', () => {
     ]
 
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
 
     const result = await calculateRealizedPnL(TEST_USER_ID)
 
@@ -82,12 +91,22 @@ describe('calculateRealizedPnL', () => {
       { ticker: 'AAPL', realizedGainLoss: 500 },
     ]
 
+    const mockTrades = [
+      { ticker: 'AAPL', realizedGainLoss: 100 },
+    ]
+
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
+    vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
 
     const result = await calculateRealizedPnL(TEST_USER_ID, { ticker: 'AAPL' })
 
-    expect(result.total).toBe(500)
+    expect(result.total).toBe(600)
     expect(prisma.position.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ ticker: 'AAPL' }),
+      })
+    )
+    expect(prisma.trade.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({ ticker: 'AAPL' }),
       })
@@ -99,18 +118,30 @@ describe('calculateRealizedPnL', () => {
       { ticker: 'AAPL', realizedGainLoss: 500 },
     ]
 
+    const mockTrades = [
+      { ticker: 'AAPL', realizedGainLoss: 100 },
+    ]
+
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
+    vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
 
     const startDate = new Date('2024-01-01')
     const endDate = new Date('2024-12-31')
 
     const result = await calculateRealizedPnL(TEST_USER_ID, { startDate, endDate })
 
-    expect(result.total).toBe(500)
+    expect(result.total).toBe(600)
     expect(prisma.position.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
           closedDate: expect.objectContaining({ gte: startDate, lte: endDate }),
+        }),
+      })
+    )
+    expect(prisma.trade.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          closeDate: expect.objectContaining({ gte: startDate, lte: endDate }),
         }),
       })
     )
@@ -122,26 +153,37 @@ describe('calculateRealizedPnL', () => {
       { ticker: 'MSFT', realizedGainLoss: 300 },
     ]
 
+    const mockTrades = [
+      { ticker: 'TSLA', realizedGainLoss: 50 },
+    ]
+
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
+    vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
 
     const result = await calculateRealizedPnL(TEST_USER_ID)
 
-    expect(result.total).toBe(300)
+    expect(result.total).toBe(350)
   })
 
-  it('should aggregate multiple positions for same ticker', async () => {
+  it('should aggregate multiple positions and trades for same ticker', async () => {
     const mockPositions = [
       { ticker: 'AAPL', realizedGainLoss: 100 },
       { ticker: 'AAPL', realizedGainLoss: 200 },
       { ticker: 'AAPL', realizedGainLoss: 300 },
     ]
 
+    const mockTrades = [
+      { ticker: 'AAPL', realizedGainLoss: 50 },
+      { ticker: 'AAPL', realizedGainLoss: 150 },
+    ]
+
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
+    vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
 
     const result = await calculateRealizedPnL(TEST_USER_ID)
 
-    expect(result.total).toBe(600)
-    expect(result.byTicker.get('AAPL')).toBe(600)
+    expect(result.total).toBe(800) // 600 from positions + 200 from trades
+    expect(result.byTicker.get('AAPL')).toBe(800)
   })
 })
 
@@ -290,6 +332,11 @@ describe('calculatePnLByTicker', () => {
       { ticker: 'MSFT', realizedGainLoss: 300 },
     ]
 
+    // Mock closed trades (realized)
+    const mockClosedTrades = [
+      { ticker: 'AAPL', realizedGainLoss: 50 },
+    ]
+
     // Mock open positions (unrealized)
     const mockOpenPositions = [
       { ticker: 'AAPL', shares: 100, totalCost: 15000, costBasis: 150 },
@@ -302,19 +349,20 @@ describe('calculatePnLByTicker', () => {
     ])
 
     vi.mocked(prisma.position.findMany)
-      .mockResolvedValueOnce(mockClosedPositions as never) // First call: realized
+      .mockResolvedValueOnce(mockClosedPositions as never) // First call: realized positions
       .mockResolvedValueOnce(mockOpenPositions as never) // Second call: unrealized
 
+    vi.mocked(prisma.trade.findMany).mockResolvedValue(mockClosedTrades as never)
     vi.mocked(marketData.getLatestPrices).mockResolvedValue(mockPrices)
 
     const result = await calculatePnLByTicker(TEST_USER_ID)
 
-    // AAPL: realized 500 + unrealized 1000 = 1500
+    // AAPL: realized (500 + 50) + unrealized 1000 = 1550
     const aapl = result.find(t => t.ticker === 'AAPL')
     expect(aapl).toBeDefined()
-    expect(aapl!.realizedPnL).toBe(500)
+    expect(aapl!.realizedPnL).toBe(550)
     expect(aapl!.unrealizedPnL).toBe(1000)
-    expect(aapl!.totalPnL).toBe(1500)
+    expect(aapl!.totalPnL).toBe(1550)
 
     // MSFT: realized 300 only
     const msft = result.find(t => t.ticker === 'MSFT')
@@ -342,6 +390,7 @@ describe('calculatePnLByTicker', () => {
       .mockResolvedValueOnce(mockClosedPositions as never)
       .mockResolvedValueOnce([])
 
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
     vi.mocked(marketData.getLatestPrices).mockResolvedValue(new Map())
 
     const result = await calculatePnLByTicker(TEST_USER_ID)
@@ -374,11 +423,16 @@ describe('calculatePnLByTimeframe', () => {
       { ticker: 'AAPL', realizedGainLoss: 500 },
     ]
 
+    const mockTrades = [
+      { ticker: 'AAPL', realizedGainLoss: 100 },
+    ]
+
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
+    vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
 
     const result = await calculatePnLByTimeframe(TEST_USER_ID, 'daily')
 
-    expect(result).toBe(500)
+    expect(result).toBe(600)
     expect(prisma.position.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
@@ -393,6 +447,10 @@ describe('calculatePnLByTimeframe', () => {
       { ticker: 'AAPL', realizedGainLoss: 500 },
     ]
 
+    const mockClosedTrades = [
+      { ticker: 'AAPL', realizedGainLoss: 100 },
+    ]
+
     const mockOpenPositions = [
       { ticker: 'MSFT', shares: 100, totalCost: 15000, costBasis: 150 },
     ]
@@ -405,12 +463,13 @@ describe('calculatePnLByTimeframe', () => {
       .mockResolvedValueOnce(mockClosedPositions as never) // Realized
       .mockResolvedValueOnce(mockOpenPositions as never) // Unrealized
 
+    vi.mocked(prisma.trade.findMany).mockResolvedValue(mockClosedTrades as never)
     vi.mocked(marketData.getLatestPrices).mockResolvedValue(mockPrices)
 
     const result = await calculatePnLByTimeframe(TEST_USER_ID, 'all')
 
-    // Realized: 500, Unrealized: 1000
-    expect(result).toBe(1500)
+    // Realized: 500 + 100, Unrealized: 1000
+    expect(result).toBe(1600)
   })
 })
 

@@ -124,6 +124,7 @@ export function calculateBenchmarkReturn(
 
 /**
  * Get benchmark metrics with current price
+ * Supports both legacy (single initial capital) and deposit-based tracking
  *
  * @param userId - User ID
  * @param ticker - Benchmark ticker (SPY, QQQ, VTI, etc.)
@@ -155,8 +156,67 @@ export async function getBenchmarkMetrics(
   }
 
   const currentPrice = priceData.price
-  const shares = Number(benchmark.shares)
-  const initialCapital = Number(benchmark.initialCapital)
+
+  // Check if using deposit-based tracking
+  const deposits = await prisma.cashDeposit.findMany({
+    where: {
+      userId,
+      type: 'DEPOSIT',
+    },
+    orderBy: {
+      depositDate: 'asc',
+    },
+  })
+
+  const withdrawals = await prisma.cashDeposit.findMany({
+    where: {
+      userId,
+      type: 'WITHDRAWAL',
+    },
+    orderBy: {
+      depositDate: 'asc',
+    },
+  })
+
+  let shares: number
+  let initialCapital: number
+  let setupDate: Date
+  let initialPrice: number
+
+  if (deposits.length > 0) {
+    // Use deposit-based calculations
+    const totalShares = deposits.reduce(
+      (sum, d) => sum + Number(d.spyShares),
+      0
+    )
+    const withdrawnShares = withdrawals.reduce(
+      (sum, w) => sum + Number(w.spyShares),
+      0
+    )
+    shares = totalShares - Math.abs(withdrawnShares)
+
+    const totalDeposited = deposits.reduce(
+      (sum, d) => sum + Number(d.amount),
+      0
+    )
+    const totalWithdrawn = withdrawals.reduce(
+      (sum, w) => sum + Math.abs(Number(w.amount)),
+      0
+    )
+    initialCapital = totalDeposited - totalWithdrawn
+
+    // Use first deposit date as setup date
+    setupDate = deposits[0].depositDate
+
+    // Calculate weighted average cost basis
+    initialPrice = shares > 0 ? initialCapital / shares : 0
+  } else {
+    // Fall back to legacy single-entry benchmark
+    shares = Number(benchmark.shares)
+    initialCapital = Number(benchmark.initialCapital)
+    setupDate = benchmark.setupDate
+    initialPrice = Number(benchmark.initialPrice)
+  }
 
   // Calculate metrics
   const currentValue = calculateBenchmarkValue(shares, currentPrice)
@@ -166,8 +226,8 @@ export async function getBenchmarkMetrics(
   return {
     ticker: benchmark.ticker,
     initialCapital,
-    setupDate: benchmark.setupDate,
-    initialPrice: Number(benchmark.initialPrice),
+    setupDate,
+    initialPrice,
     shares,
     currentPrice,
     currentValue,

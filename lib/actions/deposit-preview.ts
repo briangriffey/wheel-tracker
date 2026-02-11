@@ -119,3 +119,89 @@ export async function calculateDepositPreview(
     return { success: false, error: 'Failed to calculate deposit preview' }
   }
 }
+
+/**
+ * Withdrawal preview result (extends DepositPreview with net invested info)
+ */
+export interface WithdrawalPreview extends DepositPreview {
+  netInvested: number
+  remainingAfterWithdrawal: number
+}
+
+/**
+ * Calculate withdrawal preview without saving
+ * Returns SPY price, calculated shares, and validates against net invested
+ */
+export async function calculateWithdrawalPreview(
+  amount: number,
+  withdrawalDate: Date
+): Promise<{ success: true; data: WithdrawalPreview } | { success: false; error: string }> {
+  try {
+    // Validate inputs
+    if (!amount || amount <= 0) {
+      return { success: false, error: 'Amount must be greater than 0' }
+    }
+
+    if (!withdrawalDate || withdrawalDate > new Date()) {
+      return { success: false, error: 'Withdrawal date cannot be in the future' }
+    }
+
+    // Get current net invested amount
+    const { prisma } = await import('@/lib/db')
+
+    // Get current user
+    const user = await prisma.user.findFirst()
+    if (!user) {
+      return { success: false, error: 'No user found' }
+    }
+
+    // Calculate net invested
+    const deposits = await prisma.cashDeposit.findMany({
+      where: { userId: user.id },
+    })
+
+    const netInvested = deposits.reduce((sum, d) => sum + d.amount.toNumber(), 0)
+
+    // Validate withdrawal amount
+    if (amount > netInvested) {
+      return {
+        success: false,
+        error: `Cannot withdraw $${amount.toFixed(2)}. You have only invested $${netInvested.toFixed(2)} total.`,
+      }
+    }
+
+    // Fetch SPY price for the withdrawal date
+    const priceResult = await getSPYPriceForDate(withdrawalDate)
+
+    if (!priceResult.success) {
+      return {
+        success: false,
+        error: `Failed to fetch SPY price: ${priceResult.error}`,
+      }
+    }
+
+    const spyPrice = priceResult.price
+
+    // Calculate SPY shares (negative for withdrawal)
+    const spyShares = -(amount / spyPrice)
+
+    return {
+      success: true,
+      data: {
+        spyPrice,
+        spyShares,
+        priceDate: withdrawalDate,
+        netInvested,
+        remainingAfterWithdrawal: netInvested - amount,
+      },
+    }
+  } catch (error) {
+    console.error('Error calculating withdrawal preview:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to calculate withdrawal preview' }
+  }
+}

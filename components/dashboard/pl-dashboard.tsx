@@ -13,6 +13,7 @@ import { MetricCard } from './metric-card'
 import { StatCard } from './stat-card'
 import { TimeRangeSelector } from './time-range-selector'
 import { BenchmarkComparisonSection } from './benchmark-comparison-section'
+import { RecordDepositButton } from '../deposits/record-deposit-button'
 
 // Import Card for loading states
 const LoadingCard = ({ height = 'h-96' }: { height?: string }) => (
@@ -84,9 +85,12 @@ export function PLDashboard({
 
   return (
     <div className="space-y-6">
-      {/* Header with Time Range Selector */}
+      {/* Header with Time Range Selector and Record Deposit Button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-bold text-gray-900">P&L Dashboard</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold text-gray-900">P&L Dashboard</h1>
+          <RecordDepositButton />
+        </div>
         <TimeRangeSelector selected={timeRange} onChange={setTimeRange} />
       </div>
 

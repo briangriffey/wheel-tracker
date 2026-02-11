@@ -1,10 +1,13 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { BenchmarkSelector, type BenchmarkTicker } from './benchmark-selector'
 import { BenchmarkComparisonChart, type ComparisonDataPoint } from './benchmark-comparison-chart'
 import { getComparison } from '@/lib/actions/benchmarks'
+import { getDepositSummary } from '@/lib/actions/deposits'
 import type { BenchmarkComparison } from '@/lib/calculations/benchmark'
+import type { DepositSummary } from '@/lib/actions/deposits'
 import type { TimeRange } from '@/lib/queries/dashboard'
 import { formatCurrency } from '@/lib/utils/format'
 import { getPnLColorClass } from '@/lib/design/colors'
@@ -19,30 +22,38 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [comparison, setComparison] = useState<BenchmarkComparison | null>(null)
+  const [depositSummary, setDepositSummary] = useState<DepositSummary | null>(null)
   const [showInfo, setShowInfo] = useState(false)
 
   useEffect(() => {
-    const fetchComparison = async () => {
+    const fetchData = async () => {
       setLoading(true)
       setError(null)
 
       try {
-        const result = await getComparison({ ticker: selectedBenchmark })
+        const [comparisonResult, depositResult] = await Promise.all([
+          getComparison({ ticker: selectedBenchmark }),
+          getDepositSummary(),
+        ])
 
-        if (result.success) {
-          setComparison(result.data as BenchmarkComparison)
+        if (comparisonResult.success) {
+          setComparison(comparisonResult.data as BenchmarkComparison)
         } else {
-          setError(result.error)
+          setError(comparisonResult.error)
+        }
+
+        if (depositResult.success) {
+          setDepositSummary(depositResult.data)
         }
       } catch (err) {
-        console.error('Error fetching comparison:', err)
+        console.error('Error fetching data:', err)
         setError('Failed to load benchmark comparison')
       } finally {
         setLoading(false)
       }
     }
 
-    fetchComparison()
+    fetchData()
   }, [selectedBenchmark, timeRange])
 
   // Generate chart data (for now, we'll use a simplified version)
@@ -176,6 +187,42 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
               </ul>
             </AlertDescription>
           </Alert>
+        )}
+
+        {/* Deposit Information */}
+        {depositSummary && depositSummary.depositCount > 0 && (
+          <Card variant="default" className="mb-6 bg-blue-50 border-blue-200">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 mb-1">Capital Deposits</h4>
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span>
+                      <strong className="text-gray-900">{depositSummary.depositCount}</strong> {depositSummary.depositCount === 1 ? 'deposit' : 'deposits'}
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <span>
+                      Net Invested: <strong className="text-gray-900">{formatCurrency(depositSummary.netInvested)}</strong>
+                    </span>
+                    {depositSummary.lastDepositDate && (
+                      <>
+                        <span className="text-gray-400">•</span>
+                        <span>
+                          Last: {new Date(depositSummary.lastDepositDate).toLocaleDateString()}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <Link
+                  href="/deposits"
+                  className="text-sm font-medium text-primary hover:text-primary-dark underline"
+                >
+                  View History →
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Side-by-Side Metrics */}

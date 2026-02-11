@@ -299,26 +299,3 @@ model MarketBenchmark {
   @@index([ticker])
   @@index([migrated])
 }
-
-model CashDeposit {
-  id          String      @id @default(cuid())
-  userId      String
-  amount      Decimal     @db.Decimal(10, 2)
-  type        DepositType @default(DEPOSIT)
-  depositDate DateTime
-  notes       String?
-
-  // Benchmark tracking - SPY price and shares at time of deposit
-  spyPrice  Decimal @db.Decimal(10, 4)
-  spyShares Decimal @db.Decimal(10, 4)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([depositDate])
-  @@index([userId, depositDate])
-  @@index([type])
-}

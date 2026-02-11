@@ -14,32 +14,32 @@ enum TradeType {
 }
 
 enum TradeAction {
-  SELL_TO_OPEN     // Opening a new position
-  BUY_TO_CLOSE     // Closing an existing position
+  SELL_TO_OPEN // Opening a new position
+  BUY_TO_CLOSE // Closing an existing position
 }
 
 enum TradeStatus {
-  OPEN             // Active option contract
-  CLOSED           // Manually closed
-  EXPIRED          // Expired worthless
-  ASSIGNED         // Option was exercised
+  OPEN // Active option contract
+  CLOSED // Manually closed
+  EXPIRED // Expired worthless
+  ASSIGNED // Option was exercised
 }
 
 enum PositionStatus {
-  OPEN             // Currently holding shares
-  CLOSED           // Position closed/sold
+  OPEN // Currently holding shares
+  CLOSED // Position closed/sold
 }
 
 enum WheelStatus {
-  ACTIVE           // Currently in a wheel cycle
-  IDLE             // Completed cycle, waiting for new PUT
-  PAUSED           // User paused the wheel
-  COMPLETED        // User ended the wheel permanently
+  ACTIVE // Currently in a wheel cycle
+  IDLE // Completed cycle, waiting for new PUT
+  PAUSED // User paused the wheel
+  COMPLETED // User ended the wheel permanently
 }
 
 enum DepositType {
-  DEPOSIT          // Cash added to account
-  WITHDRAWAL       // Cash removed from account
+  DEPOSIT // Cash added to account
+  WITHDRAWAL // Cash removed from account
 }
 
 // Models
@@ -49,18 +49,18 @@ model User {
   name          String?
   emailVerified DateTime?
   image         String?
-  password      String?   // For email/password auth
+  password      String? // For email/password auth
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  trades          Trade[]
-  positions       Position[]
-  wheels          Wheel[]
-  benchmarks      Benchmark[]
+  trades           Trade[]
+  positions        Position[]
+  wheels           Wheel[]
+  benchmarks       Benchmark[]
   marketBenchmarks MarketBenchmark[]
-  cashDeposits    CashDeposit[]
-  accounts        Account[]
-  sessions        Session[]
+  cashDeposits     CashDeposit[]
+  accounts         Account[]
+  sessions         Session[]
 
   @@index([email])
 }
@@ -103,43 +103,66 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Trade {
-  id              String      @id @default(cuid())
-  userId          String
-  ticker          String      // Stock symbol (e.g., "AAPL")
-  type            TradeType
-  action          TradeAction
-  status          TradeStatus @default(OPEN)
-  strikePrice     Decimal     @db.Decimal(10, 2)
-  premium         Decimal     @db.Decimal(10, 2) // Total premium collected/paid
-  closePremium    Decimal?    @db.Decimal(10, 2) // Premium paid to close early (BUY_TO_CLOSE)
-  realizedGainLoss Decimal?   @db.Decimal(10, 2) // Net P/L when closed early (premium - closePremium)
-  contracts       Int         // Number of contracts
-  shares          Int         // contracts * 100
-  expirationDate  DateTime
-  openDate        DateTime    @default(now())
-  closeDate       DateTime?
-  notes           String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+model CashDeposit {
+  id          String      @id @default(cuid())
+  userId      String
+  amount      Decimal     @db.Decimal(10, 2)
+  type        DepositType @default(DEPOSIT)
+  depositDate DateTime
+  notes       String?
 
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Benchmark tracking - SPY price and shares at time of deposit
+  spyPrice  Decimal @db.Decimal(10, 4)
+  spyShares Decimal @db.Decimal(10, 4)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([depositDate])
+  @@index([userId, depositDate])
+  @@index([type])
+}
+
+model Trade {
+  id               String      @id @default(cuid())
+  userId           String
+  ticker           String // Stock symbol (e.g., "AAPL")
+  type             TradeType
+  action           TradeAction
+  status           TradeStatus @default(OPEN)
+  strikePrice      Decimal     @db.Decimal(10, 2)
+  premium          Decimal     @db.Decimal(10, 2) // Total premium collected/paid
+  closePremium     Decimal?    @db.Decimal(10, 2) // Premium paid to close early (BUY_TO_CLOSE)
+  realizedGainLoss Decimal?    @db.Decimal(10, 2) // Net P/L when closed early (premium - closePremium)
+  contracts        Int // Number of contracts
+  shares           Int // contracts * 100
+  expirationDate   DateTime
+  openDate         DateTime    @default(now())
+  closeDate        DateTime?
+  notes            String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Relations for assigned PUTs that create positions
-  createdPosition Position?   @relation("AssignmentTrade")
+  createdPosition Position? @relation("AssignmentTrade")
 
   // Relations for covered calls against positions
-  position        Position?   @relation("CoveredCalls", fields: [positionId], references: [id])
-  positionId      String?
+  position   Position? @relation("CoveredCalls", fields: [positionId], references: [id])
+  positionId String?
 
   // Relations for wheel strategy tracking
-  wheel           Wheel?      @relation("WheelTrades", fields: [wheelId], references: [id])
-  wheelId         String?
+  wheel   Wheel?  @relation("WheelTrades", fields: [wheelId], references: [id])
+  wheelId String?
 
   // Relations for roll tracking (when options are rolled to new dates/strikes)
-  rolledFrom      Trade?      @relation("RollTracking", fields: [rolledFromId], references: [id])
-  rolledFromId    String?
-  rolledTo        Trade[]     @relation("RollTracking")
+  rolledFrom   Trade?  @relation("RollTracking", fields: [rolledFromId], references: [id])
+  rolledFromId String?
+  rolledTo     Trade[] @relation("RollTracking")
 
   @@index([userId])
   @@index([ticker])
@@ -159,33 +182,33 @@ model Trade {
 }
 
 model Position {
-  id                String          @id @default(cuid())
-  userId            String
-  ticker            String          // Stock symbol
-  shares            Int
-  costBasis         Decimal         @db.Decimal(10, 2) // Cost per share
-  totalCost         Decimal         @db.Decimal(10, 2) // Total amount paid
-  currentValue      Decimal?        @db.Decimal(10, 2) // Current market value
-  realizedGainLoss  Decimal?        @db.Decimal(10, 2) // Gain/loss when closed
-  status            PositionStatus  @default(OPEN)
-  acquiredDate      DateTime
-  closedDate        DateTime?
-  notes             String?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id               String         @id @default(cuid())
+  userId           String
+  ticker           String // Stock symbol
+  shares           Int
+  costBasis        Decimal        @db.Decimal(10, 2) // Cost per share
+  totalCost        Decimal        @db.Decimal(10, 2) // Total amount paid
+  currentValue     Decimal?       @db.Decimal(10, 2) // Current market value
+  realizedGainLoss Decimal?       @db.Decimal(10, 2) // Gain/loss when closed
+  status           PositionStatus @default(OPEN)
+  acquiredDate     DateTime
+  closedDate       DateTime?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // The PUT trade that created this position (via assignment)
-  assignmentTrade   Trade           @relation("AssignmentTrade", fields: [assignmentTradeId], references: [id])
-  assignmentTradeId String          @unique
+  assignmentTrade   Trade  @relation("AssignmentTrade", fields: [assignmentTradeId], references: [id])
+  assignmentTradeId String @unique
 
   // Covered calls sold against this position
-  coveredCalls      Trade[]         @relation("CoveredCalls")
+  coveredCalls Trade[] @relation("CoveredCalls")
 
   // Relations for wheel strategy tracking
-  wheel             Wheel?          @relation("WheelPositions", fields: [wheelId], references: [id])
-  wheelId           String?
+  wheel   Wheel?  @relation("WheelPositions", fields: [wheelId], references: [id])
+  wheelId String?
 
   @@index([userId])
   @@index([ticker])
@@ -201,23 +224,23 @@ model Position {
 }
 
 model Wheel {
-  id              String       @id @default(cuid())
+  id              String      @id @default(cuid())
   userId          String
   ticker          String
-  status          WheelStatus  @default(ACTIVE)
-  cycleCount      Int          @default(0)
-  totalPremiums   Decimal      @db.Decimal(10, 2) @default(0)
-  totalRealizedPL Decimal      @db.Decimal(10, 2) @default(0)
-  startedAt       DateTime     @default(now())
-  lastActivityAt  DateTime     @default(now())
+  status          WheelStatus @default(ACTIVE)
+  cycleCount      Int         @default(0)
+  totalPremiums   Decimal     @default(0) @db.Decimal(10, 2)
+  totalRealizedPL Decimal     @default(0) @db.Decimal(10, 2)
+  startedAt       DateTime    @default(now())
+  lastActivityAt  DateTime    @default(now())
   completedAt     DateTime?
   notes           String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  trades          Trade[]      @relation("WheelTrades")
-  positions       Position[]   @relation("WheelPositions")
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades    Trade[]    @relation("WheelTrades")
+  positions Position[] @relation("WheelPositions")
 
   @@index([userId, ticker])
   @@index([status])
@@ -239,16 +262,16 @@ model StockPrice {
 }
 
 model Benchmark {
-  id              String   @id @default(cuid())
-  userId          String
-  date            DateTime
-  totalValue      Decimal  @db.Decimal(10, 2) // Portfolio value
-  totalGainLoss   Decimal  @db.Decimal(10, 2) // Cumulative gain/loss
-  cashBalance     Decimal  @db.Decimal(10, 2) // Available cash
-  notes           String?
-  createdAt       DateTime @default(now())
+  id            String   @id @default(cuid())
+  userId        String
+  date          DateTime
+  totalValue    Decimal  @db.Decimal(10, 2) // Portfolio value
+  totalGainLoss Decimal  @db.Decimal(10, 2) // Cumulative gain/loss
+  cashBalance   Decimal  @db.Decimal(10, 2) // Available cash
+  notes         String?
+  createdAt     DateTime @default(now())
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
   @@index([userId])
@@ -256,20 +279,20 @@ model Benchmark {
 }
 
 model MarketBenchmark {
-  id              String    @id @default(cuid())
-  userId          String
-  ticker          String    // SPY, QQQ, VTI, etc.
-  initialCapital  Decimal   @db.Decimal(10, 2) // Amount initially invested
-  setupDate       DateTime  // When the benchmark started
-  initialPrice    Decimal   @db.Decimal(10, 4) // Price at setup
-  shares          Decimal   @db.Decimal(10, 4) // Calculated: initialCapital / initialPrice
-  migrated        Boolean   @default(false) // True if migrated to deposit-based system
-  migratedAt      DateTime? // When migration occurred
-  lastUpdated     DateTime  @default(now())
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  userId         String
+  ticker         String    // SPY, QQQ, VTI, etc.
+  initialCapital Decimal   @db.Decimal(10, 2) // Amount initially invested
+  setupDate      DateTime  // When the benchmark started
+  initialPrice   Decimal   @db.Decimal(10, 4) // Price at setup
+  shares         Decimal   @db.Decimal(10, 4) // Calculated: initialCapital / initialPrice
+  migrated       Boolean   @default(false) // True if migrated to deposit-based system
+  migratedAt     DateTime? // When migration occurred
+  lastUpdated    DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, ticker])
   @@index([userId])
@@ -278,21 +301,21 @@ model MarketBenchmark {
 }
 
 model CashDeposit {
-  id              String      @id @default(cuid())
-  userId          String
-  amount          Decimal     @db.Decimal(10, 2) // Deposit amount (positive for DEPOSIT, negative for WITHDRAWAL)
-  type            DepositType @default(DEPOSIT)
-  depositDate     DateTime    // Date of deposit/withdrawal
-  notes           String?     // Optional notes
+  id          String      @id @default(cuid())
+  userId      String
+  amount      Decimal     @db.Decimal(10, 2)
+  type        DepositType @default(DEPOSIT)
+  depositDate DateTime
+  notes       String?
 
-  // Benchmark tracking - SPY share tracking
-  spyPrice        Decimal     @db.Decimal(10, 4) // SPY price at deposit time
-  spyShares       Decimal     @db.Decimal(10, 4) // Shares purchased/sold (positive for DEPOSIT, negative for WITHDRAWAL)
+  // Benchmark tracking - SPY price and shares at time of deposit
+  spyPrice  Decimal @db.Decimal(10, 4)
+  spyShares Decimal @db.Decimal(10, 4)
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([depositDate])

@@ -42,7 +42,6 @@ describe('Market Data Service', () => {
         data: {
           ticker: 'TSLA',
           price: 250.5,
-          date: new Date('2026-02-07'),
           source: 'alpha_vantage',
         },
       })
@@ -60,29 +59,25 @@ describe('Market Data Service', () => {
       expect(result).toBeNull()
     })
 
-    it('should return most recent price', async () => {
-      // Save multiple prices
-      await prisma.stockPrice.createMany({
-        data: [
-          {
-            ticker: 'MSFT',
-            price: 390.0,
-            date: new Date('2026-02-01'),
-            source: 'alpha_vantage',
-          },
-          {
-            ticker: 'MSFT',
-            price: 400.0,
-            date: new Date('2026-02-07'),
-            source: 'alpha_vantage',
-          },
-        ],
+    it('should update existing price when saving again', async () => {
+      // First create
+      await prisma.stockPrice.create({
+        data: {
+          ticker: 'MSFT',
+          price: 390.0,
+          source: 'alpha_vantage',
+        },
+      })
+
+      // Update with new price
+      await prisma.stockPrice.update({
+        where: { ticker: 'MSFT' },
+        data: { price: 400.0 },
       })
 
       const result = await getLatestPrice('MSFT')
 
       expect(result?.price).toBe(400.0)
-      expect(result?.date).toEqual(new Date('2026-02-07'))
     })
 
     it('should handle case-insensitive ticker', async () => {
@@ -127,7 +122,6 @@ describe('Market Data Service', () => {
         data: {
           ticker: 'TEST',
           price: 123.45,
-          date: new Date('2026-02-07'),
           source: 'alpha_vantage',
         },
       })
@@ -137,12 +131,11 @@ describe('Market Data Service', () => {
       expect(testPrice.source).toBe('alpha_vantage')
     })
 
-    it('should enforce unique constraint on ticker and date', async () => {
+    it('should enforce unique constraint on ticker', async () => {
       await prisma.stockPrice.create({
         data: {
           ticker: 'UNIQUE_TEST',
           price: 100.0,
-          date: new Date('2026-02-07'),
           source: 'alpha_vantage',
         },
       })
@@ -150,10 +143,7 @@ describe('Market Data Service', () => {
       // Attempting to create duplicate should work with upsert
       await prisma.stockPrice.upsert({
         where: {
-          ticker_date: {
-            ticker: 'UNIQUE_TEST',
-            date: new Date('2026-02-07'),
-          },
+          ticker: 'UNIQUE_TEST',
         },
         update: {
           price: 110.0,
@@ -161,15 +151,13 @@ describe('Market Data Service', () => {
         create: {
           ticker: 'UNIQUE_TEST',
           price: 110.0,
-          date: new Date('2026-02-07'),
           source: 'alpha_vantage',
         },
       })
 
-      const result = await prisma.stockPrice.findFirst({
+      const result = await prisma.stockPrice.findUnique({
         where: {
           ticker: 'UNIQUE_TEST',
-          date: new Date('2026-02-07'),
         },
       })
 
@@ -178,10 +166,7 @@ describe('Market Data Service', () => {
       // Cleanup
       await prisma.stockPrice.delete({
         where: {
-          ticker_date: {
-            ticker: 'UNIQUE_TEST',
-            date: new Date('2026-02-07'),
-          },
+          ticker: 'UNIQUE_TEST',
         },
       })
     })

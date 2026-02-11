@@ -16,7 +16,7 @@ vi.mock('@/lib/db', () => ({
       findFirst: vi.fn(),
     },
     stockPrice: {
-      findFirst: vi.fn(),
+      findUnique: vi.fn(),
     },
     position: {
       findMany: vi.fn(),
@@ -59,12 +59,12 @@ describe('Price Actions', () => {
         id: 'price1',
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.50),
-        date: new Date('2026-02-07T14:00:00Z'),
+        updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
 
-      vi.mocked(prisma.stockPrice.findFirst).mockResolvedValue(mockPrice)
+      vi.mocked(prisma.stockPrice.findUnique).mockResolvedValue(mockPrice)
 
       const result = await getLatestPrice('AAPL')
 
@@ -75,9 +75,8 @@ describe('Price Actions', () => {
         expect(result.data.source).toBe('alpha_vantage')
       }
 
-      expect(prisma.stockPrice.findFirst).toHaveBeenCalledWith({
+      expect(prisma.stockPrice.findUnique).toHaveBeenCalledWith({
         where: { ticker: 'AAPL' },
-        orderBy: { date: 'desc' },
       })
     })
 
@@ -86,18 +85,17 @@ describe('Price Actions', () => {
         id: 'price1',
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.50),
-        date: new Date('2026-02-07T14:00:00Z'),
+        updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
 
-      vi.mocked(prisma.stockPrice.findFirst).mockResolvedValue(mockPrice)
+      vi.mocked(prisma.stockPrice.findUnique).mockResolvedValue(mockPrice)
 
       await getLatestPrice('aapl')
 
-      expect(prisma.stockPrice.findFirst).toHaveBeenCalledWith({
+      expect(prisma.stockPrice.findUnique).toHaveBeenCalledWith({
         where: { ticker: 'AAPL' },
-        orderBy: { date: 'desc' },
       })
     })
 
@@ -109,12 +107,12 @@ describe('Price Actions', () => {
         id: 'price1',
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.50),
-        date: twoHoursAgo,
+        updatedAt: twoHoursAgo,
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
 
-      vi.mocked(prisma.stockPrice.findFirst).mockResolvedValue(mockPrice)
+      vi.mocked(prisma.stockPrice.findUnique).mockResolvedValue(mockPrice)
 
       const result = await getLatestPrice('AAPL')
 
@@ -133,12 +131,12 @@ describe('Price Actions', () => {
         id: 'price1',
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.50),
-        date: thirtyMinutesAgo,
+        updatedAt: thirtyMinutesAgo,
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
 
-      vi.mocked(prisma.stockPrice.findFirst).mockResolvedValue(mockPrice)
+      vi.mocked(prisma.stockPrice.findUnique).mockResolvedValue(mockPrice)
 
       const result = await getLatestPrice('AAPL')
 
@@ -150,7 +148,7 @@ describe('Price Actions', () => {
     })
 
     it('should return error if no price found', async () => {
-      vi.mocked(prisma.stockPrice.findFirst).mockResolvedValue(null)
+      vi.mocked(prisma.stockPrice.findUnique).mockResolvedValue(null)
 
       const result = await getLatestPrice('UNKNOWN')
 
@@ -161,7 +159,7 @@ describe('Price Actions', () => {
     })
 
     it('should handle database errors', async () => {
-      vi.mocked(prisma.stockPrice.findFirst).mockRejectedValue(
+      vi.mocked(prisma.stockPrice.findUnique).mockRejectedValue(
         new Error('Database connection failed')
       )
 
@@ -180,7 +178,7 @@ describe('Price Actions', () => {
         id: 'price1',
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.50),
-        date: new Date('2026-02-07T14:00:00Z'),
+        updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
@@ -189,12 +187,12 @@ describe('Price Actions', () => {
         id: 'price2',
         ticker: 'TSLA',
         price: new Prisma.Decimal(210.75),
-        date: new Date('2026-02-07T14:00:00Z'),
+        updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
 
-      vi.mocked(prisma.stockPrice.findFirst)
+      vi.mocked(prisma.stockPrice.findUnique)
         .mockResolvedValueOnce(mockPriceAAPL)
         .mockResolvedValueOnce(mockPriceTSLA)
 
@@ -213,12 +211,12 @@ describe('Price Actions', () => {
         id: 'price1',
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.50),
-        date: new Date('2026-02-07T14:00:00Z'),
+        updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
 
-      vi.mocked(prisma.stockPrice.findFirst)
+      vi.mocked(prisma.stockPrice.findUnique)
         .mockResolvedValueOnce(mockPriceAAPL)
         .mockResolvedValueOnce(null) // UNKNOWN ticker
 
@@ -232,7 +230,7 @@ describe('Price Actions', () => {
     })
 
     it('should return error if all tickers fail', async () => {
-      vi.mocked(prisma.stockPrice.findFirst).mockResolvedValue(null)
+      vi.mocked(prisma.stockPrice.findUnique).mockResolvedValue(null)
 
       const result = await getLatestPrices(['UNKNOWN1', 'UNKNOWN2'])
 
@@ -262,7 +260,7 @@ describe('Price Actions', () => {
         id: 'price1',
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.50),
-        date: new Date('2026-02-07T14:00:00Z'),
+        updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
@@ -271,13 +269,13 @@ describe('Price Actions', () => {
         id: 'price2',
         ticker: 'TSLA',
         price: new Prisma.Decimal(210.75),
-        date: new Date('2026-02-07T14:00:00Z'),
+        updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
 
       vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as unknown as Position[])
-      vi.mocked(prisma.stockPrice.findFirst)
+      vi.mocked(prisma.stockPrice.findUnique)
         .mockResolvedValueOnce(mockPriceAAPL)
         .mockResolvedValueOnce(mockPriceTSLA)
       vi.mocked(prisma.position.update).mockResolvedValue({} as unknown as Position)
@@ -315,13 +313,13 @@ describe('Price Actions', () => {
         id: 'price1',
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.50),
-        date: new Date('2026-02-07T14:00:00Z'),
+        updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
 
       vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as unknown as Position[])
-      vi.mocked(prisma.stockPrice.findFirst)
+      vi.mocked(prisma.stockPrice.findUnique)
         .mockResolvedValueOnce(mockPriceAAPL)
         .mockResolvedValueOnce(null)
       vi.mocked(prisma.position.update).mockResolvedValue({} as unknown as Position)
@@ -346,7 +344,7 @@ describe('Price Actions', () => {
         expect(result.data.failedTickers).toHaveLength(0)
       }
 
-      expect(prisma.stockPrice.findFirst).not.toHaveBeenCalled()
+      expect(prisma.stockPrice.findUnique).not.toHaveBeenCalled()
       expect(prisma.position.update).not.toHaveBeenCalled()
     })
   })
@@ -365,13 +363,13 @@ describe('Price Actions', () => {
         id: 'price1',
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.50),
-        date: new Date('2026-02-07T14:00:00Z'),
+        updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
       }
 
       vi.mocked(prisma.position.findUnique).mockResolvedValue(mockPosition as unknown as Position)
-      vi.mocked(prisma.stockPrice.findFirst).mockResolvedValue(mockPrice)
+      vi.mocked(prisma.stockPrice.findUnique).mockResolvedValue(mockPrice)
       vi.mocked(prisma.position.update).mockResolvedValue({} as unknown as Position)
 
       const result = await refreshSinglePositionPrice('pos1')

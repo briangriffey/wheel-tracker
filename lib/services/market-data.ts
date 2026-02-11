@@ -222,6 +222,7 @@ async function fetchFromAlphaVantage(ticker: string): Promise<StockPriceResult> 
 
 /**
  * Save stock price to database
+ * Updates the existing row for the ticker or creates a new one
  */
 async function saveStockPrice(result: StockPriceResult): Promise<void> {
   if (!result.success) {
@@ -231,10 +232,7 @@ async function saveStockPrice(result: StockPriceResult): Promise<void> {
   try {
     await prisma.stockPrice.upsert({
       where: {
-        ticker_date: {
-          ticker: result.ticker,
-          date: result.date,
-        },
+        ticker: result.ticker,
       },
       update: {
         price: new Prisma.Decimal(result.price),
@@ -242,7 +240,6 @@ async function saveStockPrice(result: StockPriceResult): Promise<void> {
       create: {
         ticker: result.ticker,
         price: new Prisma.Decimal(result.price),
-        date: result.date,
         source: 'alpha_vantage',
       },
     })
@@ -286,12 +283,9 @@ export async function batchFetchPrices(tickers: string[]): Promise<StockPriceRes
  */
 export async function getLatestPrice(ticker: string): Promise<StockPriceResult | null> {
   try {
-    const stockPrice = await prisma.stockPrice.findFirst({
+    const stockPrice = await prisma.stockPrice.findUnique({
       where: {
         ticker: ticker.toUpperCase(),
-      },
-      orderBy: {
-        date: 'desc',
       },
     })
 
@@ -302,7 +296,7 @@ export async function getLatestPrice(ticker: string): Promise<StockPriceResult |
     return {
       ticker: stockPrice.ticker,
       price: stockPrice.price.toNumber(),
-      date: stockPrice.date,
+      date: stockPrice.updatedAt,
       success: true,
     }
   } catch (error) {
@@ -319,17 +313,13 @@ export async function getLatestPrices(tickers: string[]): Promise<Map<string, St
   const priceMap = new Map<string, StockPriceResult>()
 
   try {
-    // Get the latest price for each ticker
+    // Get the price for each ticker (only one per ticker now)
     const prices = await prisma.stockPrice.findMany({
       where: {
         ticker: {
           in: uniqueTickers,
         },
       },
-      orderBy: {
-        date: 'desc',
-      },
-      distinct: ['ticker'],
     })
 
     // Map results
@@ -337,7 +327,7 @@ export async function getLatestPrices(tickers: string[]): Promise<Map<string, St
       priceMap.set(price.ticker, {
         ticker: price.ticker,
         price: price.price.toNumber(),
-        date: price.date,
+        date: price.updatedAt,
         success: true,
       })
     }

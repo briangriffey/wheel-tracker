@@ -249,16 +249,13 @@ model Wheel {
 
 model StockPrice {
   id        String   @id @default(cuid())
-  ticker    String
+  ticker    String   @unique // Only one price per ticker
   price     Decimal  @db.Decimal(10, 2)
-  date      DateTime
   source    String   @default("alpha_vantage") // API source
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt // When the price was last updated
 
-  @@unique([ticker, date])
   @@index([ticker])
-  @@index([date])
-  @@index([ticker, date])
 }
 
 model Benchmark {

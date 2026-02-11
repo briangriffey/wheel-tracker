@@ -51,10 +51,9 @@ export async function getLatestPrice(ticker: string): Promise<ActionResult<Price
   try {
     const normalizedTicker = ticker.toUpperCase()
 
-    // Get the most recent price for this ticker
-    const latestPrice = await prisma.stockPrice.findFirst({
+    // Get the price for this ticker (only one per ticker now)
+    const latestPrice = await prisma.stockPrice.findUnique({
       where: { ticker: normalizedTicker },
-      orderBy: { date: 'desc' },
     })
 
     if (!latestPrice) {
@@ -64,7 +63,7 @@ export async function getLatestPrice(ticker: string): Promise<ActionResult<Price
       }
     }
 
-    const ageInHours = calculatePriceAge(latestPrice.date)
+    const ageInHours = calculatePriceAge(latestPrice.updatedAt)
     const isStale = ageInHours > 1 // Price is stale if older than 1 hour
 
     return {
@@ -72,7 +71,7 @@ export async function getLatestPrice(ticker: string): Promise<ActionResult<Price
       data: {
         ticker: latestPrice.ticker,
         price: latestPrice.price.toNumber(),
-        date: latestPrice.date,
+        date: latestPrice.updatedAt,
         source: latestPrice.source,
         isStale,
         ageInHours,

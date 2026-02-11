@@ -37,6 +37,11 @@ enum WheelStatus {
   COMPLETED        // User ended the wheel permanently
 }
 
+enum DepositType {
+  DEPOSIT          // Cash added to account
+  WITHDRAWAL       // Cash removed from account
+}
+
 // Models
 model User {
   id            String    @id @default(cuid())
@@ -53,6 +58,7 @@ model User {
   wheels          Wheel[]
   benchmarks      Benchmark[]
   marketBenchmarks MarketBenchmark[]
+  cashDeposits    CashDeposit[]
   accounts        Account[]
   sessions        Session[]
 
@@ -250,20 +256,46 @@ model Benchmark {
 }
 
 model MarketBenchmark {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   userId          String
-  ticker          String   // SPY, QQQ, VTI, etc.
-  initialCapital  Decimal  @db.Decimal(10, 2) // Amount initially invested
-  setupDate       DateTime // When the benchmark started
-  initialPrice    Decimal  @db.Decimal(10, 4) // Price at setup
-  shares          Decimal  @db.Decimal(10, 4) // Calculated: initialCapital / initialPrice
-  lastUpdated     DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  ticker          String    // SPY, QQQ, VTI, etc.
+  initialCapital  Decimal   @db.Decimal(10, 2) // Amount initially invested
+  setupDate       DateTime  // When the benchmark started
+  initialPrice    Decimal   @db.Decimal(10, 4) // Price at setup
+  shares          Decimal   @db.Decimal(10, 4) // Calculated: initialCapital / initialPrice
+  migrated        Boolean   @default(false) // True if migrated to deposit-based system
+  migratedAt      DateTime? // When migration occurred
+  lastUpdated     DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, ticker])
   @@index([userId])
   @@index([ticker])
+  @@index([migrated])
+}
+
+model CashDeposit {
+  id              String      @id @default(cuid())
+  userId          String
+  amount          Decimal     @db.Decimal(10, 2) // Deposit amount (positive for DEPOSIT, negative for WITHDRAWAL)
+  type            DepositType @default(DEPOSIT)
+  depositDate     DateTime    // Date of deposit/withdrawal
+  notes           String?     // Optional notes
+
+  // Benchmark tracking - SPY share tracking
+  spyPrice        Decimal     @db.Decimal(10, 4) // SPY price at deposit time
+  spyShares       Decimal     @db.Decimal(10, 4) // Shares purchased/sold (positive for DEPOSIT, negative for WITHDRAWAL)
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([depositDate])
+  @@index([userId, depositDate])
+  @@index([type])
 }

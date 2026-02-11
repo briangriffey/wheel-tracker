@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { DepositForm } from '@/components/forms/deposit-form'
 import { WithdrawalForm } from '@/components/forms/withdrawal-form'
 import { Button } from '@/components/design-system/button/button'
+import { LumpSumComparison } from '@/components/deposits/lump-sum-comparison'
 import type { CashDepositData, DepositSummary } from '@/lib/actions/deposits'
 
 interface DepositsClientProps {
@@ -114,6 +115,13 @@ export function DepositsClient({ initialDeposits, initialSummary }: DepositsClie
                 Avg cost: {formatCurrency(initialSummary.avgCostBasis)}
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Lump Sum Comparison */}
+        {initialDeposits.length > 0 && (
+          <div className="mb-6">
+            <LumpSumComparison />
           </div>
         )}
 

@@ -539,3 +539,157 @@ export async function deleteCashDeposit(
     return { success: false, error: 'Failed to delete cash deposit' }
   }
 }
+
+/**
+ * Get lump sum comparison data
+ * Compares DCA strategy vs hypothetical lump sum investment
+ */
+export async function getLumpSumComparison(
+  lumpSumDate?: Date
+): Promise<ActionResult<import('@/lib/calculations/lump-sum-comparison').LumpSumComparison>> {
+  try {
+    const { calculateLumpSumComparison } = await import(
+      '@/lib/calculations/lump-sum-comparison'
+    )
+
+    const userId = await getCurrentUserId()
+
+    // Get all deposits
+    const deposits = await prisma.cashDeposit.findMany({
+      where: { userId },
+      orderBy: { depositDate: 'asc' },
+    })
+
+    if (deposits.length === 0) {
+      return {
+        success: false,
+        error: 'No deposits found. Please record some deposits first.',
+      }
+    }
+
+    // Convert to CashDepositData
+    const depositData: CashDepositData[] = deposits.map((d) => ({
+      id: d.id,
+      userId: d.userId,
+      amount: d.amount.toNumber(),
+      type: d.type as 'DEPOSIT' | 'WITHDRAWAL',
+      depositDate: d.depositDate,
+      notes: d.notes,
+      spyPrice: d.spyPrice.toNumber(),
+      spyShares: d.spyShares.toNumber(),
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt,
+    }))
+
+    // Use first deposit date as default lump sum date
+    const comparisonDate = lumpSumDate || depositData[0].depositDate
+    const lumpSumPrice = depositData[0].spyPrice
+
+    // Get current SPY price
+    const currentPriceResult = await getSPYPriceForDate(new Date())
+    if (!currentPriceResult.success) {
+      return {
+        success: false,
+        error: `Failed to fetch current SPY price: ${currentPriceResult.error}`,
+      }
+    }
+
+    const currentPrice = currentPriceResult.price
+
+    // Calculate comparison
+    const comparison = calculateLumpSumComparison(
+      depositData,
+      comparisonDate,
+      lumpSumPrice,
+      currentPrice
+    )
+
+    return {
+      success: true,
+      data: comparison,
+    }
+  } catch (error) {
+    console.error('Error getting lump sum comparison:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to get lump sum comparison' }
+  }
+}
+
+/**
+ * Calculate what-if scenario for custom date and price
+ */
+export async function getWhatIfComparison(
+  whatIfDate: Date,
+  whatIfPrice: number
+): Promise<ActionResult<import('@/lib/calculations/lump-sum-comparison').LumpSumComparison>> {
+  try {
+    const { calculateWhatIfScenario } = await import(
+      '@/lib/calculations/lump-sum-comparison'
+    )
+
+    const userId = await getCurrentUserId()
+
+    // Get all deposits
+    const deposits = await prisma.cashDeposit.findMany({
+      where: { userId },
+      orderBy: { depositDate: 'asc' },
+    })
+
+    if (deposits.length === 0) {
+      return {
+        success: false,
+        error: 'No deposits found. Please record some deposits first.',
+      }
+    }
+
+    // Convert to CashDepositData
+    const depositData: CashDepositData[] = deposits.map((d) => ({
+      id: d.id,
+      userId: d.userId,
+      amount: d.amount.toNumber(),
+      type: d.type as 'DEPOSIT' | 'WITHDRAWAL',
+      depositDate: d.depositDate,
+      notes: d.notes,
+      spyPrice: d.spyPrice.toNumber(),
+      spyShares: d.spyShares.toNumber(),
+      createdAt: d.createdAt,
+      updatedAt: d.updatedAt,
+    }))
+
+    // Get current SPY price
+    const currentPriceResult = await getSPYPriceForDate(new Date())
+    if (!currentPriceResult.success) {
+      return {
+        success: false,
+        error: `Failed to fetch current SPY price: ${currentPriceResult.error}`,
+      }
+    }
+
+    const currentPrice = currentPriceResult.price
+
+    // Calculate what-if scenario
+    const comparison = calculateWhatIfScenario(
+      depositData,
+      whatIfDate,
+      whatIfPrice,
+      currentPrice
+    )
+
+    return {
+      success: true,
+      data: comparison,
+    }
+  } catch (error) {
+    console.error('Error calculating what-if scenario:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to calculate what-if scenario' }
+  }
+}

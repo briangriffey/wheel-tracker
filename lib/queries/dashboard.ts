@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import { prisma } from '@/lib/db'
 import type { Prisma } from '@/lib/generated/prisma'
+import { getLatestPrice } from '@/lib/services/market-data'
 
 /**
  * Get the current user ID
@@ -52,17 +53,21 @@ function getDateThreshold(timeRange: TimeRange): Date | null {
  * Dashboard metrics type
  */
 export interface DashboardMetrics {
-  // Headline metrics
+  // Portfolio overview
+  totalPortfolioValue: number
+  spyComparisonValue: number
+  cashDeposits: number
+
+  // Stock metrics
   totalPL: number
   realizedPL: number
   unrealizedPL: number
-  vsSPY: number | null // To be implemented later with SPY benchmark
+  distinctStockCount: number
 
-  // Performance stats
+  // Options metrics
   totalPremiumCollected: number
   winRate: number
   assignmentRate: number
-  activePositions: number
   openContracts: number
 }
 
@@ -112,7 +117,7 @@ export const getDashboardMetrics = cache(async (
     const dateFilter = dateThreshold ? { gte: dateThreshold } : undefined
 
     // Fetch all data in parallel with optimized queries
-    const [positionStats, trades, openPositions, closedPositions, activePositionsCount] = await Promise.all([
+    const [positionStats, trades, openPositions, closedPositions, cashDepositAgg, spyPrice, distinctStocks] = await Promise.all([
       // Position aggregates
       prisma.position.aggregate({
         where: {
@@ -165,12 +170,18 @@ export const getDashboardMetrics = cache(async (
           realizedGainLoss: true,
         },
       }),
-      // Active positions count (no date filter for current state)
-      prisma.position.count({
-        where: {
-          userId,
-          status: 'OPEN',
-        },
+      // Cash deposits aggregate (net invested + total SPY shares)
+      prisma.cashDeposit.aggregate({
+        where: { userId },
+        _sum: { amount: true, spyShares: true },
+      }),
+      // Current SPY price from cached DB data
+      getLatestPrice('SPY'),
+      // Distinct stock tickers in open positions
+      prisma.position.findMany({
+        where: { userId, status: 'OPEN' },
+        select: { ticker: true },
+        distinct: ['ticker'],
       }),
     ])
 
@@ -220,15 +231,24 @@ export const getDashboardMetrics = cache(async (
       .filter(t => t.status === 'OPEN')
       .reduce((sum, trade) => sum + trade.contracts, 0)
 
+    // Calculate portfolio overview metrics
+    const netInvested = cashDepositAgg._sum.amount?.toNumber() || 0
+    const totalSpyShares = cashDepositAgg._sum.spyShares?.toNumber() || 0
+    const currentSPYPrice = spyPrice?.price || 0
+    const totalPortfolioValue = netInvested + totalPremiumCollected + unrealizedPL
+    const spyComparisonValue = totalSpyShares * currentSPYPrice
+
     return {
+      totalPortfolioValue,
+      spyComparisonValue,
+      cashDeposits: netInvested,
       totalPL,
       realizedPL,
       unrealizedPL,
-      vsSPY: null, // To be implemented with benchmark comparison
+      distinctStockCount: distinctStocks.length,
       totalPremiumCollected,
       winRate,
       assignmentRate,
-      activePositions: activePositionsCount,
       openContracts: openContractsCount,
     }
   } catch (error) {

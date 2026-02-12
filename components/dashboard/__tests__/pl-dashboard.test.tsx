@@ -14,14 +14,16 @@ import type {
 global.fetch = vi.fn()
 
 const mockMetrics: DashboardMetrics = {
+  totalPortfolioValue: 50000,
+  spyComparisonValue: 48000,
+  cashDeposits: 40000,
   totalPL: 5000,
   realizedPL: 3000,
   unrealizedPL: 2000,
-  vsSPY: null,
+  distinctStockCount: 5,
   totalPremiumCollected: 10000,
   winRate: 75,
   assignmentRate: 25,
-  activePositions: 5,
   openContracts: 10,
 }
 
@@ -61,21 +63,28 @@ describe('PLDashboard', () => {
     // Check header
     expect(screen.getByText('P&L Dashboard')).toBeInTheDocument()
 
-    // Check headline metrics
-    expect(screen.getByText('Total P&L')).toBeInTheDocument()
+    // Check section headers
+    expect(screen.getByText('Portfolio Overview')).toBeInTheDocument()
+    expect(screen.getByText('Stocks')).toBeInTheDocument()
+    expect(screen.getByText('Options')).toBeInTheDocument()
+
+    // Check portfolio overview metrics
+    expect(screen.getByText('Total Portfolio Value')).toBeInTheDocument()
+    expect(screen.getByText('$50,000.00')).toBeInTheDocument()
+    expect(screen.getByText('If You Bought SPY')).toBeInTheDocument()
+    expect(screen.getByText('$48,000.00')).toBeInTheDocument()
+
+    // Check stock metrics
+    expect(screen.getByText('Total Stock P&L')).toBeInTheDocument()
     expect(screen.getByText('$5,000.00')).toBeInTheDocument()
     expect(screen.getByText('Realized P&L')).toBeInTheDocument()
-    expect(screen.getByText('$3,000.00')).toBeInTheDocument()
-    expect(screen.getByText('Unrealized P&L')).toBeInTheDocument()
-    expect(screen.getByText('$2,000.00')).toBeInTheDocument()
+    expect(screen.getByText('Stocks Owned')).toBeInTheDocument()
 
-    // Check performance stats
+    // Check options metrics
     expect(screen.getByText('Premium Collected')).toBeInTheDocument()
     expect(screen.getByText('$10,000.00')).toBeInTheDocument()
     expect(screen.getAllByText('Win Rate').length).toBeGreaterThan(0)
     expect(screen.getByText('75.00%')).toBeInTheDocument()
-    expect(screen.getByText('Active Positions')).toBeInTheDocument()
-    expect(screen.getByText('5')).toBeInTheDocument()
   })
 
   it('renders time range selector with default "All" selected', () => {

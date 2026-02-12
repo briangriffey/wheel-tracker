@@ -90,60 +90,83 @@ export function PLDashboard({
         <TimeRangeSelector selected={timeRange} onChange={setTimeRange} />
       </div>
 
-      {/* Headline Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          title="Total P&L"
-          value={metrics.totalPL}
-          formatAs="currency"
-          colorize
-          loading={loading}
-        />
-        <MetricCard
-          title="Realized P&L"
-          value={metrics.realizedPL}
-          formatAs="currency"
-          colorize
-          loading={loading}
-        />
-        <MetricCard
-          title="Unrealized P&L"
-          value={metrics.unrealizedPL}
-          formatAs="currency"
-          colorize
-          loading={loading}
-        />
-        <MetricCard
-          title="vs SPY"
-          value={metrics.vsSPY}
-          formatAs="percentage"
-          subtitle="Benchmark comparison (coming soon)"
-          loading={loading}
-        />
+      {/* Row 1 — Portfolio Overview */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-700 mb-3">Portfolio Overview</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <MetricCard
+            title="Total Portfolio Value"
+            value={metrics.totalPortfolioValue}
+            formatAs="currency"
+            loading={loading}
+          />
+          <MetricCard
+            title="If You Bought SPY"
+            value={metrics.spyComparisonValue}
+            formatAs="currency"
+            loading={loading}
+          />
+        </div>
       </div>
 
-      {/* Performance Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <StatCard
-          label="Premium Collected"
-          value={metrics.totalPremiumCollected}
-          formatAs="currency"
-          loading={loading}
-        />
-        <StatCard
-          label="Win Rate"
-          value={metrics.winRate}
-          formatAs="percentage"
-          loading={loading}
-        />
-        <StatCard
-          label="Assignment Rate"
-          value={metrics.assignmentRate}
-          formatAs="percentage"
-          loading={loading}
-        />
-        <StatCard label="Active Positions" value={metrics.activePositions} loading={loading} />
-        <StatCard label="Open Contracts" value={metrics.openContracts} loading={loading} />
+      {/* Row 2 — Stocks */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-700 mb-3">Stocks</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <MetricCard
+            title="Total Stock P&L"
+            value={metrics.totalPL}
+            formatAs="currency"
+            colorize
+            loading={loading}
+          />
+          <MetricCard
+            title="Realized P&L"
+            value={metrics.realizedPL}
+            formatAs="currency"
+            colorize
+            loading={loading}
+          />
+          <MetricCard
+            title="Unrealized P&L"
+            value={metrics.unrealizedPL}
+            formatAs="currency"
+            colorize
+            loading={loading}
+          />
+          <MetricCard
+            title="Stocks Owned"
+            value={metrics.distinctStockCount}
+            formatAs="number"
+            loading={loading}
+          />
+        </div>
+      </div>
+
+      {/* Row 3 — Options */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-700 mb-3">Options</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard
+            label="Premium Collected"
+            value={metrics.totalPremiumCollected}
+            formatAs="currency"
+            loading={loading}
+          />
+          <StatCard
+            label="Win Rate"
+            value={metrics.winRate}
+            formatAs="percentage"
+            loading={loading}
+          />
+          <StatCard
+            label="Assignment Rate"
+            value={metrics.assignmentRate}
+            formatAs="percentage"
+            loading={loading}
+          />
+          <StatCard label="Open Contracts" value={metrics.openContracts} loading={loading} />
+        </div>
       </div>
 
       {/* Charts */}

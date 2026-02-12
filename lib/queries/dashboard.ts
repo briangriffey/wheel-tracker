@@ -106,7 +106,7 @@ export interface WinRateData {
  * Get dashboard metrics for the current user
  * Cached to avoid duplicate queries within the same request
  */
-export const getDashboardMetrics = cache(async (
+export const getDashboardMetrics = async (
   timeRange: TimeRange = 'All'
 ): Promise<DashboardMetrics> => {
   try {
@@ -255,7 +255,7 @@ export const getDashboardMetrics = cache(async (
     console.error('Error fetching dashboard metrics:', error)
     throw new Error('Failed to fetch dashboard metrics')
   }
-})
+}
 
 /**
  * Get P&L over time data

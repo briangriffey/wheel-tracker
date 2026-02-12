@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
-import { getStatusColor } from '@/lib/design/colors'
+import { getStatusColor, getPnlColor } from '@/lib/design/colors'
 import { Button } from '@/components/design-system/button/button'
 import type { StockPriceResult } from '@/lib/services/market-data'
 import { TradeActionsDialog } from './trade-actions-dialog'
@@ -149,8 +149,27 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
     }
   }
 
-  // Get row background color based on money status
+  // Get realized P&L for closed/expired trades
+  const getClosedTradePnL = (trade: Trade): number | null => {
+    if (trade.status === 'EXPIRED') {
+      // Expired = full premium is profit
+      return toDecimalNumber(trade.premium as unknown as Prisma.Decimal | string | number)
+    }
+    if (trade.status === 'CLOSED' && trade.realizedGainLoss != null) {
+      return toDecimalNumber(trade.realizedGainLoss as unknown as Prisma.Decimal | string | number)
+    }
+    return null
+  }
+
+  // Get row background color based on money status (open) or P&L (closed)
   const getRowBgColor = (trade: Trade, currentPrice: number | undefined) => {
+    // Closed/expired trades: color by realized P&L
+    const closedPnL = getClosedTradePnL(trade)
+    if (closedPnL !== null) {
+      return getPnlColor(closedPnL).bg
+    }
+
+    // Open trades: color by moneyness
     const status = getMoneyStatus(trade, currentPrice)
     if (status === 'otm') return 'bg-green-50'
     if (status === 'itm') return 'bg-red-50'
@@ -361,6 +380,9 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  P&L
+                </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
@@ -411,6 +433,18 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
                         {trade.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {(() => {
+                        const pnl = getClosedTradePnL(trade)
+                        if (pnl === null) return <span className="text-gray-400">-</span>
+                        const colors = getPnlColor(pnl)
+                        return (
+                          <span className={`font-semibold ${colors.text}`}>
+                            {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}
+                          </span>
+                        )
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
                       <Button
@@ -490,6 +524,19 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                     <span className="text-gray-500">Contracts:</span>
                     <span className="font-medium text-gray-900">{trade.contracts}</span>
                   </div>
+                  {(() => {
+                    const pnl = getClosedTradePnL(trade)
+                    if (pnl === null) return null
+                    const colors = getPnlColor(pnl)
+                    return (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">P&L:</span>
+                        <span className={`font-semibold ${colors.text}`}>
+                          {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}
+                        </span>
+                      </div>
+                    )
+                  })()}
                 </div>
 
                 {/* Tap to view hint */}

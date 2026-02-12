@@ -236,6 +236,7 @@ async function saveStockPrice(result: StockPriceResult): Promise<void> {
       },
       update: {
         price: new Prisma.Decimal(result.price),
+        createdAt: new Date(),
       },
       create: {
         ticker: result.ticker,

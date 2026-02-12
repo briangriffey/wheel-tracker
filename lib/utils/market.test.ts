@@ -223,7 +223,12 @@ describe('Market Utilities', () => {
       expect(tickers).toEqual(sorted)
     })
 
-    it('should return empty array if no active tickers', async () => {
+    it('should always include SPY for benchmark tracking', async () => {
+      const tickers = await getActiveTickers(testUserId)
+      expect(tickers).toContain('SPY')
+    })
+
+    it('should return only SPY if no active tickers', async () => {
       // Create a user with no data
       const emptyUser = await prisma.user.create({
         data: {
@@ -233,7 +238,7 @@ describe('Market Utilities', () => {
       })
 
       const tickers = await getActiveTickers(emptyUser.id)
-      expect(tickers).toEqual([])
+      expect(tickers).toEqual(['SPY'])
 
       // Cleanup
       await prisma.user.delete({ where: { id: emptyUser.id } })

@@ -136,8 +136,8 @@ export async function getActiveTickers(userId?: string): Promise<string[]> {
       distinct: ['ticker'],
     })
 
-    // Combine and deduplicate
-    const tickerSet = new Set<string>()
+    // Combine and deduplicate, always include SPY for benchmark tracking
+    const tickerSet = new Set<string>(['SPY'])
 
     for (const position of positions) {
       tickerSet.add(position.ticker.toUpperCase())

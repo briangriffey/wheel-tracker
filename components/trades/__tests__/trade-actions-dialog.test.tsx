@@ -1,6 +1,5 @@
-import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { TradeActionsDialog } from '../trade-actions-dialog'
 import { Prisma } from '@/lib/generated/prisma'
@@ -335,10 +334,10 @@ describe('TradeActionsDialog - User Interactions', () => {
       />
     )
 
-    // Click the backdrop (sibling of the dialog)
-    const backdrop = screen.getByRole('dialog').previousElementSibling
+    // Click the backdrop (find by role and check it's not the dialog itself)
+    const backdrop = screen.getByRole('dialog').parentElement
     if (backdrop) {
-      fireEvent.click(backdrop)
+      await user.click(backdrop)
       expect(onClose).toHaveBeenCalled()
     }
   })

@@ -188,7 +188,7 @@ describe('TradeList - Dropdown Menu', () => {
 
     // Menu should open and show options
     await waitFor(() => {
-      expect(screen.getAllByText('View Details').length).toBeGreaterThan(0)
+      expect(screen.getByText('View Details')).toBeInTheDocument()
     })
   })
 
@@ -201,11 +201,11 @@ describe('TradeList - Dropdown Menu', () => {
     await user.click(actionButtons[0])
 
     await waitFor(() => {
-      expect(screen.getAllByText('View Details').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('Close Early').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('Mark as Expired').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('Mark as Assigned').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('Delete').length).toBeGreaterThan(0)
+      expect(screen.getByText('View Details')).toBeInTheDocument()
+      expect(screen.getByText('Close Early')).toBeInTheDocument()
+      expect(screen.getByText('Mark as Expired')).toBeInTheDocument()
+      expect(screen.getByText('Mark as Assigned')).toBeInTheDocument()
+      expect(screen.getByText('Delete')).toBeInTheDocument()
     })
   })
 
@@ -218,7 +218,7 @@ describe('TradeList - Dropdown Menu', () => {
     await user.click(actionButtons[1])
 
     await waitFor(() => {
-      expect(screen.getAllByText('View Details').length).toBeGreaterThan(0)
+      expect(screen.getByText('View Details')).toBeInTheDocument()
       // These should not be present for EXPIRED trades
       expect(screen.queryByText('Close Early')).not.toBeInTheDocument()
       expect(screen.queryByText('Mark as Expired')).not.toBeInTheDocument()
@@ -251,9 +251,8 @@ describe('TradeList - Row Click Dialog', () => {
     const user = userEvent.setup()
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    // Open dialog by clicking the card or row
-    const appleCells = screen.getAllByText('AAPL')
-    await user.click(appleCells[0])
+    const appleCell = screen.getByText('AAPL')
+    await user.click(appleCell)
 
     await waitFor(() => {
       // Should show "Current Price:" label in dialog
@@ -268,8 +267,8 @@ describe('TradeList - Row Click Dialog', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
     // Open dialog
-    const appleCells = screen.getAllByText('AAPL')
-    await user.click(appleCells[0])
+    const appleCell = screen.getByText('AAPL')
+    await user.click(appleCell)
 
     await waitFor(() => {
       expect(screen.getByText('Current Price:')).toBeInTheDocument()
@@ -294,7 +293,7 @@ describe('TradeList - Row Click Dialog', () => {
 
     // Dropdown menu should open
     await waitFor(() => {
-      expect(screen.getAllByText('View Details').length).toBeGreaterThan(0)
+      expect(screen.getByText('View Details')).toBeInTheDocument()
     })
 
     // Dialog should NOT open (no "Current Price:" text which is unique to dialog)

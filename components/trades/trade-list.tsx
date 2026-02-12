@@ -150,13 +150,17 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
   }
 
   // Get realized P&L for closed/expired trades
+  // P&L = (premium - closePremium) * 100 * contracts
   const getClosedTradePnL = (trade: Trade): number | null => {
     if (trade.status === 'EXPIRED') {
-      // Expired = full premium is profit
-      return toDecimalNumber(trade.premium as unknown as Prisma.Decimal | string | number)
+      // Expired = full premium kept as profit
+      const premium = toDecimalNumber(trade.premium as unknown as Prisma.Decimal | string | number)
+      return premium * 100 * trade.contracts
     }
-    if (trade.status === 'CLOSED' && trade.realizedGainLoss != null) {
-      return toDecimalNumber(trade.realizedGainLoss as unknown as Prisma.Decimal | string | number)
+    if (trade.status === 'CLOSED' && trade.closePremium != null) {
+      const premium = toDecimalNumber(trade.premium as unknown as Prisma.Decimal | string | number)
+      const closePremium = toDecimalNumber(trade.closePremium as unknown as Prisma.Decimal | string | number)
+      return (premium - closePremium) * 100 * trade.contracts
     }
     return null
   }

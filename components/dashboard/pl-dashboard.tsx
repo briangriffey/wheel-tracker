@@ -93,7 +93,7 @@ export function PLDashboard({
       {/* Row 1 — Portfolio Overview */}
       <div>
         <h2 className="text-lg font-semibold text-gray-700 mb-3">Portfolio Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <MetricCard
             title="Total Portfolio Value"
             value={metrics.totalPortfolioValue}
@@ -104,6 +104,13 @@ export function PLDashboard({
             title="If You Bought SPY"
             value={metrics.spyComparisonValue}
             formatAs="currency"
+            loading={loading}
+          />
+          <MetricCard
+            title="vs SPY"
+            value={metrics.totalPortfolioValue - metrics.spyComparisonValue}
+            formatAs="currency"
+            colorize
             loading={loading}
           />
         </div>

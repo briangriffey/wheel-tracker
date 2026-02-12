@@ -73,6 +73,8 @@ describe('PLDashboard', () => {
     expect(screen.getByText('$50,000.00')).toBeInTheDocument()
     expect(screen.getByText('If You Bought SPY')).toBeInTheDocument()
     expect(screen.getByText('$48,000.00')).toBeInTheDocument()
+    expect(screen.getByText('vs SPY')).toBeInTheDocument()
+    expect(screen.getAllByText('$2,000.00').length).toBeGreaterThanOrEqual(1)
 
     // Check stock metrics
     expect(screen.getByText('Total Stock P&L')).toBeInTheDocument()

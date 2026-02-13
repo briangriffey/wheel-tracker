@@ -114,12 +114,14 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
     return `$${toDecimalNumber(value).toFixed(2)}`
   }
 
-  // Format date
+  // Format date using UTC values to avoid timezone shift
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
+    const d = new Date(date)
+    return d.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+      timeZone: 'UTC',
     })
   }
 

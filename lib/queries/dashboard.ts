@@ -140,6 +140,7 @@ export const getDashboardMetrics = async (
           premium: true,
           contracts: true,
           status: true,
+          closePremium: true
         },
       }),
       // Open positions for unrealized P&L (select only needed fields)
@@ -207,9 +208,10 @@ export const getDashboardMetrics = async (
     // Calculate total P&L
     const totalPL = realizedPL + unrealizedPL
 
-    // Calculate total premium collected: contracts × premium × 100 for each trade
+    // Calculate total premium collected: contracts × (premium - closedPremium) × 100 for each trade
     const totalPremiumCollected = trades.reduce((sum, trade) => {
-      return sum + (trade.premium.toNumber() * trade.contracts * 100)
+      const closePremium = trade.closePremium?.toNumber() ?? 0
+      return sum + ((trade.premium.toNumber() - closePremium) * trade.contracts * 100)
     }, 0)
 
     // Calculate win rate from already-fetched data

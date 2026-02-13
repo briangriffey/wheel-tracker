@@ -37,7 +37,7 @@ export async function getTrades(options: GetTradesOptions = {}): Promise<Trade[]
       limit,
       offset,
       orderBy = 'expirationDate',
-      orderDirection = 'asc',
+      orderDirection = 'desc',
     } = options
 
     // Build where clause

@@ -313,7 +313,7 @@ export default function GlossaryPage() {
           </p>
           <div className="space-y-2">
             <Link
-              href="/docs/USER_GUIDE.md"
+              href="/help/user-guide"
               className="block text-blue-600 hover:text-blue-800 hover:underline"
             >
               📖 Read the Complete User Guide

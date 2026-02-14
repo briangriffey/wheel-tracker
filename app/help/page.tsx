@@ -87,14 +87,13 @@ export default function HelpPage() {
                 started to advanced strategies. Learn how to enter trades, handle
                 assignments, read your dashboard, and optimize your wheel trading.
               </p>
-              <a
-                href="/docs/USER_GUIDE.md"
-                download
+              <Link
+                href="/help/user-guide"
                 className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
               >
-                <span className="mr-2">📥</span>
-                Download User Guide
-              </a>
+                <span className="mr-2">📖</span>
+                Read User Guide
+              </Link>
             </div>
           </div>
         </div>

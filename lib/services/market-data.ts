@@ -2,22 +2,15 @@ import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
 
 /**
- * Alpha Vantage API response types
+ * FinancialData.net API response type
  */
-interface AlphaVantageQuote {
-  'Global Quote': {
-    '01. symbol': string
-    '05. price': string
-    '07. latest trading day': string
-  }
-}
-
-interface AlphaVantageError {
-  'Error Message': string
-}
-
-interface AlphaVantageNote {
-  Note: string
+interface FinancialDataPriceRecord {
+  date: string
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
 }
 
 /**
@@ -32,14 +25,13 @@ export interface StockPriceResult {
 }
 
 /**
- * Rate limiter implementation for Alpha Vantage API
- * Limits: 5 requests per minute, 500 requests per day
+ * Rate limiter implementation for FinancialData.net API
  */
 class RateLimiter {
   private queue: Array<() => Promise<void>> = []
   private requestTimes: number[] = []
-  private readonly maxRequestsPerMinute: number = 5
-  private readonly minIntervalMs: number = 12000 // 12 seconds between requests (5 per minute)
+  private readonly maxRequestsPerMinute: number = 10
+  private readonly minIntervalMs: number = 6000 // 6 seconds between requests (10 per minute)
   private processing: boolean = false
 
   /**
@@ -126,82 +118,91 @@ const rateLimiter = new RateLimiter()
  * Validate API key is configured
  */
 function validateApiKey(): void {
-  if (!process.env.ALPHA_VANTAGE_API_KEY) {
-    throw new Error('ALPHA_VANTAGE_API_KEY is not configured in environment variables')
+  if (!process.env.FINANCIAL_DATA_API_KEY) {
+    throw new Error('FINANCIAL_DATA_API_KEY is not configured in environment variables')
   }
 }
 
 /**
- * Fetch stock price from Alpha Vantage API
+ * Fetch stock price from FinancialData.net API
  */
-async function fetchFromAlphaVantage(ticker: string): Promise<StockPriceResult> {
+async function fetchFromFinancialData(ticker: string): Promise<StockPriceResult> {
   validateApiKey()
 
-  const apiKey = process.env.ALPHA_VANTAGE_API_KEY
-  const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker.toUpperCase()}&apikey=${apiKey}`
+  const apiKey = process.env.FINANCIAL_DATA_API_KEY
+  const url = `https://financialdata.net/api/v1/stock-prices?identifier=${ticker.toUpperCase()}&key=${apiKey}`
 
   try {
     const response = await fetch(url)
 
     if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status} ${response.statusText}`)
-    }
-
-    const data = (await response.json()) as AlphaVantageQuote | AlphaVantageError | AlphaVantageNote
-
-    // Check for API errors
-    if ('Error Message' in data) {
-      return {
-        ticker,
-        price: 0,
-        date: new Date(),
-        success: false,
-        error: data['Error Message'],
-      }
-    }
-
-    // Check for rate limiting note
-    if ('Note' in data) {
-      return {
-        ticker,
-        price: 0,
-        date: new Date(),
-        success: false,
-        error: 'API rate limit exceeded. Please try again later.',
-      }
-    }
-
-    // Parse successful response
-    if ('Global Quote' in data && data['Global Quote']) {
-      const quote = data['Global Quote']
-      const price = parseFloat(quote['05. price'])
-      const dateStr = quote['07. latest trading day']
-
-      if (isNaN(price)) {
+      if (response.status === 401) {
         return {
           ticker,
           price: 0,
           date: new Date(),
           success: false,
-          error: 'Invalid price data received from API',
+          error: 'API authentication failed. Check FINANCIAL_DATA_API_KEY.',
         }
       }
-
+      if (response.status === 404) {
+        return {
+          ticker,
+          price: 0,
+          date: new Date(),
+          success: false,
+          error: 'No data received from API. Ticker may not exist.',
+        }
+      }
+      if (response.status === 429) {
+        return {
+          ticker,
+          price: 0,
+          date: new Date(),
+          success: false,
+          error: 'API rate limit exceeded. Please try again later.',
+        }
+      }
       return {
-        ticker: ticker.toUpperCase(),
-        price,
-        date: new Date(dateStr),
-        success: true,
+        ticker,
+        price: 0,
+        date: new Date(),
+        success: false,
+        error: `API server error: ${response.status} ${response.statusText}`,
       }
     }
 
-    // Empty or unexpected response
+    const data = (await response.json()) as FinancialDataPriceRecord[]
+
+    // Empty array means unknown ticker
+    if (!Array.isArray(data) || data.length === 0) {
+      return {
+        ticker,
+        price: 0,
+        date: new Date(),
+        success: false,
+        error: 'No data received from API. Ticker may not exist.',
+      }
+    }
+
+    const latest = data[0]
+    const price = latest.close
+
+    if (!price || isNaN(price)) {
+      return {
+        ticker,
+        price: 0,
+        date: new Date(),
+        success: false,
+        error: 'Invalid price data received from API',
+      }
+    }
+
     return {
-      ticker,
-      price: 0,
-      date: new Date(),
-      success: false,
-      error: 'No data received from API. Ticker may not exist.',
+      ticker: ticker.toUpperCase(),
+      price,
+      date: new Date(latest.date),
+      success: true,
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
@@ -238,7 +239,7 @@ async function saveStockPrice(result: StockPriceResult): Promise<void> {
       create: {
         ticker: result.ticker,
         price: new Prisma.Decimal(result.price),
-        source: 'alpha_vantage',
+        source: 'financial_data',
       },
     })
   } catch (error) {
@@ -251,7 +252,7 @@ async function saveStockPrice(result: StockPriceResult): Promise<void> {
  * Fetch stock price for a single ticker with rate limiting
  */
 export async function fetchStockPrice(ticker: string): Promise<StockPriceResult> {
-  const result = await rateLimiter.enqueue(() => fetchFromAlphaVantage(ticker))
+  const result = await rateLimiter.enqueue(() => fetchFromFinancialData(ticker))
 
   if (result.success) {
     await saveStockPrice(result)

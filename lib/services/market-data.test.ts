@@ -6,7 +6,7 @@ describe('Market Data Service', () => {
   // Setup test environment
   beforeAll(async () => {
     // Set test API key
-    process.env.ALPHA_VANTAGE_API_KEY = 'test-api-key'
+    process.env.FINANCIAL_DATA_API_KEY = 'test-api-key'
 
     // Clean up test data
     await prisma.stockPrice.deleteMany({
@@ -31,7 +31,7 @@ describe('Market Data Service', () => {
 
   describe('API Configuration', () => {
     it('should require API key in environment', () => {
-      expect(process.env.ALPHA_VANTAGE_API_KEY).toBeDefined()
+      expect(process.env.FINANCIAL_DATA_API_KEY).toBeDefined()
     })
   })
 
@@ -42,7 +42,7 @@ describe('Market Data Service', () => {
         data: {
           ticker: 'TSLA',
           price: 250.5,
-          source: 'alpha_vantage',
+          source: 'financial_data',
         },
       })
 
@@ -65,7 +65,7 @@ describe('Market Data Service', () => {
         data: {
           ticker: 'MSFT',
           price: 390.0,
-          source: 'alpha_vantage',
+          source: 'financial_data',
         },
       })
 
@@ -122,13 +122,13 @@ describe('Market Data Service', () => {
         data: {
           ticker: 'TEST',
           price: 123.45,
-          source: 'alpha_vantage',
+          source: 'financial_data',
         },
       })
 
       expect(testPrice.ticker).toBe('TEST')
       expect(testPrice.price.toNumber()).toBe(123.45)
-      expect(testPrice.source).toBe('alpha_vantage')
+      expect(testPrice.source).toBe('financial_data')
     })
 
     it('should enforce unique constraint on ticker', async () => {
@@ -136,7 +136,7 @@ describe('Market Data Service', () => {
         data: {
           ticker: 'UNIQUE_TEST',
           price: 100.0,
-          source: 'alpha_vantage',
+          source: 'financial_data',
         },
       })
 
@@ -151,7 +151,7 @@ describe('Market Data Service', () => {
         create: {
           ticker: 'UNIQUE_TEST',
           price: 110.0,
-          source: 'alpha_vantage',
+          source: 'financial_data',
         },
       })
 

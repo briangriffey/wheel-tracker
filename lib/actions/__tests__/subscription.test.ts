@@ -189,6 +189,48 @@ describe('Subscription Actions', () => {
       }
     })
 
+    it('should treat past_due user in grace period as PRO', async () => {
+      const futureDate = new Date()
+      futureDate.setDate(futureDate.getDate() + 10)
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        subscriptionTier: 'FREE',
+        subscriptionStatus: 'past_due',
+        subscriptionEndsAt: futureDate,
+      } as never)
+      vi.mocked(prisma.trade.count).mockResolvedValue(25)
+
+      const result = await getTradeUsage()
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.tier).toBe('PRO')
+        expect(result.data.tradeLimit).toBe(Infinity)
+        expect(result.data.remaining).toBe(Infinity)
+        expect(result.data.limitReached).toBe(false)
+      }
+    })
+
+    it('should treat past_due user past grace period as FREE', async () => {
+      const pastDate = new Date()
+      pastDate.setDate(pastDate.getDate() - 1)
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        subscriptionTier: 'FREE',
+        subscriptionStatus: 'past_due',
+        subscriptionEndsAt: pastDate,
+      } as never)
+      vi.mocked(prisma.trade.count).mockResolvedValue(25)
+
+      const result = await getTradeUsage()
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.tier).toBe('FREE')
+        expect(result.data.limitReached).toBe(true)
+      }
+    })
+
     it('should treat canceled user past grace period as FREE', async () => {
       const pastDate = new Date()
       pastDate.setDate(pastDate.getDate() - 1)

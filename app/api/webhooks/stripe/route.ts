@@ -63,6 +63,13 @@ export async function POST(request: NextRequest) {
 
   console.log(`[WEBHOOK] Received event: ${event.type} (${event.id})`)
 
+  // Idempotency: skip events we've already processed
+  const existing = await prisma.webhookEvent.findUnique({ where: { id: event.id } })
+  if (existing) {
+    console.log(`[WEBHOOK] Duplicate event ${event.id}, skipping`)
+    return NextResponse.json({ received: true, duplicate: true })
+  }
+
   try {
     switch (event.type) {
       case 'checkout.session.completed':
@@ -83,6 +90,9 @@ export async function POST(request: NextRequest) {
       default:
         console.log(`[WEBHOOK] Unhandled event type: ${event.type}`)
     }
+
+    // Record event as processed
+    await prisma.webhookEvent.create({ data: { id: event.id, type: event.type } })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error(`[WEBHOOK] Error handling ${event.type}:`, message)

@@ -285,7 +285,7 @@ export default function FAQPage() {
 
           <FAQItem
             question="Where does stock price data come from?"
-            answer="We use the Alpha Vantage API for stock price data. Prices are updated when you view the positions page and automatically once daily via scheduled background jobs. This ensures accurate position valuations for calculating unrealized P&L."
+            answer="We use the FinancialData.net API for stock price data. Prices are updated when you view the positions page and automatically once daily via scheduled background jobs. This ensures accurate position valuations for calculating unrealized P&L."
           />
 
           <FAQItem

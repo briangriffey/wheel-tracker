@@ -83,7 +83,7 @@ Required environment variables in Railway:
 - `NODE_ENV`: Set to `production` (Railway sets this automatically)
 
 ### Optional
-- `ALPHA_VANTAGE_API_KEY`: For stock price data fetching
+- `FINANCIAL_DATA_API_KEY`: For stock price data fetching
 - `NEXT_PUBLIC_APP_URL`: Public-facing application URL
 
 ## Deployment Process

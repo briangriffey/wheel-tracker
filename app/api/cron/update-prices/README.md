@@ -80,7 +80,7 @@ Configured in `vercel.json`.
 CRON_SECRET="your-secret-key-here"
 
 # Already configured
-ALPHA_VANTAGE_API_KEY="your-api-key-here"
+FINANCIAL_DATA_API_KEY="your-api-key-here"
 DATABASE_URL="postgresql://..."
 ```
 
@@ -107,8 +107,7 @@ Tests cover:
 
 ## Rate Limiting
 
-The endpoint respects Alpha Vantage API limits:
-- 5 requests per minute
-- 500 requests per day
+The endpoint respects FinancialData.net API limits:
+- 10 requests per minute
 
-Rate limiting is handled automatically by the `batchFetchPrices` function with a queue-based system (12-second intervals between requests).
+Rate limiting is handled automatically by the `batchFetchPrices` function with a queue-based system (6-second intervals between requests).

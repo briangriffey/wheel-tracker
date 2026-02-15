@@ -198,14 +198,14 @@ if (result.success) {
 #### Performance
 
 - Query time: ~100-500ms (depends on number of trades and API calls)
-- External API: Alpha Vantage (rate limit: 5 calls/minute on free tier)
+- External API: FinancialData.net (rate limit: 10 calls/minute)
 - Recommended caching: 15-60 minutes
 - Note: Makes one price API call per unique ticker
 
 #### Dependencies
 
 - `getLatestPrice(ticker)` from `lib/actions/prices`
-- Alpha Vantage API key in environment variables
+- FinancialData.net API key in environment variables
 
 ---
 
@@ -671,9 +671,9 @@ export async function NotificationBadge() {
   error: "Failed to fetch ITM options"
 }
 ```
-- Occurs when Alpha Vantage API fails
+- Occurs when FinancialData.net API fails
 - Check API key in environment variables
-- Check rate limits (5 calls/minute on free tier)
+- Check rate limits (10 calls/minute)
 - Consider implementing fallback or retry logic
 
 ### Error Handling Best Practices

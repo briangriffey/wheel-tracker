@@ -495,7 +495,7 @@ A: The wheel *starts* with selling PUTs (hoping NOT to be assigned) and only mov
 A: Currently, you cannot edit trades (for accuracy). If you made a mistake, contact support. Delete functionality may be added in future versions.
 
 **Q: Why doesn't my position show current prices?**
-A: We fetch prices periodically from Alpha Vantage API. Free tier has rate limits. Refresh the page or wait a few minutes for updates.
+A: We fetch prices periodically from FinancialData.net API. Refresh the page or wait a few minutes for updates.
 
 **Q: Can I use Wheel Tracker on my phone?**
 A: Yes! Wheel Tracker is fully responsive and works on mobile devices, tablets, and desktops.

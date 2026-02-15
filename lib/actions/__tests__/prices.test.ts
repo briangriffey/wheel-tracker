@@ -67,7 +67,7 @@ describe('Price Actions', () => {
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -79,7 +79,7 @@ describe('Price Actions', () => {
       if (result.success) {
         expect(result.data.ticker).toBe('AAPL')
         expect(result.data.price).toBe(155.5)
-        expect(result.data.source).toBe('alpha_vantage')
+        expect(result.data.source).toBe('financial_data')
       }
 
       expect(prisma.stockPrice.findUnique).toHaveBeenCalledWith({
@@ -93,7 +93,7 @@ describe('Price Actions', () => {
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -115,7 +115,7 @@ describe('Price Actions', () => {
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.5),
         updatedAt: twoHoursAgo,
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -139,7 +139,7 @@ describe('Price Actions', () => {
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.5),
         updatedAt: thirtyMinutesAgo,
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -186,7 +186,7 @@ describe('Price Actions', () => {
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -195,7 +195,7 @@ describe('Price Actions', () => {
         ticker: 'TSLA',
         price: new Prisma.Decimal(210.75),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -219,7 +219,7 @@ describe('Price Actions', () => {
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -268,7 +268,7 @@ describe('Price Actions', () => {
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -277,7 +277,7 @@ describe('Price Actions', () => {
         ticker: 'TSLA',
         price: new Prisma.Decimal(210.75),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -321,7 +321,7 @@ describe('Price Actions', () => {
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 
@@ -371,7 +371,7 @@ describe('Price Actions', () => {
         ticker: 'AAPL',
         price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
-        source: 'alpha_vantage',
+        source: 'financial_data',
         createdAt: new Date(),
       }
 

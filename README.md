@@ -20,7 +20,7 @@ Wheel Tracker is designed for options traders who use the "wheel strategy" - a s
 - **Node.js**: 18.0 or higher
 - **pnpm**: 8.0 or higher
 - **PostgreSQL**: 14+ (or use Docker Compose)
-- **Alpha Vantage API Key**: Free tier available at [alphavantage.co](https://www.alphavantage.co/)
+- **FinancialData.net API Key**: Available at [financialdata.net](https://financialdata.net/)
 
 ### Installation
 
@@ -49,8 +49,8 @@ DATABASE_URL="postgresql://user:password@localhost:5432/wheeltracker"
 NEXTAUTH_SECRET="your-secret-key-here"
 NEXTAUTH_URL="http://localhost:3000"
 
-# Alpha Vantage API (for stock prices)
-ALPHA_VANTAGE_API_KEY="your-api-key-here"
+# FinancialData.net API (for stock prices)
+FINANCIAL_DATA_API_KEY="your-api-key-here"
 ```
 
 4. **Start the database**
@@ -349,7 +349,7 @@ Database (PostgreSQL)
 
 ### External Services
 
-- **Alpha Vantage API**: Real-time and historical stock prices
+- **FinancialData.net API**: Real-time and historical stock prices
 - **Scheduled Jobs**: Daily price updates via Vercel Cron
 
 ## 🚀 Deployment
@@ -365,7 +365,7 @@ Environment variables needed:
 DATABASE_URL
 NEXTAUTH_SECRET
 NEXTAUTH_URL
-ALPHA_VANTAGE_API_KEY
+FINANCIAL_DATA_API_KEY
 ```
 
 ### Docker Deployment
@@ -392,7 +392,7 @@ docker run -d \
   -e DATABASE_URL="your-database-url" \
   -e NEXTAUTH_URL="https://your-domain.com" \
   -e NEXTAUTH_SECRET="your-secret" \
-  -e ALPHA_VANTAGE_API_KEY="your-api-key" \
+  -e FINANCIAL_DATA_API_KEY="your-api-key" \
   wheeltracker
 ```
 
@@ -437,7 +437,7 @@ Set the following environment variables in your Railway project:
 - `DATABASE_URL` - PostgreSQL connection string
 - `NEXTAUTH_URL` - Your application URL (e.g., https://yourapp.railway.app)
 - `NEXTAUTH_SECRET` - Secret for NextAuth.js session encryption
-- `ALPHA_VANTAGE_API_KEY` - API key for stock market data
+- `FINANCIAL_DATA_API_KEY` - API key for stock market data
 
 #### Deployment Steps
 
@@ -578,7 +578,7 @@ Husky automatically runs before each commit:
 - ✅ Automatic P&L calculations
 - ✅ Dashboard with charts
 - ✅ Benchmark comparisons (personal and market)
-- ✅ Stock price integration (Alpha Vantage)
+- ✅ Stock price integration (FinancialData.net)
 - ✅ Export to CSV
 - ✅ Responsive design
 - ✅ Error handling and loading states
@@ -654,7 +654,7 @@ Private project - All rights reserved
 - **Options Trading Community**: For strategy inspiration
 - **Next.js Team**: For the amazing framework
 - **Prisma Team**: For the best ORM
-- **Alpha Vantage**: For stock price data
+- **FinancialData.net**: For stock price data
 
 ## 📞 Support
 

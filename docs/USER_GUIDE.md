@@ -498,7 +498,7 @@ A: Generally yes, but if you believe the stock will rally significantly, you mig
 A: Cost basis = PUT strike price. The premium collected effectively reduces your break-even point.
 
 **Q: Where does stock price data come from?**
-A: We use Alpha Vantage API for real-time stock pricing.
+A: We use FinancialData.net API for real-time stock pricing.
 
 **Q: How often is my position value updated?**
 A: Stock prices are updated when you view the positions page, and automatically daily via scheduled jobs.

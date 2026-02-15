@@ -17,8 +17,8 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
   const [interval, setInterval] = useState<'monthly' | 'annual'>('monthly')
   const [loading, setLoading] = useState(false)
 
-  const monthlyPrice = PLANS.monthly.amount
-  const annualPrice = PLANS.annual.amount
+  const monthlyPrice = PLANS.monthly.amount / 100 // amount is in cents so divide by 100
+  const annualPrice = PLANS.annual.amount / 100 // amount is in cents so divide by 100
   const annualMonthly = annualPrice / 12
 
   async function handleStartPro() {
@@ -32,6 +32,8 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
       trackEvent('checkout_started', { plan: interval, source: 'pricing_page' })
       const result: Awaited<ReturnType<typeof createCheckoutSession>> =
         await createCheckoutSession(interval)
+
+      console.log(JSON.stringify(result))
       if (result.success) {
         window.location.assign(result.data.url)
       }

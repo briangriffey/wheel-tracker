@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getSubscriptionStatus } from '@/lib/actions/billing'
@@ -28,7 +29,9 @@ export default async function BillingPage() {
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-3xl mx-auto">
         <h1 className="text-2xl font-bold text-neutral-900 mb-6">Billing</h1>
-        <BillingContent subscription={subscription} usage={usage} />
+        <Suspense>
+          <BillingContent subscription={subscription} usage={usage} />
+        </Suspense>
       </div>
     </div>
   )

@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { SessionProvider } from '@/components/session-provider'
 import { ToastProvider } from '@/components/toast-provider'
 import { UserMenu } from '@/components/user-menu'
+import { UpgradeNavCta } from '@/components/billing/upgrade-nav-cta'
 import { SkipLink } from '@/components/ui/skip-link'
 import './globals.css'
 import './design-system.css'
@@ -55,6 +56,7 @@ export default async function RootLayout({
                       <Link href="/billing" className="text-sm text-neutral-700 hover:text-neutral-900">
                         Billing
                       </Link>
+                      <UpgradeNavCta />
                     </nav>
                   </div>
                   <UserMenu user={session.user} />

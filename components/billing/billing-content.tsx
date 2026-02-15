@@ -1,11 +1,13 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/design-system/button/button'
 import { createPortalSession } from '@/lib/actions/billing'
 import type { SubscriptionInfo } from '@/lib/actions/billing'
 import type { TradeUsage } from '@/lib/actions/subscription'
 import { FREE_TRADE_LIMIT } from '@/lib/constants'
+import { CheckoutSuccess } from './checkout-success'
 
 interface BillingContentProps {
   subscription: SubscriptionInfo | null
@@ -13,6 +15,8 @@ interface BillingContentProps {
 }
 
 export function BillingContent({ subscription, usage }: BillingContentProps) {
+  const searchParams = useSearchParams()
+  const isSuccess = searchParams.get('success') === 'true'
   const [loading, setLoading] = useState(false)
 
   const isPro = subscription?.tier === 'PRO'
@@ -33,6 +37,9 @@ export function BillingContent({ subscription, usage }: BillingContentProps) {
 
   return (
     <div className="space-y-6">
+      {/* Checkout Success Celebration */}
+      {isSuccess && isPro && <CheckoutSuccess />}
+
       {/* Current Plan */}
       <div className="rounded-lg border border-neutral-200 bg-white p-6">
         <h2 className="text-lg font-semibold text-neutral-900 mb-4">Current Plan</h2>

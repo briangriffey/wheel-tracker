@@ -124,11 +124,11 @@ export default async function Home() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sm text-neutral-500">
               <div className="flex items-center">
                 <CheckCircle2 className="w-5 h-5 text-primary-500 mr-2" />
-                <span>Free to start</span>
+                <span>20 trades free — no credit card</span>
               </div>
               <div className="flex items-center">
                 <CheckCircle2 className="w-5 h-5 text-primary-500 mr-2" />
-                <span>No credit card required</span>
+                <span>Unlimited trades for $8/month</span>
               </div>
               <div className="flex items-center">
                 <CheckCircle2 className="w-5 h-5 text-primary-500 mr-2" />
@@ -451,6 +451,106 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="py-20 bg-neutral-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 mb-4">
+              Simple, honest pricing.
+            </h2>
+            <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
+              Start free. Upgrade when you&apos;re ready.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Tier */}
+            <div className="bg-white p-8 rounded-2xl border-2 border-neutral-200 shadow-sm">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-neutral-900 mb-2">Free</h3>
+                <div className="text-4xl font-bold text-neutral-900">
+                  $0<span className="text-lg font-normal text-neutral-500">/month</span>
+                </div>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" />
+                  <span className="text-neutral-700">20 trades</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" />
+                  <span className="text-neutral-700">Full dashboard</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" />
+                  <span className="text-neutral-700">Greek calculations</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" />
+                  <span className="text-neutral-700">Wheel tracking</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" />
+                  <span className="text-neutral-700">Benchmark comparisons</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" />
+                  <span className="text-neutral-700">Cash deposit tracking</span>
+                </li>
+              </ul>
+              {!session && (
+                <Link
+                  href="/register"
+                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-white text-neutral-700 font-semibold rounded-lg border-2 border-neutral-200 hover:border-neutral-300 transition-all"
+                >
+                  Get Started Free
+                </Link>
+              )}
+            </div>
+
+            {/* Pro Tier */}
+            <div className="bg-white p-8 rounded-2xl border-2 border-primary-500 shadow-lg relative">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-sm font-semibold px-4 py-1 rounded-full">
+                Most Popular
+              </div>
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-neutral-900 mb-2">Pro</h3>
+                <div className="text-4xl font-bold text-neutral-900">
+                  $8<span className="text-lg font-normal text-neutral-500">/month</span>
+                </div>
+                <div className="text-sm text-neutral-500 mt-1">
+                  or $72/year (save 25%)
+                </div>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" />
+                  <span className="text-neutral-700 font-semibold">Unlimited trades</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" />
+                  <span className="text-neutral-700">Everything in Free</span>
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="w-5 h-5 text-primary-500 mr-3 flex-shrink-0" />
+                  <span className="text-neutral-700">Priority support</span>
+                </li>
+              </ul>
+              <Link
+                href="/register"
+                className="w-full inline-flex items-center justify-center px-6 py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-all shadow-md"
+              >
+                Start Pro — $8/mo
+              </Link>
+            </div>
+          </div>
+
+          <div className="text-center mt-8 text-sm text-neutral-500">
+            No credit card required to start.
+          </div>
+        </div>
+      </section>
+
       {/* Social Proof / Community */}
       <section className="py-20 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -555,7 +655,7 @@ export default async function Home() {
               <h3 className="text-white font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-sm">
                 <li><Link href="/dashboard" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="/dashboard" className="hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
                 <li><Link href="/dashboard" className="hover:text-white transition-colors">Demo</Link></li>
               </ul>
             </div>

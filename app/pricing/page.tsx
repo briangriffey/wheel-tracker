@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
-import { CheckCircle2 } from 'lucide-react'
 import { PricingToggle } from '@/components/pricing/pricing-toggle'
 import { FREE_TRADE_LIMIT } from '@/lib/constants'
 

@@ -27,6 +27,7 @@ export async function createCheckoutSession(
 ): Promise<ActionResult<{ url: string }>> {
   try {
     const userId = await getCurrentUserId()
+    console.log(`Received checkout session request for plan ${plan} for user ${userId}`)
     if (!userId) {
       return { success: false, error: 'Unauthorized. Please log in.' }
     }
@@ -67,6 +68,8 @@ export async function createCheckoutSession(
 
     const session: Stripe.Checkout.Session =
       await stripe.checkout.sessions.create(sessionParams)
+
+    console.log(`Stripe session response ${JSON.stringify(session)}`)
 
     if (!session.url) {
       return { success: false, error: 'Failed to create checkout session' }

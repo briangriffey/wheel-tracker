@@ -33,7 +33,7 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
       const result: Awaited<ReturnType<typeof createCheckoutSession>> =
         await createCheckoutSession(interval)
 
-      console.log(JSON.stringify(result))
+      console.log(`Received back checkout session ${JSON.stringify(result)}`)
       if (result.success) {
         window.location.assign(result.data.url)
       }

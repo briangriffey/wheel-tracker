@@ -275,7 +275,7 @@ model StockPrice {
   id        String   @id @default(cuid())
   ticker    String   @unique // Only one price per ticker
   price     Decimal  @db.Decimal(10, 2)
-  source    String   @default("alpha_vantage") // API source
+  source    String   @default("financial_data") // API source
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt // When the price was last updated
 

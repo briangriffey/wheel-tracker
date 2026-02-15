@@ -254,7 +254,8 @@ describe('Edge Cases & Hardening', () => {
       expect(result.success).toBe(true)
       // Verify $transaction was called (count + create are atomic)
       expect(prisma.$transaction).toHaveBeenCalled()
-      const txCall = vi.mocked(prisma.$transaction as unknown as ReturnType<typeof vi.fn>).mock.calls[0]
+      const txCall = vi.mocked(prisma.$transaction as unknown as ReturnType<typeof vi.fn>).mock
+        .calls[0]
       // Second argument should include isolation level
       expect(txCall[1]).toEqual({
         isolationLevel: 'Serializable',

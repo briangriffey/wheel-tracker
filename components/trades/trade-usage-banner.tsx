@@ -39,8 +39,8 @@ export function TradeUsageBanner({ usage }: TradeUsageBannerProps) {
         className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800"
         role="alert"
       >
-        <span className="font-medium">1 trade remaining.</span>{' '}
-        After this, you&apos;ll need to upgrade.
+        <span className="font-medium">1 trade remaining.</span> After this, you&apos;ll need to
+        upgrade.
       </div>
     )
   }

@@ -72,9 +72,7 @@ export function BenchmarkComparisonChart({
         <h3 className="text-lg font-semibold text-gray-900">Performance Comparison</h3>
         <div className="flex items-center gap-2">
           <span
-            className={`text-sm font-medium ${
-              outperforming ? 'text-green-600' : 'text-red-600'
-            }`}
+            className={`text-sm font-medium ${outperforming ? 'text-green-600' : 'text-red-600'}`}
           >
             {outperforming ? '↑ Outperforming' : '↓ Underperforming'}
           </span>
@@ -90,10 +88,7 @@ export function BenchmarkComparisonChart({
             textAnchor="end"
             height={80}
           />
-          <YAxis
-            tick={{ fontSize: 12 }}
-            tickFormatter={(value) => `$${value.toLocaleString()}`}
-          />
+          <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `$${value.toLocaleString()}`} />
           <Tooltip
             formatter={(value: number | undefined) =>
               value !== undefined ? formatCurrency(value) : 'N/A'

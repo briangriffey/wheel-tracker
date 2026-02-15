@@ -4,9 +4,7 @@ import { prisma } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { FREE_TRADE_LIMIT } from '@/lib/constants'
 
-type ActionResult<T = unknown> =
-  | { success: true; data: T }
-  | { success: false; error: string }
+type ActionResult<T = unknown> = { success: true; data: T } | { success: false; error: string }
 
 export interface TradeUsage {
   tradesUsed: number
@@ -52,15 +50,16 @@ export async function getTradeUsage(): Promise<ActionResult<TradeUsage>> {
     })
 
     // Grace period: canceled and past_due users retain Pro access until subscriptionEndsAt
-    const hasProAccess = user.subscriptionTier === 'PRO' ||
+    const hasProAccess =
+      user.subscriptionTier === 'PRO' ||
       (user.subscriptionStatus === 'canceled' &&
-       user.subscriptionEndsAt != null &&
-       new Date(user.subscriptionEndsAt) > new Date()) ||
+        user.subscriptionEndsAt != null &&
+        new Date(user.subscriptionEndsAt) > new Date()) ||
       (user.subscriptionStatus === 'past_due' &&
-       user.subscriptionEndsAt != null &&
-       new Date(user.subscriptionEndsAt) > new Date())
+        user.subscriptionEndsAt != null &&
+        new Date(user.subscriptionEndsAt) > new Date())
 
-    const tier = hasProAccess ? 'PRO' as const : user.subscriptionTier
+    const tier = hasProAccess ? ('PRO' as const) : user.subscriptionTier
     const tradeLimit = tier === 'FREE' ? FREE_TRADE_LIMIT : Infinity
     const remaining = tier === 'PRO' ? Infinity : Math.max(0, FREE_TRADE_LIMIT - tradesUsed)
     const limitReached = tier === 'FREE' && tradesUsed >= FREE_TRADE_LIMIT

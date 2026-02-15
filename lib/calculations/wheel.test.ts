@@ -35,9 +35,7 @@ function createMockCycle(overrides: Partial<WheelCycle> = {}): WheelCycle {
     cycleNumber: 1,
     putTrade: createMockTrade({ premium: 250 }),
     position: createMockPosition({ realizedGainLoss: 750 }),
-    callTrades: [
-      createMockTrade({ premium: 200 }),
-    ],
+    callTrades: [createMockTrade({ premium: 200 })],
     totalPremiums: 450,
     realizedPL: 1200,
     duration: 45,
@@ -51,9 +49,7 @@ describe('calculateCyclePL', () => {
   it('should calculate total P&L from premiums and stock gains', () => {
     const cycle = createMockCycle({
       putTrade: createMockTrade({ premium: 250 }),
-      callTrades: [
-        createMockTrade({ premium: 200 }),
-      ],
+      callTrades: [createMockTrade({ premium: 200 })],
       position: createMockPosition({ realizedGainLoss: 750 }),
     })
 
@@ -81,9 +77,7 @@ describe('calculateCyclePL', () => {
   it('should handle negative stock gains (losses)', () => {
     const cycle = createMockCycle({
       putTrade: createMockTrade({ premium: 250 }),
-      callTrades: [
-        createMockTrade({ premium: 200 }),
-      ],
+      callTrades: [createMockTrade({ premium: 200 })],
       position: createMockPosition({ realizedGainLoss: -500 }),
     })
 
@@ -95,9 +89,7 @@ describe('calculateCyclePL', () => {
   it('should handle cycle with no stock gain/loss', () => {
     const cycle = createMockCycle({
       putTrade: createMockTrade({ premium: 250 }),
-      callTrades: [
-        createMockTrade({ premium: 200 }),
-      ],
+      callTrades: [createMockTrade({ premium: 200 })],
       position: createMockPosition({ realizedGainLoss: 0 }),
     })
 
@@ -109,9 +101,7 @@ describe('calculateCyclePL', () => {
   it('should handle cycle with no realized gain/loss field', () => {
     const cycle = createMockCycle({
       putTrade: createMockTrade({ premium: 250 }),
-      callTrades: [
-        createMockTrade({ premium: 200 }),
-      ],
+      callTrades: [createMockTrade({ premium: 200 })],
       position: createMockPosition({ realizedGainLoss: null }),
     })
 
@@ -499,7 +489,7 @@ describe('validateCashRequirement', () => {
   it('should handle fractional strike prices', () => {
     const user: UserData = { cashBalance: 15000 }
 
-    const result = validateCashRequirement(user, 147.50, 1)
+    const result = validateCashRequirement(user, 147.5, 1)
 
     // Needs: 147.50 * 100 = 14,750
     // Has: 15,000

@@ -157,11 +157,10 @@ describe('Trade Limit Enforcement', () => {
 
     await createTrade(validTradeInput)
 
-    expect(recordAnalyticsEvent).toHaveBeenCalledWith(
-      'trade_limit_reached',
-      mockUserId,
-      { tradesUsed: FREE_TRADE_LIMIT, limit: FREE_TRADE_LIMIT }
-    )
+    expect(recordAnalyticsEvent).toHaveBeenCalledWith('trade_limit_reached', mockUserId, {
+      tradesUsed: FREE_TRADE_LIMIT,
+      limit: FREE_TRADE_LIMIT,
+    })
   })
 
   it('should not record analytics event when under limit', async () => {

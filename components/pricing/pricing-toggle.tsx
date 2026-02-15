@@ -58,12 +58,14 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
             aria-checked={interval === 'annual'}
             aria-label="Toggle annual billing"
             onClick={() => setInterval(interval === 'monthly' ? 'annual' : 'monthly')}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${interval === 'annual' ? 'bg-primary-500' : 'bg-neutral-300'
-              }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
+              interval === 'annual' ? 'bg-primary-500' : 'bg-neutral-300'
+            }`}
           >
             <span
-              className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${interval === 'annual' ? 'translate-x-6' : 'translate-x-1'
-                }`}
+              className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+                interval === 'annual' ? 'translate-x-6' : 'translate-x-1'
+              }`}
             />
           </button>
           <span
@@ -84,9 +86,7 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
           <div className="rounded-2xl border-2 border-neutral-200 bg-white p-8">
             <div className="mb-6">
               <h3 className="text-xl font-bold text-neutral-900">Free</h3>
-              <p className="mt-1 text-sm text-neutral-500">
-                Perfect for learning the wheel
-              </p>
+              <p className="mt-1 text-sm text-neutral-500">Perfect for learning the wheel</p>
             </div>
             <div className="mb-6">
               <span className="text-4xl font-bold text-neutral-900">$0</span>
@@ -130,9 +130,7 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
             </div>
             <div className="mb-6">
               <h3 className="text-xl font-bold text-neutral-900">Pro</h3>
-              <p className="mt-1 text-sm text-neutral-500">
-                For serious wheel traders
-              </p>
+              <p className="mt-1 text-sm text-neutral-500">For serious wheel traders</p>
             </div>
             <div className="mb-6">
               {interval === 'monthly' ? (
@@ -144,9 +142,7 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
                 <>
                   <span className="text-4xl font-bold text-neutral-900">${annualMonthly}</span>
                   <span className="text-neutral-500 ml-1">/month</span>
-                  <p className="text-sm text-neutral-500 mt-1">
-                    ${annualPrice} billed annually
-                  </p>
+                  <p className="text-sm text-neutral-500 mt-1">${annualPrice} billed annually</p>
                 </>
               )}
             </div>

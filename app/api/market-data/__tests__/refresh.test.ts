@@ -25,7 +25,7 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
       mockBatchFetchPrices.mockResolvedValue([
         { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
         { ticker: 'TSLA', price: 198.75, date: new Date(), success: true },
-        { ticker: 'MSFT', price: 345.60, date: new Date(), success: true },
+        { ticker: 'MSFT', price: 345.6, date: new Date(), success: true },
       ])
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {

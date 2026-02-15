@@ -115,8 +115,8 @@ export function CloseOptionDialog({
             {/* Content */}
             <div className="px-6 py-4">
               <p className="text-gray-700 mb-4">
-                Are you sure you want to close this {type} option on {ticker}? This action cannot
-                be undone.
+                Are you sure you want to close this {type} option on {ticker}? This action cannot be
+                undone.
               </p>
 
               <div className="rounded-md bg-gray-50 p-4 border border-gray-200">
@@ -325,7 +325,10 @@ export function CloseOptionDialog({
 
             {/* Close Premium Input */}
             <div>
-              <label htmlFor="closePremium" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="closePremium"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Close Premium (Amount Paid to Buy Back) <span className="text-red-500">*</span>
               </label>
               <div className="relative rounded-md shadow-sm">
@@ -346,7 +349,8 @@ export function CloseOptionDialog({
                 />
               </div>
               <p id="close-premium-description" className="mt-1 text-xs text-gray-500">
-                Enter the total premium you paid to close this option (0 if it expired worthless before closing)
+                Enter the total premium you paid to close this option (0 if it expired worthless
+                before closing)
               </p>
             </div>
 

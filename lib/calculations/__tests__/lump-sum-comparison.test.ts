@@ -75,9 +75,7 @@ describe('Lump Sum Comparison Calculations', () => {
     })
 
     it('should calculate returns correctly', () => {
-      const deposits: CashDepositData[] = [
-        createMockDeposit(1000, new Date('2026-01-01'), 400),
-      ]
+      const deposits: CashDepositData[] = [createMockDeposit(1000, new Date('2026-01-01'), 400)]
 
       const lumpSumDate = new Date('2026-01-01')
       const lumpSumPrice = 400
@@ -113,10 +111,7 @@ describe('Lump Sum Comparison Calculations', () => {
 
       // Last point should use current price
       const lastPoint = result.dataPoints[result.dataPoints.length - 1]
-      expect(lastPoint.dcaValue).toBeCloseTo(
-        (1000 / 400 + 1000 / 420) * currentPrice,
-        2
-      )
+      expect(lastPoint.dcaValue).toBeCloseTo((1000 / 400 + 1000 / 420) * currentPrice, 2)
     })
 
     it('should handle withdrawals correctly', () => {
@@ -183,16 +178,9 @@ describe('Lump Sum Comparison Calculations', () => {
 
   describe('edge cases', () => {
     it('should handle single deposit', () => {
-      const deposits: CashDepositData[] = [
-        createMockDeposit(5000, new Date('2026-01-01'), 400),
-      ]
+      const deposits: CashDepositData[] = [createMockDeposit(5000, new Date('2026-01-01'), 400)]
 
-      const result = calculateLumpSumComparison(
-        deposits,
-        new Date('2026-01-01'),
-        400,
-        450
-      )
+      const result = calculateLumpSumComparison(deposits, new Date('2026-01-01'), 400, 450)
 
       // Single deposit = lump sum, should be a tie
       expect(result.winner).toBe('TIE')
@@ -201,16 +189,11 @@ describe('Lump Sum Comparison Calculations', () => {
 
     it('should handle very small differences', () => {
       const deposits: CashDepositData[] = [
-        createMockDeposit(1000, new Date('2026-01-01'), 400.00),
+        createMockDeposit(1000, new Date('2026-01-01'), 400.0),
         createMockDeposit(1000, new Date('2026-02-01'), 400.01), // Tiny difference
       ]
 
-      const result = calculateLumpSumComparison(
-        deposits,
-        new Date('2026-01-01'),
-        400,
-        450
-      )
+      const result = calculateLumpSumComparison(deposits, new Date('2026-01-01'), 400, 450)
 
       // Very close, might be a tie or slight difference
       expect(Math.abs(result.difference)).toBeLessThan(1)

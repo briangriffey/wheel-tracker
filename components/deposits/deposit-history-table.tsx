@@ -113,17 +113,25 @@ export function DepositHistoryTable({ initialDeposits }: DepositHistoryTableProp
 
   // Get type badge styles
   const getTypeBadgeStyles = (type: 'DEPOSIT' | 'WITHDRAWAL') => {
-    return type === 'DEPOSIT'
-      ? 'bg-green-100 text-green-800'
-      : 'bg-red-100 text-red-800'
+    return type === 'DEPOSIT' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
   }
 
   // Get sort icon
   const getSortIcon = (field: SortField) => {
     if (sortField !== field) {
       return (
-        <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        <svg
+          className="w-4 h-4 text-gray-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+          />
         </svg>
       )
     }
@@ -245,10 +253,16 @@ export function DepositHistoryTable({ initialDeposits }: DepositHistoryTableProp
                         {getSortIcon('spyPrice')}
                       </div>
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       SPY Shares
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Notes
                     </th>
                   </tr>
@@ -260,7 +274,9 @@ export function DepositHistoryTable({ initialDeposits }: DepositHistoryTableProp
                         {formatDate(deposit.depositDate)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 text-xs font-semibold leading-5 rounded-full ${getTypeBadgeStyles(deposit.type)}`}>
+                        <span
+                          className={`inline-flex px-2 text-xs font-semibold leading-5 rounded-full ${getTypeBadgeStyles(deposit.type)}`}
+                        >
                           {deposit.type}
                         </span>
                       </td>
@@ -273,9 +289,7 @@ export function DepositHistoryTable({ initialDeposits }: DepositHistoryTableProp
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatShares(deposit.spyShares)}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {deposit.notes || '-'}
-                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{deposit.notes || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -295,7 +309,9 @@ export function DepositHistoryTable({ initialDeposits }: DepositHistoryTableProp
                         {formatShares(deposit.spyShares)} SPY @ {formatCurrency(deposit.spyPrice)}
                       </div>
                     </div>
-                    <span className={`inline-flex px-2 text-xs font-semibold leading-5 rounded-full ${getTypeBadgeStyles(deposit.type)}`}>
+                    <span
+                      className={`inline-flex px-2 text-xs font-semibold leading-5 rounded-full ${getTypeBadgeStyles(deposit.type)}`}
+                    >
                       {deposit.type}
                     </span>
                   </div>
@@ -303,9 +319,7 @@ export function DepositHistoryTable({ initialDeposits }: DepositHistoryTableProp
                     {formatCurrency(deposit.amount)}
                   </div>
                   {deposit.notes && (
-                    <div className="text-sm text-gray-500 mt-2">
-                      {deposit.notes}
-                    </div>
+                    <div className="text-sm text-gray-500 mt-2">{deposit.notes}</div>
                   )}
                 </div>
               ))}
@@ -316,7 +330,8 @@ export function DepositHistoryTable({ initialDeposits }: DepositHistoryTableProp
 
       {/* Results count */}
       <div className="mt-4 text-sm text-gray-500 text-center">
-        Showing {filteredDeposits.length} of {deposits.length} transaction{deposits.length !== 1 ? 's' : ''}
+        Showing {filteredDeposits.length} of {deposits.length} transaction
+        {deposits.length !== 1 ? 's' : ''}
       </div>
     </div>
   )

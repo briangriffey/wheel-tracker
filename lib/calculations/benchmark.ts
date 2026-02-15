@@ -65,10 +65,7 @@ export interface MultiBenchmarkComparison {
  * @param initialPrice - Price at purchase
  * @returns Number of shares purchased
  */
-export function calculateBenchmarkShares(
-  initialCapital: number,
-  initialPrice: number
-): number {
+export function calculateBenchmarkShares(initialCapital: number, initialPrice: number): number {
   if (initialPrice <= 0) {
     throw new Error('Initial price must be positive')
   }
@@ -83,10 +80,7 @@ export function calculateBenchmarkShares(
  * @param currentPrice - Current market price
  * @returns Current market value
  */
-export function calculateBenchmarkValue(
-  shares: number,
-  currentPrice: number
-): number {
+export function calculateBenchmarkValue(shares: number, currentPrice: number): number {
   return shares * currentPrice
 }
 
@@ -97,10 +91,7 @@ export function calculateBenchmarkValue(
  * @param initialCapital - Initial investment
  * @returns Gain or loss amount
  */
-export function calculateBenchmarkGainLoss(
-  currentValue: number,
-  initialCapital: number
-): number {
+export function calculateBenchmarkGainLoss(currentValue: number, initialCapital: number): number {
   return currentValue - initialCapital
 }
 
@@ -111,10 +102,7 @@ export function calculateBenchmarkGainLoss(
  * @param initialCapital - Initial investment
  * @returns Return percentage
  */
-export function calculateBenchmarkReturn(
-  gainLoss: number,
-  initialCapital: number
-): number {
+export function calculateBenchmarkReturn(gainLoss: number, initialCapital: number): number {
   if (initialCapital <= 0) {
     return 0
   }
@@ -185,24 +173,12 @@ export async function getBenchmarkMetrics(
 
   if (deposits.length > 0) {
     // Use deposit-based calculations
-    const totalShares = deposits.reduce(
-      (sum, d) => sum + Number(d.spyShares),
-      0
-    )
-    const withdrawnShares = withdrawals.reduce(
-      (sum, w) => sum + Number(w.spyShares),
-      0
-    )
+    const totalShares = deposits.reduce((sum, d) => sum + Number(d.spyShares), 0)
+    const withdrawnShares = withdrawals.reduce((sum, w) => sum + Number(w.spyShares), 0)
     shares = totalShares - Math.abs(withdrawnShares)
 
-    const totalDeposited = deposits.reduce(
-      (sum, d) => sum + Number(d.amount),
-      0
-    )
-    const totalWithdrawn = withdrawals.reduce(
-      (sum, w) => sum + Math.abs(Number(w.amount)),
-      0
-    )
+    const totalDeposited = deposits.reduce((sum, d) => sum + Number(d.amount), 0)
+    const totalWithdrawn = withdrawals.reduce((sum, w) => sum + Math.abs(Number(w.amount)), 0)
     initialCapital = totalDeposited - totalWithdrawn
 
     // Use first deposit date as setup date
@@ -243,9 +219,7 @@ export async function getBenchmarkMetrics(
  * @param userId - User ID
  * @returns Array of benchmark metrics
  */
-export async function getAllBenchmarkMetrics(
-  userId: string
-): Promise<BenchmarkMetrics[]> {
+export async function getAllBenchmarkMetrics(userId: string): Promise<BenchmarkMetrics[]> {
   const benchmarks = await prisma.marketBenchmark.findMany({
     where: { userId },
     orderBy: { ticker: 'asc' },
@@ -315,9 +289,7 @@ export async function compareToBenchmark(
  * @param userId - User ID
  * @returns Multi-benchmark comparison
  */
-export async function compareToAllBenchmarks(
-  userId: string
-): Promise<MultiBenchmarkComparison> {
+export async function compareToAllBenchmarks(userId: string): Promise<MultiBenchmarkComparison> {
   // Get wheel strategy stats
   const portfolioStats = await calculatePortfolioStats(userId)
 

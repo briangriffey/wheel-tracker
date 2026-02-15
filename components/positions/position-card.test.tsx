@@ -1,6 +1,20 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
+
+// Mock server-side modules to prevent next/server import chain
+vi.mock('@/components/trades/close-option-dialog', () => ({
+  CloseOptionDialog: () => null,
+}))
+
+vi.mock('@/lib/actions/prices', () => ({
+  refreshSinglePositionPrice: vi.fn(),
+}))
+
+vi.mock('./assign-call-dialog', () => ({
+  AssignCallDialog: () => null,
+}))
+
 import { PositionCard, type PositionCardData } from './position-card'
 
 // Mock position data
@@ -23,14 +37,14 @@ const mockOpenPosition: PositionCardData = {
       premium: 250,
       strikePrice: 160,
       expirationDate: new Date('2024-02-16'),
-      status: 'OPEN'
+      status: 'OPEN',
     },
     {
       id: 'call-2',
       premium: 300,
       strikePrice: 165,
       expirationDate: new Date('2024-03-15'),
-      status: 'CLOSED'
+      status: 'CLOSED',
     },
   ],
 }
@@ -148,8 +162,11 @@ describe('PositionCard', () => {
 
       // Check that the error message container is present
       const errorElements = screen.getAllByText((content, element) => {
-        return element?.textContent?.includes('Unable to fetch current price') &&
-               element?.textContent?.includes(errorMessage) || false
+        return (
+          (element?.textContent?.includes('Unable to fetch current price') &&
+            element?.textContent?.includes(errorMessage)) ||
+          false
+        )
       })
       expect(errorElements.length).toBeGreaterThan(0)
     })
@@ -193,14 +210,18 @@ describe('PositionCard', () => {
 
   describe('Action Buttons', () => {
     it('should render action buttons for OPEN positions', () => {
-      render(<PositionCard position={mockOpenPosition} onSellCall={vi.fn()} onViewDetails={vi.fn()} />)
+      render(
+        <PositionCard position={mockOpenPosition} onSellCall={vi.fn()} onViewDetails={vi.fn()} />
+      )
 
       expect(screen.getByText('Sell Covered Call')).toBeInTheDocument()
       expect(screen.getByText('View Details')).toBeInTheDocument()
     })
 
     it('should not render action buttons for CLOSED positions', () => {
-      render(<PositionCard position={mockClosedPosition} onSellCall={vi.fn()} onViewDetails={vi.fn()} />)
+      render(
+        <PositionCard position={mockClosedPosition} onSellCall={vi.fn()} onViewDetails={vi.fn()} />
+      )
 
       expect(screen.queryByText('Sell Covered Call')).not.toBeInTheDocument()
       expect(screen.queryByText('View Details')).not.toBeInTheDocument()
@@ -208,7 +229,9 @@ describe('PositionCard', () => {
 
     it('should call onSellCall when Sell Covered Call button is clicked', () => {
       const onSellCall = vi.fn()
-      render(<PositionCard position={mockOpenPosition} onSellCall={onSellCall} onViewDetails={vi.fn()} />)
+      render(
+        <PositionCard position={mockOpenPosition} onSellCall={onSellCall} onViewDetails={vi.fn()} />
+      )
 
       const sellCallButton = screen.getByText('Sell Covered Call')
       fireEvent.click(sellCallButton)
@@ -218,7 +241,13 @@ describe('PositionCard', () => {
 
     it('should call onViewDetails when View Details button is clicked', () => {
       const onViewDetails = vi.fn()
-      render(<PositionCard position={mockOpenPosition} onSellCall={vi.fn()} onViewDetails={onViewDetails} />)
+      render(
+        <PositionCard
+          position={mockOpenPosition}
+          onSellCall={vi.fn()}
+          onViewDetails={onViewDetails}
+        />
+      )
 
       const viewDetailsButton = screen.getByText('View Details')
       fireEvent.click(viewDetailsButton)
@@ -311,7 +340,9 @@ describe('PositionCard', () => {
     })
 
     it('should have descriptive button text', () => {
-      render(<PositionCard position={mockOpenPosition} onSellCall={vi.fn()} onViewDetails={vi.fn()} />)
+      render(
+        <PositionCard position={mockOpenPosition} onSellCall={vi.fn()} onViewDetails={vi.fn()} />
+      )
 
       expect(screen.getByRole('button', { name: 'Sell Covered Call' })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'View Details' })).toBeInTheDocument()
@@ -354,8 +385,8 @@ describe('PositionCard', () => {
             premium: 250,
             strikePrice: 160,
             expirationDate: new Date('2024-02-16'),
-            status: 'OPEN'
-          }
+            status: 'OPEN',
+          },
         ],
       }
       render(<PositionCard position={positionWithOneCall} />)

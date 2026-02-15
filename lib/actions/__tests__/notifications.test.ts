@@ -3,11 +3,7 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { prisma } from '@/lib/db'
-import {
-  getUpcomingExpirations,
-  getITMOptions,
-  getPositionsWithoutCalls,
-} from '../notifications'
+import { getUpcomingExpirations, getITMOptions, getPositionsWithoutCalls } from '../notifications'
 import * as pricesModule from '../prices'
 
 // Mock Prisma

@@ -62,7 +62,8 @@ export function WheelPositionsList({ positions, ticker }: WheelPositionsListProp
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Total Cost</dt>
                   <dd className="mt-1 text-base sm:text-lg font-semibold text-gray-900">
-                    ${position.totalCost.toLocaleString(undefined, {
+                    $
+                    {position.totalCost.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}

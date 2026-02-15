@@ -62,9 +62,7 @@ export function LumpSumComparison() {
     <div className="space-y-6">
       {/* Default Comparison (First Deposit Date) */}
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          Lump Sum vs Dollar-Cost Averaging
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Lump Sum vs Dollar-Cost Averaging</h2>
         <p className="text-gray-600 mb-6">
           Compare your actual deposit strategy (DCA) against a hypothetical lump sum investment made
           on your first deposit date.

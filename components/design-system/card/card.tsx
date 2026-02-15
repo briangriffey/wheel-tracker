@@ -122,41 +122,23 @@ export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
 /**
  * Base styles applied to all cards
  */
-const baseStyles = [
-  'rounded-lg',
-  'bg-white',
-  'transition-all',
-  'duration-200',
-].join(' ')
+const baseStyles = ['rounded-lg', 'bg-white', 'transition-all', 'duration-200'].join(' ')
 
 /**
  * Variant styles mapping
  */
 const variantStyles: Record<CardVariant, string> = {
-  default: [
-    'border',
-    'border-neutral-200',
-  ].join(' '),
+  default: ['border', 'border-neutral-200'].join(' '),
 
-  bordered: [
-    'border-2',
-    'border-neutral-300',
-  ].join(' '),
+  bordered: ['border-2', 'border-neutral-300'].join(' '),
 
-  elevated: [
-    'shadow-md',
-    'hover:shadow-lg',
-  ].join(' '),
+  elevated: ['shadow-md', 'hover:shadow-lg'].join(' '),
 }
 
 /**
  * Clickable card styles
  */
-const clickableStyles = [
-  'cursor-pointer',
-  'hover:shadow-lg',
-  'active:scale-[0.98]',
-].join(' ')
+const clickableStyles = ['cursor-pointer', 'hover:shadow-lg', 'active:scale-[0.98]'].join(' ')
 
 /**
  * Card Component
@@ -206,17 +188,7 @@ const clickableStyles = [
  * ```
  */
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  (
-    {
-      variant = 'default',
-      clickable = false,
-      onClick,
-      children,
-      className,
-      ...props
-    },
-    ref
-  ) => {
+  ({ variant = 'default', clickable = false, onClick, children, className, ...props }, ref) => {
     // Determine if card should have clickable styles
     const isClickable = clickable || !!onClick
 
@@ -268,16 +240,9 @@ Card.displayName = 'Card'
  * </Card>
  * ```
  */
-export function CardHeader({
-  children,
-  className,
-  ...props
-}: CardHeaderProps) {
+export function CardHeader({ children, className, ...props }: CardHeaderProps) {
   return (
-    <div
-      className={cn('flex flex-col space-y-1.5 p-6', className)}
-      {...props}
-    >
+    <div className={cn('flex flex-col space-y-1.5 p-6', className)} {...props}>
       {children}
     </div>
   )
@@ -298,19 +263,9 @@ CardHeader.displayName = 'CardHeader'
  * </CardHeader>
  * ```
  */
-export function CardTitle({
-  children,
-  className,
-  ...props
-}: CardTitleProps) {
+export function CardTitle({ children, className, ...props }: CardTitleProps) {
   return (
-    <h3
-      className={cn(
-        'text-2xl font-semibold leading-none tracking-tight',
-        className
-      )}
-      {...props}
-    >
+    <h3 className={cn('text-2xl font-semibold leading-none tracking-tight', className)} {...props}>
       {children}
     </h3>
   )
@@ -334,16 +289,9 @@ CardTitle.displayName = 'CardTitle'
  * </CardHeader>
  * ```
  */
-export function CardDescription({
-  children,
-  className,
-  ...props
-}: CardDescriptionProps) {
+export function CardDescription({ children, className, ...props }: CardDescriptionProps) {
   return (
-    <p
-      className={cn('text-sm text-neutral-500', className)}
-      {...props}
-    >
+    <p className={cn('text-sm text-neutral-500', className)} {...props}>
       {children}
     </p>
   )
@@ -366,11 +314,7 @@ CardDescription.displayName = 'CardDescription'
  * </Card>
  * ```
  */
-export function CardContent({
-  children,
-  className,
-  ...props
-}: CardContentProps) {
+export function CardContent({ children, className, ...props }: CardContentProps) {
   return (
     <div className={cn('p-6 pt-0', className)} {...props}>
       {children}
@@ -396,16 +340,9 @@ CardContent.displayName = 'CardContent'
  * </Card>
  * ```
  */
-export function CardFooter({
-  children,
-  className,
-  ...props
-}: CardFooterProps) {
+export function CardFooter({ children, className, ...props }: CardFooterProps) {
   return (
-    <div
-      className={cn('flex items-center p-6 pt-0', className)}
-      {...props}
-    >
+    <div className={cn('flex items-center p-6 pt-0', className)} {...props}>
       {children}
     </div>
   )

@@ -30,9 +30,7 @@ const MARKET_HOLIDAYS_2026 = [
  */
 export function isMarketOpen(date: Date = new Date()): boolean {
   // Convert to ET timezone
-  const etDate = new Date(
-    date.toLocaleString('en-US', { timeZone: 'America/New_York' })
-  )
+  const etDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }))
 
   // Check if it's a weekend
   const dayOfWeek = etDate.getDay()
@@ -73,9 +71,7 @@ export function isMarketOpen(date: Date = new Date()): boolean {
  * Get the next market open time
  */
 export function getNextMarketOpen(date: Date = new Date()): Date {
-  const etDate = new Date(
-    date.toLocaleString('en-US', { timeZone: 'America/New_York' })
-  )
+  const etDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }))
 
   // Start with tomorrow
   const nextOpen = new Date(etDate)

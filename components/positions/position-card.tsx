@@ -155,36 +155,43 @@ export function PositionCard({
   }
 
   // Calculate derived values
-  const currentPrice = position.currentValue && position.shares > 0
-    ? toDecimalNumber(position.currentValue) / position.shares
-    : null
+  const currentPrice =
+    position.currentValue && position.shares > 0
+      ? toDecimalNumber(position.currentValue) / position.shares
+      : null
 
   // Use pre-calculated values if available (from PositionWithCalculations), otherwise calculate inline
-  const unrealizedPnL = 'unrealizedPL' in position && position.unrealizedPL != null
-    ? position.unrealizedPL
-    : position.currentValue
-      ? toDecimalNumber(position.currentValue) - toDecimalNumber(position.totalCost)
-      : null
+  const unrealizedPnL =
+    'unrealizedPL' in position && position.unrealizedPL != null
+      ? position.unrealizedPL
+      : position.currentValue
+        ? toDecimalNumber(position.currentValue) - toDecimalNumber(position.totalCost)
+        : null
 
-  const unrealizedPnLPercent = 'unrealizedPLPercent' in position && position.unrealizedPLPercent != null
-    ? position.unrealizedPLPercent
-    : position.currentValue && toDecimalNumber(position.totalCost) > 0
-      ? ((toDecimalNumber(position.currentValue) - toDecimalNumber(position.totalCost)) / toDecimalNumber(position.totalCost)) * 100
-      : null
+  const unrealizedPnLPercent =
+    'unrealizedPLPercent' in position && position.unrealizedPLPercent != null
+      ? position.unrealizedPLPercent
+      : position.currentValue && toDecimalNumber(position.totalCost) > 0
+        ? ((toDecimalNumber(position.currentValue) - toDecimalNumber(position.totalCost)) /
+            toDecimalNumber(position.totalCost)) *
+          100
+        : null
 
-  const daysHeld = 'daysHeld' in position && position.daysHeld != null
-    ? position.daysHeld
-    : (() => {
-      const endDate = position.closedDate ?? new Date()
-      const diffTime = Math.abs(endDate.getTime() - position.acquiredDate.getTime())
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    })()
+  const daysHeld =
+    'daysHeld' in position && position.daysHeld != null
+      ? position.daysHeld
+      : (() => {
+          const endDate = position.closedDate ?? new Date()
+          const diffTime = Math.abs(endDate.getTime() - position.acquiredDate.getTime())
+          return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+        })()
 
-  const totalCoveredCallPremium = 'coveredCallsPremium' in position && position.coveredCallsPremium != null
-    ? position.coveredCallsPremium
-    : position.coveredCalls
-      ? position.coveredCalls.reduce((sum, call) => sum + toDecimalNumber(call.premium), 0)
-      : 0
+  const totalCoveredCallPremium =
+    'coveredCallsPremium' in position && position.coveredCallsPremium != null
+      ? position.coveredCallsPremium
+      : position.coveredCalls
+        ? position.coveredCalls.reduce((sum, call) => sum + toDecimalNumber(call.premium), 0)
+        : 0
 
   // Determine P&L color classes
   const pnlColorClass = unrealizedPnL !== null ? getPnLColorClass(unrealizedPnL) : 'text-gray-600'
@@ -378,7 +385,9 @@ export function PositionCard({
 
           {/* Total Cost */}
           <div>
-            <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total Cost</dt>
+            <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              Total Cost
+            </dt>
             <dd className="mt-1 text-sm font-semibold text-gray-900">
               {formatCurrency(toDecimalNumber(position.totalCost))}
             </dd>
@@ -408,7 +417,9 @@ export function PositionCard({
         </div>
 
         {/* Unrealized P&L - Prominent Display */}
-        <div className={`rounded-md p-4 ${pnlBgClass} border-2 ${unrealizedPnL && unrealizedPnL > 0 ? 'border-green-200' : unrealizedPnL && unrealizedPnL < 0 ? 'border-red-200' : 'border-gray-200'}`}>
+        <div
+          className={`rounded-md p-4 ${pnlBgClass} border-2 ${unrealizedPnL && unrealizedPnL > 0 ? 'border-green-200' : unrealizedPnL && unrealizedPnL < 0 ? 'border-red-200' : 'border-gray-200'}`}
+        >
           <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             Unrealized P&L
           </dt>
@@ -418,7 +429,9 @@ export function PositionCard({
             ) : unrealizedPnL !== null && unrealizedPnLPercent !== null ? (
               <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
                 <span>{formatCurrency(unrealizedPnL)}</span>
-                <span className="text-base font-medium">{formatPercentage(unrealizedPnLPercent)}</span>
+                <span className="text-base font-medium">
+                  {formatPercentage(unrealizedPnLPercent)}
+                </span>
               </div>
             ) : (
               <span className="text-gray-400 text-base">N/A</span>
@@ -440,7 +453,8 @@ export function PositionCard({
               </div>
               {position.coveredCalls && position.coveredCalls.length > 0 && (
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {position.coveredCalls.length} {position.coveredCalls.length === 1 ? 'Call' : 'Calls'}
+                  {position.coveredCalls.length}{' '}
+                  {position.coveredCalls.length === 1 ? 'Call' : 'Calls'}
                 </span>
               )}
             </div>
@@ -481,7 +495,9 @@ export function PositionCard({
                   {position.coveredCalls.map((call) => {
                     const strikePrice = toDecimalNumber(call.strikePrice)
                     const premium = toDecimalNumber(call.premium)
-                    const statusColors = getStatusColor(call.status as 'OPEN' | 'CLOSED' | 'EXPIRED' | 'ASSIGNED')
+                    const statusColors = getStatusColor(
+                      call.status as 'OPEN' | 'CLOSED' | 'EXPIRED' | 'ASSIGNED'
+                    )
 
                     return (
                       <div

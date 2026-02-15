@@ -78,10 +78,7 @@ export function calculateCyclePL(cycle: WheelCycle): number {
 
   // Sum all premiums (PUT + CALLs)
   const putPremium = cycle.putTrade.premium
-  const callPremiums = cycle.callTrades.reduce(
-    (sum, trade) => sum + trade.premium,
-    0
-  )
+  const callPremiums = cycle.callTrades.reduce((sum, trade) => sum + trade.premium, 0)
 
   const totalPremiums = putPremium + callPremiums
 
@@ -109,11 +106,7 @@ export function calculateCyclePL(cycle: WheelCycle): number {
  * // Returns: ~66.4% annualized
  * // (1200 / 14750 = 8.1% return over 45 days = 65.7% annualized)
  */
-export function calculateAnnualizedReturn(
-  pl: number,
-  duration: number,
-  capital: number
-): number {
+export function calculateAnnualizedReturn(pl: number, duration: number, capital: number): number {
   // Handle edge cases
   if (capital <= 0 || duration <= 0) {
     return 0
@@ -190,10 +183,7 @@ export function calculateWinRate(cycles: WheelCycle[]): number {
  * // Returns: 154.88 (147.50 * 1.05)
  * // This gives a 5% return on cost basis if assigned
  */
-export function suggestCallStrike(
-  position: { costBasis: number },
-  desiredReturn: number
-): number {
+export function suggestCallStrike(position: { costBasis: number }, desiredReturn: number): number {
   const costBasis = position.costBasis
 
   // Handle edge cases

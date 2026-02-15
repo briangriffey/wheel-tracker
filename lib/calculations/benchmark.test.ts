@@ -68,19 +68,15 @@ describe('Benchmark Calculations', () => {
 
     it('should handle fractional shares', () => {
       const shares = calculateBenchmarkShares(10000, 333.33)
-      expect(shares).toBeCloseTo(30.00, 2)
+      expect(shares).toBeCloseTo(30.0, 2)
     })
 
     it('should throw error for zero price', () => {
-      expect(() => calculateBenchmarkShares(10000, 0)).toThrow(
-        'Initial price must be positive'
-      )
+      expect(() => calculateBenchmarkShares(10000, 0)).toThrow('Initial price must be positive')
     })
 
     it('should throw error for negative price', () => {
-      expect(() => calculateBenchmarkShares(10000, -100)).toThrow(
-        'Initial price must be positive'
-      )
+      expect(() => calculateBenchmarkShares(10000, -100)).toThrow('Initial price must be positive')
     })
   })
 
@@ -166,9 +162,7 @@ describe('Benchmark Calculations', () => {
 
     it('should calculate metrics correctly', async () => {
       // Mock database query
-      ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(
-        mockBenchmark
-      )
+      ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(mockBenchmark)
 
       // Mock price fetch
       ;(marketData.getLatestPrice as any).mockResolvedValue({
@@ -203,9 +197,7 @@ describe('Benchmark Calculations', () => {
     })
 
     it('should throw error when price fetch fails', async () => {
-      ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(
-        mockBenchmark      )
-
+      ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(mockBenchmark)
       ;(marketData.getLatestPrice as any).mockResolvedValue({
         ticker: 'SPY',
         price: 0,
@@ -221,9 +213,7 @@ describe('Benchmark Calculations', () => {
 
     describe('Deposit-based calculations', () => {
       it('should calculate metrics from single deposit', async () => {
-        ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(
-          mockBenchmark
-        )
+        ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(mockBenchmark)
 
         const mockDeposits = [
           {
@@ -240,7 +230,6 @@ describe('Benchmark Calculations', () => {
         ;(prisma.cashDeposit.findMany as any)
           .mockResolvedValueOnce(mockDeposits) // deposits
           .mockResolvedValueOnce([]) // withdrawals
-
         ;(marketData.getLatestPrice as any).mockResolvedValue({
           ticker: 'SPY',
           price: 420,
@@ -265,9 +254,7 @@ describe('Benchmark Calculations', () => {
       })
 
       it('should calculate metrics from multiple deposits (dollar-cost averaging)', async () => {
-        ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(
-          mockBenchmark
-        )
+        ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(mockBenchmark)
 
         const mockDeposits = [
           {
@@ -293,7 +280,6 @@ describe('Benchmark Calculations', () => {
         ;(prisma.cashDeposit.findMany as any)
           .mockResolvedValueOnce(mockDeposits) // deposits
           .mockResolvedValueOnce([]) // withdrawals
-
         ;(marketData.getLatestPrice as any).mockResolvedValue({
           ticker: 'SPY',
           price: 440,
@@ -315,9 +301,7 @@ describe('Benchmark Calculations', () => {
       })
 
       it('should handle deposits and withdrawals', async () => {
-        ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(
-          mockBenchmark
-        )
+        ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(mockBenchmark)
 
         const mockDeposits = [
           {
@@ -355,7 +339,6 @@ describe('Benchmark Calculations', () => {
         ;(prisma.cashDeposit.findMany as any)
           .mockResolvedValueOnce(mockDeposits) // deposits
           .mockResolvedValueOnce(mockWithdrawals) // withdrawals
-
         ;(marketData.getLatestPrice as any).mockResolvedValue({
           ticker: 'SPY',
           price: 440,
@@ -373,14 +356,10 @@ describe('Benchmark Calculations', () => {
       })
 
       it('should fall back to legacy calculation when no deposits exist', async () => {
-        ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(
-          mockBenchmark
-        )
-
+        ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(mockBenchmark)
         ;(prisma.cashDeposit.findMany as any)
           .mockResolvedValueOnce([]) // deposits
           .mockResolvedValueOnce([]) // withdrawals
-
         ;(marketData.getLatestPrice as any).mockResolvedValue({
           ticker: 'SPY',
           price: 420,
@@ -440,9 +419,7 @@ describe('Benchmark Calculations', () => {
     })
 
     it('should get all benchmarks', async () => {
-      ;(prisma.marketBenchmark.findMany as any).mockResolvedValue(
-        mockBenchmarks      )
-
+      ;(prisma.marketBenchmark.findMany as any).mockResolvedValue(mockBenchmarks)
       ;(marketData.getLatestPrice as any)
         .mockResolvedValueOnce({
           ticker: 'SPY',
@@ -456,7 +433,6 @@ describe('Benchmark Calculations', () => {
           date: new Date('2024-06-01'),
           success: true,
         })
-
       ;(prisma.marketBenchmark.findUnique as any)
         .mockResolvedValueOnce(mockBenchmarks[0] as any)
         .mockResolvedValueOnce(mockBenchmarks[1] as any)
@@ -469,13 +445,10 @@ describe('Benchmark Calculations', () => {
     })
 
     it('should skip benchmarks with errors', async () => {
-      ;(prisma.marketBenchmark.findMany as any).mockResolvedValue(
-        mockBenchmarks      )
-
+      ;(prisma.marketBenchmark.findMany as any).mockResolvedValue(mockBenchmarks)
       ;(prisma.marketBenchmark.findUnique as any)
         .mockResolvedValueOnce(mockBenchmarks[0] as any)
         .mockResolvedValueOnce(mockBenchmarks[1] as any)
-
       ;(marketData.getLatestPrice as any)
         .mockResolvedValueOnce({
           ticker: 'SPY',
@@ -540,10 +513,7 @@ describe('Benchmark Calculations', () => {
     })
 
     it('should compare wheel to benchmark correctly', async () => {
-      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(
-        mockPortfolioStats
-      )
-
+      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(mockPortfolioStats)
       ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue({
         id: 'test-id',
         userId: 'user-1',
@@ -556,7 +526,6 @@ describe('Benchmark Calculations', () => {
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-06-01'),
       } as any)
-
       ;(marketData.getLatestPrice as any).mockResolvedValue({
         ticker: 'SPY',
         price: 420,
@@ -588,10 +557,7 @@ describe('Benchmark Calculations', () => {
         returnPercent: 2,
       }
 
-      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(
-        underperformingStats
-      )
-
+      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(underperformingStats)
       ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue({
         id: 'test-id',
         userId: 'user-1',
@@ -604,7 +570,6 @@ describe('Benchmark Calculations', () => {
         createdAt: new Date('2024-01-01'),
         updatedAt: new Date('2024-06-01'),
       } as any)
-
       ;(marketData.getLatestPrice as any).mockResolvedValue({
         ticker: 'SPY',
         price: 420,
@@ -619,10 +584,7 @@ describe('Benchmark Calculations', () => {
     })
 
     it('should return null for non-existent benchmark', async () => {
-      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(
-        mockPortfolioStats
-      )
-
+      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(mockPortfolioStats)
       ;(prisma.marketBenchmark.findUnique as any).mockResolvedValue(null)
 
       const comparison = await compareToBenchmark('user-1', 'SPY')
@@ -652,10 +614,7 @@ describe('Benchmark Calculations', () => {
     })
 
     it('should compare to all benchmarks', async () => {
-      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(
-        mockPortfolioStats
-      )
-
+      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(mockPortfolioStats)
       ;(prisma.marketBenchmark.findMany as any).mockResolvedValue([
         {
           id: 'test-1',
@@ -682,7 +641,6 @@ describe('Benchmark Calculations', () => {
           updatedAt: new Date('2024-06-01'),
         },
       ] as any)
-
       ;(prisma.marketBenchmark.findUnique as any)
         .mockResolvedValueOnce({
           id: 'test-1',
@@ -708,7 +666,6 @@ describe('Benchmark Calculations', () => {
           createdAt: new Date('2024-01-01'),
           updatedAt: new Date('2024-06-01'),
         } as any)
-
       ;(marketData.getLatestPrice as any)
         .mockResolvedValueOnce({
           ticker: 'SPY',
@@ -732,10 +689,7 @@ describe('Benchmark Calculations', () => {
     })
 
     it('should handle no benchmarks', async () => {
-      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(
-        mockPortfolioStats
-      )
-
+      ;(profitLoss.calculatePortfolioStats as any).mockResolvedValue(mockPortfolioStats)
       ;(prisma.marketBenchmark.findMany as any).mockResolvedValue([])
 
       const comparison = await compareToAllBenchmarks('user-1')

@@ -68,9 +68,7 @@ function calculateDaysHeld(acquiredDate: Date, closedDate?: Date | null): number
 /**
  * Calculate total premium from covered calls
  */
-function calculateCoveredCallsPremium(
-  coveredCalls: Array<{ premium: Prisma.Decimal }>
-): number {
+function calculateCoveredCallsPremium(coveredCalls: Array<{ premium: Prisma.Decimal }>): number {
   return coveredCalls.reduce((sum, call) => sum + call.premium.toNumber(), 0)
 }
 

@@ -114,9 +114,7 @@ export async function createWheel(
  * await getWheels({ status: 'ACTIVE' });
  * await getWheels({ ticker: 'AAPL' });
  */
-export async function getWheels(
-  filters?: WheelFilters
-): Promise<
+export async function getWheels(filters?: WheelFilters): Promise<
   ActionResult<
     Array<{
       id: string
@@ -174,7 +172,7 @@ export async function getWheels(
     })
 
     // Convert Decimal to number and flatten _count
-    const serialized = wheels.map((wheel: typeof wheels[number]) => ({
+    const serialized = wheels.map((wheel: (typeof wheels)[number]) => ({
       id: wheel.id,
       ticker: wheel.ticker,
       status: wheel.status,
@@ -315,7 +313,7 @@ export async function getWheelDetail(wheelId: string): Promise<
       lastActivityAt: wheel.lastActivityAt,
       completedAt: wheel.completedAt,
       notes: wheel.notes,
-      trades: wheel.trades.map((trade: typeof wheel.trades[number]) => ({
+      trades: wheel.trades.map((trade: (typeof wheel.trades)[number]) => ({
         id: trade.id,
         type: trade.type,
         action: trade.action,
@@ -327,7 +325,7 @@ export async function getWheelDetail(wheelId: string): Promise<
         openDate: trade.openDate,
         closeDate: trade.closeDate,
       })),
-      positions: wheel.positions.map((position: typeof wheel.positions[number]) => ({
+      positions: wheel.positions.map((position: (typeof wheel.positions)[number]) => ({
         id: position.id,
         shares: position.shares,
         costBasis: Number(position.costBasis),
@@ -360,9 +358,7 @@ export async function getWheelDetail(wheelId: string): Promise<
  * @example
  * await updateWheel({ id: 'wheel_123', notes: 'Updated strategy notes' });
  */
-export async function updateWheel(
-  input: UpdateWheelInput
-): Promise<ActionResult<{ id: string }>> {
+export async function updateWheel(input: UpdateWheelInput): Promise<ActionResult<{ id: string }>> {
   try {
     // Validate input
     const validated = UpdateWheelSchema.parse(input)

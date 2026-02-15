@@ -82,7 +82,8 @@ function determineCurrentStep(
       return {
         step: 3,
         title: 'Step 3: Covered Position',
-        description: 'Holding shares with active covered CALL. Waiting for expiration or assignment.',
+        description:
+          'Holding shares with active covered CALL. Waiting for expiration or assignment.',
         color: 'blue',
       }
     } else {
@@ -172,8 +173,8 @@ export function WheelCurrentStatus({
                 currentStep.step === 1
                   ? 'bg-green-500 border-green-600 text-white'
                   : currentStep.step > 1
-                  ? 'bg-green-100 border-green-300 text-green-700'
-                  : 'bg-white border-gray-300 text-gray-400'
+                    ? 'bg-green-100 border-green-300 text-green-700'
+                    : 'bg-white border-gray-300 text-gray-400'
               }`}
             >
               <span className="text-xs sm:text-sm font-bold">1</span>
@@ -186,8 +187,8 @@ export function WheelCurrentStatus({
                 currentStep.step === 2
                   ? 'bg-purple-500 border-purple-600 text-white'
                   : currentStep.step > 2
-                  ? 'bg-purple-100 border-purple-300 text-purple-700'
-                  : 'bg-white border-gray-300 text-gray-400'
+                    ? 'bg-purple-100 border-purple-300 text-purple-700'
+                    : 'bg-white border-gray-300 text-gray-400'
               }`}
             >
               <span className="text-xs sm:text-sm font-bold">2</span>
@@ -200,8 +201,8 @@ export function WheelCurrentStatus({
                 currentStep.step === 3
                   ? 'bg-blue-500 border-blue-600 text-white'
                   : currentStep.step > 3
-                  ? 'bg-blue-100 border-blue-300 text-blue-700'
-                  : 'bg-white border-gray-300 text-gray-400'
+                    ? 'bg-blue-100 border-blue-300 text-blue-700'
+                    : 'bg-white border-gray-300 text-gray-400'
               }`}
             >
               <span className="text-xs sm:text-sm font-bold">3</span>

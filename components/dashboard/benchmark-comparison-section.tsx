@@ -8,7 +8,15 @@ import type { BenchmarkComparison } from '@/lib/calculations/benchmark'
 import type { TimeRange } from '@/lib/queries/dashboard'
 import { formatCurrency } from '@/lib/utils/format'
 import { getPnLColorClass } from '@/lib/design/colors'
-import { Card, CardHeader, CardTitle, CardContent, Button, Alert, AlertDescription } from '@/components/design-system'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Alert,
+  AlertDescription,
+} from '@/components/design-system'
 
 interface BenchmarkComparisonSectionProps {
   timeRange: TimeRange
@@ -131,12 +139,7 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
               aria-label="Show calculation details"
               className="p-1 h-auto"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -146,10 +149,7 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
               </svg>
             </Button>
           </div>
-          <BenchmarkSelector
-            selected={selectedBenchmark}
-            onChange={setSelectedBenchmark}
-          />
+          <BenchmarkSelector selected={selectedBenchmark} onChange={setSelectedBenchmark} />
         </div>
 
         {/* Info Tooltip */}
@@ -162,12 +162,12 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
                   • <strong>Wheel Strategy:</strong> Total P&L from all your trades and positions
                 </li>
                 <li>
-                  • <strong>Benchmark:</strong> Hypothetical investment in {selectedBenchmark} with same
-                  initial capital
+                  • <strong>Benchmark:</strong> Hypothetical investment in {selectedBenchmark} with
+                  same initial capital
                 </li>
                 <li>
-                  • <strong>Comparison:</strong> Shows if your wheel strategy is outperforming (green)
-                  or underperforming (red) the benchmark
+                  • <strong>Comparison:</strong> Shows if your wheel strategy is outperforming
+                  (green) or underperforming (red) the benchmark
                 </li>
                 <li>
                   • <strong>Return %:</strong> Calculated as (Current Value - Initial Capital) /
@@ -193,7 +193,9 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
                 </div>
                 <div className="flex justify-between items-baseline">
                   <span className="text-sm text-gray-600">Return:</span>
-                  <span className={`text-lg font-bold ${getPnLColorClass(wheelStrategy.returnPercent)}`}>
+                  <span
+                    className={`text-lg font-bold ${getPnLColorClass(wheelStrategy.returnPercent)}`}
+                  >
                     {wheelStrategy.returnPercent.toFixed(2)}%
                   </span>
                 </div>
@@ -222,7 +224,9 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
                 </div>
                 <div className="flex justify-between items-baseline">
                   <span className="text-sm text-gray-600">Return:</span>
-                  <span className={`text-lg font-bold ${getPnLColorClass(benchmark.returnPercent)}`}>
+                  <span
+                    className={`text-lg font-bold ${getPnLColorClass(benchmark.returnPercent)}`}
+                  >
                     {benchmark.returnPercent.toFixed(2)}%
                   </span>
                 </div>
@@ -255,7 +259,9 @@ export function BenchmarkComparisonSection({ timeRange }: BenchmarkComparisonSec
                 </div>
                 <div>
                   <p className="text-xs text-gray-600 mb-1">Return Difference</p>
-                  <p className={`text-lg font-bold ${getPnLColorClass(difference.returnDifference)}`}>
+                  <p
+                    className={`text-lg font-bold ${getPnLColorClass(difference.returnDifference)}`}
+                  >
                     {difference.returnDifference >= 0 ? '+' : ''}
                     {difference.returnDifference.toFixed(2)}%
                   </p>

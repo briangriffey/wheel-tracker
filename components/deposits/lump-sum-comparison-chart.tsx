@@ -44,9 +44,7 @@ export function LumpSumComparisonChart({ comparison }: LumpSumComparisonChartPro
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        DCA vs Lump Sum Over Time
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">DCA vs Lump Sum Over Time</h3>
 
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>

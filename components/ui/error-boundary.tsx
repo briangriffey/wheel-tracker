@@ -95,9 +95,7 @@ function DefaultErrorFallback({ error, reset, className }: DefaultErrorFallbackP
             />
           </svg>
         </div>
-        <h2 className="text-lg font-semibold text-neutral-900 mb-2">
-          Something went wrong
-        </h2>
+        <h2 className="text-lg font-semibold text-neutral-900 mb-2">Something went wrong</h2>
         <p className="text-sm text-neutral-600 mb-4">
           {error.message || 'An unexpected error occurred'}
         </p>

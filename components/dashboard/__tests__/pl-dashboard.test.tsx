@@ -163,9 +163,7 @@ describe('PLDashboard', () => {
     const user = userEvent.setup()
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    ;(global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-      new Error('Failed to fetch')
-    )
+    ;(global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Failed to fetch'))
 
     render(
       <PLDashboard

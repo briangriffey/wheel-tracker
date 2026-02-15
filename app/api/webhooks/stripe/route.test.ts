@@ -49,15 +49,12 @@ function mockSubscriptionWithPeriodEnd(periodEnd: number) {
  * Helper to build a mock invoice event object.
  * In Stripe API 2026-01-28.clover, subscription is under parent.subscription_details.
  */
-function mockInvoiceObject(opts: {
-  subscriptionId?: string | null
-  customerId: string
-}) {
+function mockInvoiceObject(opts: { subscriptionId?: string | null; customerId: string }) {
   return {
     parent: opts.subscriptionId
       ? {
-        subscription_details: { subscription: opts.subscriptionId },
-      }
+          subscription_details: { subscription: opts.subscriptionId },
+        }
       : null,
     customer: opts.customerId,
   }
@@ -70,9 +67,9 @@ describe('Stripe Webhook Handler', () => {
   beforeEach(() => {
     process.env.STRIPE_WEBHOOK_SECRET = mockWebhookSecret
     vi.clearAllMocks()
-    vi.spyOn(console, 'log').mockImplementation(() => { })
-    vi.spyOn(console, 'warn').mockImplementation(() => { })
-    vi.spyOn(console, 'error').mockImplementation(() => { })
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
     // Default: no duplicate events (idempotency check passes)
     vi.mocked(prisma.webhookEvent.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.webhookEvent.create).mockResolvedValue({} as never)
@@ -641,9 +638,7 @@ describe('Stripe Webhook Handler', () => {
         },
       } as unknown as ReturnType<typeof stripe.webhooks.constructEvent>)
 
-      vi.mocked(stripe.subscriptions.retrieve).mockRejectedValue(
-        new Error('Stripe API error')
-      )
+      vi.mocked(stripe.subscriptions.retrieve).mockRejectedValue(new Error('Stripe API error'))
 
       const request = makeRequest()
       const response = await POST(request)
@@ -734,9 +729,7 @@ describe('Stripe Webhook Handler', () => {
         },
       } as unknown as ReturnType<typeof stripe.webhooks.constructEvent>)
 
-      vi.mocked(stripe.subscriptions.retrieve).mockRejectedValue(
-        new Error('Stripe API error')
-      )
+      vi.mocked(stripe.subscriptions.retrieve).mockRejectedValue(new Error('Stripe API error'))
 
       const request = makeRequest()
       const response = await POST(request)

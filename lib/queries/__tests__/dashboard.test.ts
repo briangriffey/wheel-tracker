@@ -80,7 +80,7 @@ describe('getDashboardMetrics', () => {
       // Total expected: $1,050
       const mockTrades = [
         {
-          premium: new Prisma.Decimal(1.50),
+          premium: new Prisma.Decimal(1.5),
           contracts: 2,
           status: 'OPEN',
         },
@@ -145,7 +145,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as unknown as Trade[])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
 
-
       const result = await getDashboardMetrics('All')
 
       expect(result.totalPremiumCollected).toBe(165)
@@ -167,7 +166,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.trade.findMany).mockResolvedValue([])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
 
-
       const result = await getDashboardMetrics('All')
 
       expect(result.totalPremiumCollected).toBe(0)
@@ -180,7 +178,7 @@ describe('getDashboardMetrics', () => {
 
       vi.mocked(prisma.position.aggregate).mockResolvedValue({
         _sum: {
-          realizedGainLoss: new Prisma.Decimal(1500.50),
+          realizedGainLoss: new Prisma.Decimal(1500.5),
           currentValue: new Prisma.Decimal(0),
           totalCost: new Prisma.Decimal(0),
         },
@@ -193,10 +191,9 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as Trade[])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
 
-
       const result = await getDashboardMetrics('All')
 
-      expect(result.realizedPL).toBe(1500.50)
+      expect(result.realizedPL).toBe(1500.5)
     })
 
     it('should correctly calculate unrealized P&L with covered calls', async () => {
@@ -326,7 +323,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.trade.findMany).mockResolvedValue([])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
 
-
       const result = await getDashboardMetrics('All')
 
       expect(result.winRate).toBe(0)
@@ -358,7 +354,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as unknown as Trade[])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
 
-
       const result = await getDashboardMetrics('All')
 
       // 3 assigned out of 5 total = 60%
@@ -381,7 +376,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.trade.findMany).mockResolvedValue([])
       vi.mocked(prisma.position.findMany).mockResolvedValue([])
 
-
       const result = await getDashboardMetrics('All')
 
       expect(result.assignmentRate).toBe(0)
@@ -397,9 +391,9 @@ describe('getDashboardMetrics', () => {
       // - 1 assigned trade out of 3 total
 
       const mockTrades = [
-        { premium: new Prisma.Decimal(2.50), contracts: 5, status: 'ASSIGNED' },
+        { premium: new Prisma.Decimal(2.5), contracts: 5, status: 'ASSIGNED' },
         { premium: new Prisma.Decimal(1.75), contracts: 3, status: 'OPEN' },
-        { premium: new Prisma.Decimal(3.00), contracts: 2, status: 'CLOSED' },
+        { premium: new Prisma.Decimal(3.0), contracts: 2, status: 'CLOSED' },
       ]
 
       const mockOpenPositions = [
@@ -476,17 +470,13 @@ describe('getDashboardMetrics', () => {
         new Error('Database connection failed')
       )
 
-      await expect(getDashboardMetrics('All')).rejects.toThrow(
-        'Failed to fetch dashboard metrics'
-      )
+      await expect(getDashboardMetrics('All')).rejects.toThrow('Failed to fetch dashboard metrics')
     })
 
     it('should throw error when no user found', async () => {
       vi.mocked(prisma.user.findFirst).mockResolvedValue(null)
 
-      await expect(getDashboardMetrics('All')).rejects.toThrow(
-        'Failed to fetch dashboard metrics'
-      )
+      await expect(getDashboardMetrics('All')).rejects.toThrow('Failed to fetch dashboard metrics')
     })
   })
 })

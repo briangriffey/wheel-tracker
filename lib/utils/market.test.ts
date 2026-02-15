@@ -182,93 +182,92 @@ describe('Market Utilities', () => {
     })
 
     describe('getActiveTickers', () => {
+      it('should return tickers from open positions', async () => {
+        const tickers = await getActiveTickers(testUserId)
 
-    it('should return tickers from open positions', async () => {
-      const tickers = await getActiveTickers(testUserId)
-
-      expect(tickers).toContain('MSFT')
-    })
-
-    it('should return tickers from open trades', async () => {
-      const tickers = await getActiveTickers(testUserId)
-
-      expect(tickers).toContain('AAPL')
-    })
-
-    it('should not return tickers from closed trades', async () => {
-      const tickers = await getActiveTickers(testUserId)
-
-      expect(tickers).not.toContain('TSLA')
-    })
-
-    it('should deduplicate tickers', async () => {
-      const tickers = await getActiveTickers(testUserId)
-
-      const uniqueTickers = [...new Set(tickers)]
-      expect(tickers.length).toBe(uniqueTickers.length)
-    })
-
-    it('should return uppercase tickers', async () => {
-      const tickers = await getActiveTickers(testUserId)
-
-      for (const ticker of tickers) {
-        expect(ticker).toBe(ticker.toUpperCase())
-      }
-    })
-
-    it('should return sorted tickers', async () => {
-      const tickers = await getActiveTickers(testUserId)
-
-      const sorted = [...tickers].sort()
-      expect(tickers).toEqual(sorted)
-    })
-
-    it('should always include SPY for benchmark tracking', async () => {
-      const tickers = await getActiveTickers(testUserId)
-      expect(tickers).toContain('SPY')
-    })
-
-    it('should return only SPY if no active tickers', async () => {
-      // Create a user with no data
-      const emptyUser = await prisma.user.create({
-        data: {
-          email: 'empty-user@example.com',
-          name: 'Empty User',
-        },
+        expect(tickers).toContain('MSFT')
       })
 
-      const tickers = await getActiveTickers(emptyUser.id)
-      expect(tickers).toEqual(['SPY'])
+      it('should return tickers from open trades', async () => {
+        const tickers = await getActiveTickers(testUserId)
 
-      // Cleanup
-      await prisma.user.delete({ where: { id: emptyUser.id } })
-    })
+        expect(tickers).toContain('AAPL')
+      })
+
+      it('should not return tickers from closed trades', async () => {
+        const tickers = await getActiveTickers(testUserId)
+
+        expect(tickers).not.toContain('TSLA')
+      })
+
+      it('should deduplicate tickers', async () => {
+        const tickers = await getActiveTickers(testUserId)
+
+        const uniqueTickers = [...new Set(tickers)]
+        expect(tickers.length).toBe(uniqueTickers.length)
+      })
+
+      it('should return uppercase tickers', async () => {
+        const tickers = await getActiveTickers(testUserId)
+
+        for (const ticker of tickers) {
+          expect(ticker).toBe(ticker.toUpperCase())
+        }
+      })
+
+      it('should return sorted tickers', async () => {
+        const tickers = await getActiveTickers(testUserId)
+
+        const sorted = [...tickers].sort()
+        expect(tickers).toEqual(sorted)
+      })
+
+      it('should always include SPY for benchmark tracking', async () => {
+        const tickers = await getActiveTickers(testUserId)
+        expect(tickers).toContain('SPY')
+      })
+
+      it('should return only SPY if no active tickers', async () => {
+        // Create a user with no data
+        const emptyUser = await prisma.user.create({
+          data: {
+            email: 'empty-user@example.com',
+            name: 'Empty User',
+          },
+        })
+
+        const tickers = await getActiveTickers(emptyUser.id)
+        expect(tickers).toEqual(['SPY'])
+
+        // Cleanup
+        await prisma.user.delete({ where: { id: emptyUser.id } })
+      })
     })
 
     describe('getAllTickers', () => {
-    it('should return all tickers including closed', async () => {
-      const tickers = await getAllTickers(testUserId)
+      it('should return all tickers including closed', async () => {
+        const tickers = await getAllTickers(testUserId)
 
-      // Test should have AAPL (open trade), MSFT (open position), and TSLA (closed trade)
-      expect(tickers.length).toBeGreaterThanOrEqual(3)
-      expect(tickers).toContain('AAPL')
-      expect(tickers).toContain('MSFT')
-      expect(tickers).toContain('TSLA')
-    })
+        // Test should have AAPL (open trade), MSFT (open position), and TSLA (closed trade)
+        expect(tickers.length).toBeGreaterThanOrEqual(3)
+        expect(tickers).toContain('AAPL')
+        expect(tickers).toContain('MSFT')
+        expect(tickers).toContain('TSLA')
+      })
 
-    it('should deduplicate tickers', async () => {
-      const tickers = await getAllTickers(testUserId)
+      it('should deduplicate tickers', async () => {
+        const tickers = await getAllTickers(testUserId)
 
-      const uniqueTickers = [...new Set(tickers)]
-      expect(tickers.length).toBe(uniqueTickers.length)
-    })
+        const uniqueTickers = [...new Set(tickers)]
+        expect(tickers.length).toBe(uniqueTickers.length)
+      })
 
-    it('should return sorted tickers', async () => {
-      const tickers = await getAllTickers(testUserId)
+      it('should return sorted tickers', async () => {
+        const tickers = await getAllTickers(testUserId)
 
-      const sorted = [...tickers].sort()
-      expect(tickers).toEqual(sorted)
-    })
+        const sorted = [...tickers].sort()
+        expect(tickers).toEqual(sorted)
+      })
     })
   })
 

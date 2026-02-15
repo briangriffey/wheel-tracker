@@ -56,10 +56,7 @@ export default async function ExpirationsPage() {
         </div>
 
         {/* Expiration Calendar Component */}
-        <ExpirationCalendar
-          groupedTrades={groupedTrades}
-          prices={prices}
-        />
+        <ExpirationCalendar groupedTrades={groupedTrades} prices={prices} />
       </div>
     </div>
   )

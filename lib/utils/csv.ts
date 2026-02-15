@@ -26,7 +26,7 @@ export function escapeCsvField(value: string | number | null | undefined): strin
  * Convert an array of rows into CSV format
  */
 export function arrayToCSV(rows: (string | number | null | undefined)[][]): string {
-  return rows.map(row => row.map(escapeCsvField).join(',')).join('\n')
+  return rows.map((row) => row.map(escapeCsvField).join(',')).join('\n')
 }
 
 /**

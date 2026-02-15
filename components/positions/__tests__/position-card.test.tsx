@@ -200,7 +200,8 @@ describe('PositionCard Component Logic', () => {
     })
 
     it('should calculate net cost basis with premium', () => {
-      const expectedNetCost = mockPosition.costBasis.toNumber() - (mockPosition.coveredCallsPremium / mockPosition.shares)
+      const expectedNetCost =
+        mockPosition.costBasis.toNumber() - mockPosition.coveredCallsPremium / mockPosition.shares
       expect(mockPosition.netCostBasis).toBeCloseTo(expectedNetCost, 2)
     })
 

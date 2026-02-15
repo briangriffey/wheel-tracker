@@ -359,9 +359,7 @@ export async function getComparison(
  *
  * @returns Action result with updated metrics
  */
-export async function updateAllBenchmarks(): Promise<
-  ActionResult<BenchmarkMetrics[]>
-> {
+export async function updateAllBenchmarks(): Promise<ActionResult<BenchmarkMetrics[]>> {
   try {
     // Get current user
     const userId = await getCurrentUserId()
@@ -376,7 +374,7 @@ export async function updateAllBenchmarks(): Promise<
 
     for (const benchmark of benchmarks) {
       const result = await updateBenchmark({
-        ticker: benchmark.ticker as 'SPY' | 'QQQ' | 'VTI' | 'DIA' | 'IWM'
+        ticker: benchmark.ticker as 'SPY' | 'QQQ' | 'VTI' | 'DIA' | 'IWM',
       })
 
       if (result.success) {

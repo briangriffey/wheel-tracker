@@ -37,12 +37,8 @@ export default function DesignSystemPage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Wheel Tracker Design System
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Interactive component gallery and documentation
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900">Wheel Tracker Design System</h1>
+          <p className="mt-2 text-gray-600">Interactive component gallery and documentation</p>
         </div>
       </header>
 
@@ -51,12 +47,10 @@ export default function DesignSystemPage() {
         {/* Introduction */}
         <section className="mb-16">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Welcome to the Design System
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to the Design System</h2>
             <p className="text-gray-700 mb-4">
-              This design system provides a consistent, reusable set of components
-              built with accessibility, performance, and developer experience in mind.
+              This design system provides a consistent, reusable set of components built with
+              accessibility, performance, and developer experience in mind.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div className="p-4 bg-green-50 rounded-lg border border-green-200">
@@ -81,9 +75,7 @@ export default function DesignSystemPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             {/* Primary Green */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Primary Green
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Primary Green</h3>
               <div className="grid grid-cols-5 gap-2">
                 {[
                   { shade: '50', color: '#F0FDF7' },
@@ -97,12 +89,8 @@ export default function DesignSystemPage() {
                       className="h-20 rounded-lg shadow-sm border border-gray-200 mb-2"
                       style={{ backgroundColor: item.color }}
                     />
-                    <div className="text-xs font-medium text-gray-700">
-                      {item.shade}
-                    </div>
-                    <div className="text-xs text-gray-500 font-mono">
-                      {item.color}
-                    </div>
+                    <div className="text-xs font-medium text-gray-700">{item.shade}</div>
+                    <div className="text-xs text-gray-500 font-mono">{item.color}</div>
                   </div>
                 ))}
               </div>
@@ -121,13 +109,9 @@ export default function DesignSystemPage() {
                     />
                     <div className="text-xs font-medium text-gray-700">
                       {item.shade}
-                      {item.label && (
-                        <span className="ml-1 text-green-600">★</span>
-                      )}
+                      {item.label && <span className="ml-1 text-green-600">★</span>}
                     </div>
-                    <div className="text-xs text-gray-500 font-mono">
-                      {item.color}
-                    </div>
+                    <div className="text-xs text-gray-500 font-mono">{item.color}</div>
                   </div>
                 ))}
               </div>
@@ -135,9 +119,7 @@ export default function DesignSystemPage() {
 
             {/* Semantic Colors */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Semantic Colors
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Semantic Colors</h3>
               <div className="grid grid-cols-4 gap-4">
                 {[
                   { name: 'Success', color: '#43D984', class: 'bg-green-500' },
@@ -147,12 +129,8 @@ export default function DesignSystemPage() {
                 ].map((item) => (
                   <div key={item.name} className="text-center">
                     <div className={`h-20 rounded-lg shadow-sm mb-2 ${item.class}`} />
-                    <div className="text-sm font-medium text-gray-700">
-                      {item.name}
-                    </div>
-                    <div className="text-xs text-gray-500 font-mono">
-                      {item.color}
-                    </div>
+                    <div className="text-sm font-medium text-gray-700">{item.name}</div>
+                    <div className="text-xs text-gray-500 font-mono">{item.color}</div>
                   </div>
                 ))}
               </div>
@@ -316,21 +294,15 @@ export default function DesignSystemPage() {
             <div className="space-y-4">
               <Alert variant="info">
                 <AlertTitle>Information</AlertTitle>
-                <AlertDescription>
-                  This is an informational message for the user.
-                </AlertDescription>
+                <AlertDescription>This is an informational message for the user.</AlertDescription>
               </Alert>
               <Alert variant="success">
                 <AlertTitle>Success</AlertTitle>
-                <AlertDescription>
-                  Your changes have been saved successfully.
-                </AlertDescription>
+                <AlertDescription>Your changes have been saved successfully.</AlertDescription>
               </Alert>
               <Alert variant="warning">
                 <AlertTitle>Warning</AlertTitle>
-                <AlertDescription>
-                  Please review your settings before continuing.
-                </AlertDescription>
+                <AlertDescription>Please review your settings before continuing.</AlertDescription>
               </Alert>
               <Alert variant="error">
                 <AlertTitle>Error</AlertTitle>
@@ -359,9 +331,7 @@ export default function DesignSystemPage() {
             </h4>
             <Alert variant="success" dismissible onDismiss={() => console.log('Dismissed')}>
               <AlertTitle>Success</AlertTitle>
-              <AlertDescription>
-                Click the X button to dismiss this alert.
-              </AlertDescription>
+              <AlertDescription>Click the X button to dismiss this alert.</AlertDescription>
             </Alert>
             <CodeBlock
               code={`<Alert variant="success" dismissible onDismiss={() => console.log('Dismissed')}>
@@ -441,10 +411,7 @@ export default function DesignSystemPage() {
                 placeholder="Enter percentage"
                 suffix={<span className="text-gray-500">%</span>}
               />
-              <Input
-                placeholder="With help text"
-                helpText="Enter a value between 0 and 100"
-              />
+              <Input placeholder="With help text" helpText="Enter a value between 0 and 100" />
             </div>
             <CodeBlock
               code={`<Input
@@ -579,10 +546,12 @@ export default function DesignSystemPage() {
             <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
               Spinner Overlay
             </h4>
-            <Button onClick={() => {
-              setShowSpinnerOverlay(true)
-              setTimeout(() => setShowSpinnerOverlay(false), 2000)
-            }}>
+            <Button
+              onClick={() => {
+                setShowSpinnerOverlay(true)
+                setTimeout(() => setShowSpinnerOverlay(false), 2000)
+              }}
+            >
               Show Spinner Overlay (2s)
             </Button>
             {showSpinnerOverlay && <SpinnerOverlay />}
@@ -659,16 +628,14 @@ export default function DesignSystemPage() {
               maxWidth="lg"
             >
               <p className="text-gray-600">
-                This is a dialog component with automatic focus management,
-                keyboard navigation (ESC to close), and click-outside-to-close functionality.
+                This is a dialog component with automatic focus management, keyboard navigation (ESC
+                to close), and click-outside-to-close functionality.
               </p>
               <div className="mt-6 flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={() => setIsDialogOpen(false)}>
-                  Confirm
-                </Button>
+                <Button onClick={() => setIsDialogOpen(false)}>Confirm</Button>
               </div>
             </Dialog>
             <CodeBlock
@@ -714,16 +681,14 @@ export default function DesignSystemPage() {
               size="lg"
             >
               <p className="text-gray-600">
-                Modal component with support for title, optional description,
-                and configurable sizes (sm, md, lg, xl).
+                Modal component with support for title, optional description, and configurable sizes
+                (sm, md, lg, xl).
               </p>
               <div className="mt-6 flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={() => setIsModalOpen(false)}>
-                  Save Changes
-                </Button>
+                <Button onClick={() => setIsModalOpen(false)}>Save Changes</Button>
               </div>
             </Modal>
             <CodeBlock
@@ -813,10 +778,7 @@ export default function DesignSystemPage() {
           id="error-message"
         >
           <div className="space-y-4">
-            <ErrorMessage
-              title="Error"
-              message="Something went wrong while loading your data."
-            />
+            <ErrorMessage title="Error" message="Something went wrong while loading your data." />
             <ErrorMessage
               title="Validation Error"
               message="Please check your input and try again."
@@ -859,10 +821,7 @@ export default function DesignSystemPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-700">Premium</span>
-                  <HelpIcon
-                    tooltip="Amount received for selling the option"
-                    helpLink="#"
-                  />
+                  <HelpIcon tooltip="Amount received for selling the option" helpLink="#" />
                 </div>
               </div>
               <CodeBlock
@@ -936,9 +895,7 @@ function ComponentSection({ title, description, id, children }: ComponentSection
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
         <p className="text-gray-600">{description}</p>
       </div>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-        {children}
-      </div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">{children}</div>
     </section>
   )
 }

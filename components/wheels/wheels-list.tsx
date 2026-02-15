@@ -73,7 +73,11 @@ export function WheelsList({ initialWheels }: WheelsListProps) {
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-sm font-medium text-gray-500 mb-1">Total Premiums</h3>
           <p className="text-2xl font-bold text-green-600">
-            ${stats.totalPremiums.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            $
+            {stats.totalPremiums.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
@@ -83,8 +87,11 @@ export function WheelsList({ initialWheels }: WheelsListProps) {
               stats.totalPL >= 0 ? 'text-green-600' : 'text-red-600'
             }`}
           >
-            {stats.totalPL >= 0 ? '+' : ''}
-            ${stats.totalPL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {stats.totalPL >= 0 ? '+' : ''}$
+            {stats.totalPL.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </p>
         </div>
       </div>

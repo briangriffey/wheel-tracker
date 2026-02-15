@@ -67,12 +67,15 @@ export interface UnrealizedPnL {
   totalPercent: number
   currentValue: number
   costBasis: number
-  byTicker: Map<string, {
-    pnl: number
-    pnlPercent: number
-    currentValue: number
-    costBasis: number
-  }>
+  byTicker: Map<
+    string,
+    {
+      pnl: number
+      pnlPercent: number
+      currentValue: number
+      costBasis: number
+    }
+  >
 }
 
 /**
@@ -157,10 +160,10 @@ export async function calculateRealizedPnL(
   if (startDate || endDate) {
     positionWhere.closedDate = {}
     if (startDate) {
-      (positionWhere.closedDate as Record<string, unknown>).gte = startDate
+      ;(positionWhere.closedDate as Record<string, unknown>).gte = startDate
     }
     if (endDate) {
-      (positionWhere.closedDate as Record<string, unknown>).lte = endDate
+      ;(positionWhere.closedDate as Record<string, unknown>).lte = endDate
     }
   }
 
@@ -180,10 +183,10 @@ export async function calculateRealizedPnL(
   if (startDate || endDate) {
     tradeWhere.closeDate = {}
     if (startDate) {
-      (tradeWhere.closeDate as Record<string, unknown>).gte = startDate
+      ;(tradeWhere.closeDate as Record<string, unknown>).gte = startDate
     }
     if (endDate) {
-      (tradeWhere.closeDate as Record<string, unknown>).lte = endDate
+      ;(tradeWhere.closeDate as Record<string, unknown>).lte = endDate
     }
   }
 
@@ -279,16 +282,19 @@ export async function calculateUnrealizedPnL(
   }
 
   // Get current prices for all tickers
-  const tickers = [...new Set(openPositions.map(p => p.ticker))]
+  const tickers = [...new Set(openPositions.map((p) => p.ticker))]
   const priceMap = await getLatestPrices(tickers)
 
   // Calculate unrealized P&L
-  const byTicker = new Map<string, {
-    pnl: number
-    pnlPercent: number
-    currentValue: number
-    costBasis: number
-  }>()
+  const byTicker = new Map<
+    string,
+    {
+      pnl: number
+      pnlPercent: number
+      currentValue: number
+      costBasis: number
+    }
+  >()
 
   let totalPnL = 0
   let totalCurrentValue = 0
@@ -315,9 +321,12 @@ export async function calculateUnrealizedPnL(
     if (existing) {
       byTicker.set(position.ticker, {
         pnl: existing.pnl + pnl,
-        pnlPercent: existing.costBasis > 0
-          ? ((existing.currentValue + currentValue - existing.costBasis - totalCost) / (existing.costBasis + totalCost)) * 100
-          : 0,
+        pnlPercent:
+          existing.costBasis > 0
+            ? ((existing.currentValue + currentValue - existing.costBasis - totalCost) /
+                (existing.costBasis + totalCost)) *
+              100
+            : 0,
         currentValue: existing.currentValue + currentValue,
         costBasis: existing.costBasis + totalCost,
       })
@@ -459,13 +468,7 @@ export async function calculatePnLByTicker(userId: string): Promise<TickerPnL[]>
  */
 export async function calculatePortfolioStats(userId: string): Promise<PortfolioStats> {
   // Run queries in parallel for performance
-  const [
-    realized,
-    unrealized,
-    allTrades,
-    closedPositions,
-    openPositions,
-  ] = await Promise.all([
+  const [realized, unrealized, allTrades, closedPositions, openPositions] = await Promise.all([
     calculateRealizedPnL(userId),
     calculateUnrealizedPnL(userId),
     prisma.trade.findMany({
@@ -490,30 +493,21 @@ export async function calculatePortfolioStats(userId: string): Promise<Portfolio
   ])
 
   // Calculate capital deployed (total cost of open positions)
-  const capitalDeployed = openPositions.reduce(
-    (sum, pos) => sum + Number(pos.totalCost),
-    0
-  )
+  const capitalDeployed = openPositions.reduce((sum, pos) => sum + Number(pos.totalCost), 0)
 
   // Calculate total premium collected
-  const premiumCollected = allTrades.reduce(
-    (sum, trade) => sum + Number(trade.premium),
-    0
-  )
+  const premiumCollected = allTrades.reduce((sum, trade) => sum + Number(trade.premium), 0)
 
   // Calculate win rate (profitable closed positions / total closed positions)
   const profitablePositions = closedPositions.filter(
     (pos) => pos.realizedGainLoss && Number(pos.realizedGainLoss) > 0
   ).length
-  const winRate = closedPositions.length > 0
-    ? (profitablePositions / closedPositions.length) * 100
-    : 0
+  const winRate =
+    closedPositions.length > 0 ? (profitablePositions / closedPositions.length) * 100 : 0
 
   // Calculate assignment rate (assigned trades / total trades)
   const assignedTrades = allTrades.filter((t) => t.status === 'ASSIGNED').length
-  const assignmentRate = allTrades.length > 0
-    ? (assignedTrades / allTrades.length) * 100
-    : 0
+  const assignmentRate = allTrades.length > 0 ? (assignedTrades / allTrades.length) * 100 : 0
 
   // Calculate total P&L
   const totalPnL = realized.total + unrealized.total

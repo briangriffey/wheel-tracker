@@ -81,12 +81,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
   }
 
   if (showUpgradePrompt) {
-    return (
-      <UpgradePrompt
-        tradesUsed={tradeUsage?.tradesUsed}
-        onCancel={onCancel}
-      />
-    )
+    return <UpgradePrompt tradesUsed={tradeUsage?.tradesUsed} onCancel={onCancel} />
   }
 
   return (
@@ -96,7 +91,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Ticker */}
         <div>
           <label htmlFor="ticker" className="block text-sm font-medium text-neutral-700">
-            Ticker Symbol <span className="text-error" aria-hidden="true">*</span>
+            Ticker Symbol{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
           </label>
           <Input
             id="ticker"
@@ -114,7 +112,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Trade Type */}
         <div>
           <label htmlFor="type" className="block text-sm font-medium text-neutral-700">
-            Trade Type <span className="text-error" aria-hidden="true">*</span>
+            Trade Type{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
             <InfoTooltip
               content="PUT = Right to sell shares at strike price. CALL = Right to buy shares at strike price. For the wheel strategy, start by selling PUTs."
               position="top"
@@ -137,7 +138,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Trade Action */}
         <div>
           <label htmlFor="action" className="block text-sm font-medium text-neutral-700">
-            Trade Action <span className="text-error" aria-hidden="true">*</span>
+            Trade Action{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
             <InfoTooltip
               content="SELL TO OPEN = Opening a new position (collecting premium). BUY TO CLOSE = Closing an existing position early (paying premium)."
               position="top"
@@ -159,7 +163,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Strike Price */}
         <div>
           <label htmlFor="strikePrice" className="block text-sm font-medium text-neutral-700">
-            Strike Price <span className="text-error" aria-hidden="true">*</span>
+            Strike Price{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
             <InfoTooltip
               content="The price at which the option can be exercised. For PUTs, you'll buy shares at this price if assigned. Choose a strike you're comfortable owning the stock at."
               position="top"
@@ -182,7 +189,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Premium */}
         <div>
           <label htmlFor="premium" className="block text-sm font-medium text-neutral-700">
-            Premium (Total) <span className="text-error" aria-hidden="true">*</span>
+            Premium (Total){' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
             <InfoTooltip
               content="Total premium collected or paid across all contracts. Example: If you collect $2.50 per share on 1 contract, enter $250 (2.50 × 100 shares)."
               position="top"
@@ -205,7 +215,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Contracts */}
         <div>
           <label htmlFor="contracts" className="block text-sm font-medium text-neutral-700">
-            Number of Contracts <span className="text-error" aria-hidden="true">*</span>
+            Number of Contracts{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
           </label>
           <Input
             id="contracts"
@@ -224,7 +237,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Entry Date */}
         <div>
           <label htmlFor="openDate" className="block text-sm font-medium text-neutral-700">
-            Entry Date <span className="text-error" aria-hidden="true">*</span>
+            Entry Date{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
           </label>
           <Input
             id="openDate"
@@ -240,7 +256,10 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         {/* Expiration Date */}
         <div>
           <label htmlFor="expirationDate" className="block text-sm font-medium text-neutral-700">
-            Expiration Date <span className="text-error" aria-hidden="true">*</span>
+            Expiration Date{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
             <InfoTooltip
               content="The date when the option expires. Best practice: 30-45 days out for optimal theta decay. Options closer to expiration decay faster but carry more risk."
               position="top"

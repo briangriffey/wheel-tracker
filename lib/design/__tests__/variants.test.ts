@@ -24,7 +24,7 @@ describe('Variant System', () => {
     })
 
     it('should handle conditional classes', () => {
-      const result = cn('base', { 'conditional': true, 'skip': false })
+      const result = cn('base', { conditional: true, skip: false })
       expect(result).toContain('base')
       expect(result).toContain('conditional')
       expect(result).not.toContain('skip')

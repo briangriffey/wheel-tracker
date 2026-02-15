@@ -147,12 +147,14 @@ export const buttonVariants = cva(
       {
         variant: 'outline',
         color: 'neutral',
-        className: 'border-neutral-600 text-neutral-600 hover:bg-neutral-50 focus-visible:ring-neutral-500',
+        className:
+          'border-neutral-600 text-neutral-600 hover:bg-neutral-50 focus-visible:ring-neutral-500',
       },
       {
         variant: 'outline',
         color: 'success',
-        className: 'border-emerald-600 text-emerald-600 hover:bg-emerald-50 focus-visible:ring-emerald-500',
+        className:
+          'border-emerald-600 text-emerald-600 hover:bg-emerald-50 focus-visible:ring-emerald-500',
       },
       {
         variant: 'outline',
@@ -330,12 +332,7 @@ export type CardVariantProps = VariantProps<typeof cardVariants>
  */
 export const badgeVariants = cva(
   // Base styles
-  [
-    'inline-flex items-center justify-center',
-    'font-medium',
-    'rounded-full',
-    'whitespace-nowrap',
-  ],
+  ['inline-flex items-center justify-center', 'font-medium', 'rounded-full', 'whitespace-nowrap'],
   {
     variants: {
       variant: {

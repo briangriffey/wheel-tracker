@@ -128,12 +128,12 @@ export type SpacingTokens = {
  * - 2xl: 3rem (48px)
  */
 export const spacingTokens: SpacingTokens = {
-  xs: '0.5rem',    // 8px
-  sm: '0.75rem',   // 12px
-  md: '1rem',      // 16px
-  lg: '1.5rem',    // 24px
-  xl: '2rem',      // 32px
-  '2xl': '3rem',   // 48px
+  xs: '0.5rem', // 8px
+  sm: '0.75rem', // 12px
+  md: '1rem', // 16px
+  lg: '1.5rem', // 24px
+  xl: '2rem', // 32px
+  '2xl': '3rem', // 48px
 }
 
 /**
@@ -161,10 +161,10 @@ export type RadiusTokens = {
  */
 export const radiusTokens: RadiusTokens = {
   none: '0',
-  sm: '0.25rem',   // 4px
-  md: '0.5rem',    // 8px
-  lg: '1rem',      // 16px
-  full: '9999px',  // Pill shape
+  sm: '0.25rem', // 4px
+  md: '0.5rem', // 8px
+  lg: '1rem', // 16px
+  full: '9999px', // Pill shape
 }
 
 /**

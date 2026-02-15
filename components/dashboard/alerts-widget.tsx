@@ -1,12 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  Badge,
-} from '@/components/design-system'
+import { Card, CardHeader, CardTitle, CardContent, Badge } from '@/components/design-system'
 import type {
   ExpirationNotification,
   ITMNotification,
@@ -129,8 +123,7 @@ export function AlertsWidget({
   itmOptions,
   positionsWithoutCalls,
 }: AlertsWidgetProps) {
-  const totalAlerts =
-    upcomingExpirations.length + itmOptions.length + positionsWithoutCalls.length
+  const totalAlerts = upcomingExpirations.length + itmOptions.length + positionsWithoutCalls.length
 
   // If no alerts, show empty state
   if (totalAlerts === 0) {
@@ -150,9 +143,7 @@ export function AlertsWidget({
               <BellIcon className="h-12 w-12 mx-auto" />
             </div>
             <p className="text-gray-500 text-sm">No alerts at this time</p>
-            <p className="text-gray-400 text-xs mt-1">
-              You&apos;re all caught up!
-            </p>
+            <p className="text-gray-400 text-xs mt-1">You&apos;re all caught up!</p>
           </div>
         </CardContent>
       </Card>
@@ -191,9 +182,7 @@ export function AlertsWidget({
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-900">
-                            {exp.ticker}
-                          </span>
+                          <span className="font-semibold text-gray-900">{exp.ticker}</span>
                           <Badge variant="warning" size="sm">
                             {exp.type}
                           </Badge>
@@ -249,9 +238,7 @@ export function AlertsWidget({
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-900">
-                            {itm.ticker}
-                          </span>
+                          <span className="font-semibold text-gray-900">{itm.ticker}</span>
                           <Badge variant="info" size="sm">
                             {itm.type}
                           </Badge>
@@ -297,9 +284,7 @@ export function AlertsWidget({
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <span className="font-semibold text-gray-900">
-                          {pos.ticker}
-                        </span>
+                        <span className="font-semibold text-gray-900">{pos.ticker}</span>
                         <p className="text-sm text-gray-600 mt-1">
                           {pos.shares} shares @ {formatCurrency(pos.costBasis)}
                         </p>

@@ -10,7 +10,7 @@ export async function GET() {
       status: 'ok',
       timestamp: new Date().toISOString(),
       service: 'wheeltracker',
-      version: process.env.npm_package_version || '0.1.0'
+      version: process.env.npm_package_version || '0.1.0',
     },
     { status: 200 }
   )

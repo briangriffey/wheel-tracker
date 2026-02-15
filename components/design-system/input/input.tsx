@@ -243,12 +243,7 @@ const InputComponent = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={id}
             disabled={disabled}
-            className={cn(
-              baseStyles,
-              stateStyles[actualState],
-              inputSizeStyles,
-              className
-            )}
+            className={cn(baseStyles, stateStyles[actualState], inputSizeStyles, className)}
             aria-invalid={actualState === 'error' ? 'true' : 'false'}
             aria-describedby={describedBy}
             {...props}
@@ -331,14 +326,15 @@ const InputLabelComponent = forwardRef<HTMLLabelElement, InputLabelProps>(
     return (
       <label
         ref={ref}
-        className={cn(
-          'block text-sm font-medium text-neutral-700 mb-1',
-          className
-        )}
+        className={cn('block text-sm font-medium text-neutral-700 mb-1', className)}
         {...props}
       >
         {children}
-        {required && <span className="text-error ml-1" aria-label="required">*</span>}
+        {required && (
+          <span className="text-error ml-1" aria-label="required">
+            *
+          </span>
+        )}
       </label>
     )
   }
@@ -381,12 +377,7 @@ export interface InputErrorProps extends React.HTMLAttributes<HTMLParagraphEleme
 const InputErrorComponent = forwardRef<HTMLParagraphElement, InputErrorProps>(
   ({ children, className, ...props }, ref) => {
     return (
-      <p
-        ref={ref}
-        className={cn('mt-1 text-sm text-error', className)}
-        role="alert"
-        {...props}
-      >
+      <p ref={ref} className={cn('mt-1 text-sm text-error', className)} role="alert" {...props}>
         {children}
       </p>
     )
@@ -477,19 +468,7 @@ export interface InputGroupProps extends React.HTMLAttributes<HTMLDivElement> {
  * ```
  */
 const InputGroupComponent = forwardRef<HTMLDivElement, InputGroupProps>(
-  (
-    {
-      label,
-      required = false,
-      error,
-      helpText,
-      children,
-      className,
-      htmlFor,
-      ...props
-    },
-    ref
-  ) => {
+  ({ label, required = false, error, helpText, children, className, htmlFor, ...props }, ref) => {
     // Generate unique ID for error/help text
     const errorId = error && htmlFor ? `${htmlFor}-error` : undefined
     const helpTextId = helpText && htmlFor ? `${htmlFor}-help` : undefined

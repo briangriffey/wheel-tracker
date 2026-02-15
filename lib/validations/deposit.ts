@@ -40,11 +40,7 @@ export const RecordWithdrawalSchema = z.object({
  */
 export const UpdateDepositSchema = z.object({
   id: z.string().cuid('Invalid deposit ID'),
-  amount: z
-    .number()
-    .finite('Amount must be finite')
-    .positive('Amount must be positive')
-    .optional(),
+  amount: z.number().finite('Amount must be finite').positive('Amount must be positive').optional(),
   depositDate: z.coerce
     .date()
     .refine((date) => date <= new Date(), 'Deposit date cannot be in the future')

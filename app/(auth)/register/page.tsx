@@ -47,15 +47,10 @@ export default function RegisterPage() {
 
         <Card variant="elevated">
           <CardHeader>
-            <h2 className="text-2xl font-bold text-neutral-900 text-center">
-              Create your account
-            </h2>
+            <h2 className="text-2xl font-bold text-neutral-900 text-center">Create your account</h2>
             <p className="mt-1 text-center text-sm text-neutral-500">
               Or{' '}
-              <Link
-                href="/login"
-                className="font-medium text-primary-600 hover:text-primary-500"
-              >
+              <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">
                 sign in to your existing account
               </Link>
             </p>
@@ -70,13 +65,7 @@ export default function RegisterPage() {
               )}
 
               <InputGroup label="Name" htmlFor="name" required>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  placeholder="Your name"
-                />
+                <Input id="name" name="name" type="text" required placeholder="Your name" />
               </InputGroup>
 
               <InputGroup label="Email address" htmlFor="email" required>
@@ -122,10 +111,7 @@ export default function RegisterPage() {
           <CardFooter className="justify-center border-t border-neutral-100 pt-6">
             <p className="text-sm text-neutral-500">
               Already have an account?{' '}
-              <Link
-                href="/login"
-                className="font-medium text-primary-600 hover:text-primary-500"
-              >
+              <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">
                 Sign in
               </Link>
             </p>

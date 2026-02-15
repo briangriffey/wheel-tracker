@@ -27,9 +27,7 @@ export default async function TradesPage() {
         <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Trades</h1>
-            <p className="text-gray-600 mt-2">
-              View and manage your options trades
-            </p>
+            <p className="text-gray-600 mt-2">View and manage your options trades</p>
           </div>
           <div className="flex-shrink-0 flex gap-3">
             <RefreshPricesButton />

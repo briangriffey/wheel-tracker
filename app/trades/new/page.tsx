@@ -15,9 +15,7 @@ export default async function NewTradePage() {
         <div className="bg-white shadow-md rounded-lg px-8 py-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Create New Trade</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              Enter the details of your options trade
-            </p>
+            <p className="mt-1 text-sm text-gray-600">Enter the details of your options trade</p>
           </div>
           <TradeEntryForm />
         </div>

@@ -71,20 +71,24 @@ export async function getSubscriptionMetrics() {
   const [totalUsers, proUsers, freeUsersAtLimit, recentChurns] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { subscriptionTier: 'PRO' } }),
-    prisma.user.count({
-      where: {
-        subscriptionTier: 'FREE',
-        trades: { some: {} },
-      },
-    }).then(async () => {
-      // Count free users who have >= FREE_TRADE_LIMIT trades
-      const { FREE_TRADE_LIMIT } = await import('@/lib/constants')
-      const users = await prisma.user.findMany({
-        where: { subscriptionTier: 'FREE' },
-        select: { id: true, _count: { select: { trades: true } } },
+    prisma.user
+      .count({
+        where: {
+          subscriptionTier: 'FREE',
+          trades: { some: {} },
+        },
       })
-      return users.filter((u: { _count: { trades: number } }) => u._count.trades >= FREE_TRADE_LIMIT).length
-    }),
+      .then(async () => {
+        // Count free users who have >= FREE_TRADE_LIMIT trades
+        const { FREE_TRADE_LIMIT } = await import('@/lib/constants')
+        const users = await prisma.user.findMany({
+          where: { subscriptionTier: 'FREE' },
+          select: { id: true, _count: { select: { trades: true } } },
+        })
+        return users.filter(
+          (u: { _count: { trades: number } }) => u._count.trades >= FREE_TRADE_LIMIT
+        ).length
+      }),
     prisma.user.count({
       where: {
         subscriptionStatus: 'canceled',

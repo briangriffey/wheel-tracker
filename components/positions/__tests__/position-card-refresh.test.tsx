@@ -5,6 +5,15 @@ import '@testing-library/jest-dom/vitest'
 import { PositionCard, type PositionCardData } from '../position-card'
 import type { PriceData } from '@/lib/actions/prices'
 
+// Mock server-side modules to prevent next/server import chain
+vi.mock('@/components/trades/close-option-dialog', () => ({
+  CloseOptionDialog: () => null,
+}))
+
+vi.mock('../assign-call-dialog', () => ({
+  AssignCallDialog: () => null,
+}))
+
 // Mock the price actions
 vi.mock('@/lib/actions/prices', () => ({
   refreshSinglePositionPrice: vi.fn(),
@@ -28,7 +37,7 @@ describe('PositionCard - Price Refresh Features', () => {
 
   const freshPriceData: PriceData = {
     ticker: 'AAPL',
-    price: 155.00,
+    price: 155.0,
     date: new Date('2026-02-07T14:30:00Z'),
     source: 'alpha_vantage',
     isStale: false,
@@ -37,7 +46,7 @@ describe('PositionCard - Price Refresh Features', () => {
 
   const stalePriceData: PriceData = {
     ticker: 'AAPL',
-    price: 155.00,
+    price: 155.0,
     date: new Date('2026-02-07T10:00:00Z'),
     source: 'alpha_vantage',
     isStale: true,

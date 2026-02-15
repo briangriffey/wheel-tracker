@@ -33,9 +33,7 @@ export default function GlossaryPage() {
           >
             ← Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Options Trading Glossary
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Options Trading Glossary</h1>
           <p className="text-gray-600">
             Key terms and definitions for options trading and the wheel strategy.
           </p>
@@ -305,9 +303,7 @@ export default function GlossaryPage() {
 
         {/* Additional Resources */}
         <div className="bg-blue-50 rounded-lg p-6 mt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">
-            Learn More
-          </h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Learn More</h2>
           <p className="text-gray-700 mb-4">
             Now that you know the terminology, put it into practice:
           </p>
@@ -343,24 +339,21 @@ export default function GlossaryPage() {
               <div className="text-2xl mb-2">1️⃣</div>
               <h3 className="font-bold text-gray-900 mb-1">Sell PUT</h3>
               <p className="text-sm text-gray-600">
-                Collect premium. If expired: keep premium. If assigned: buy
-                stock at strike.
+                Collect premium. If expired: keep premium. If assigned: buy stock at strike.
               </p>
             </div>
             <div className="bg-white p-4 rounded-lg">
               <div className="text-2xl mb-2">2️⃣</div>
               <h3 className="font-bold text-gray-900 mb-1">Own Shares</h3>
               <p className="text-sm text-gray-600">
-                Your cost basis is the strike price. Premium collected reduces
-                break-even.
+                Your cost basis is the strike price. Premium collected reduces break-even.
               </p>
             </div>
             <div className="bg-white p-4 rounded-lg">
               <div className="text-2xl mb-2">3️⃣</div>
               <h3 className="font-bold text-gray-900 mb-1">Sell CALL</h3>
               <p className="text-sm text-gray-600">
-                Collect more premium. Repeat until assigned, then restart the
-                wheel.
+                Collect more premium. Repeat until assigned, then restart the wheel.
               </p>
             </div>
           </div>

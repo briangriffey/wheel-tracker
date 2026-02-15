@@ -20,7 +20,7 @@ import {
 
 describe('getPnlColor', () => {
   it('returns green colors for positive P&L', () => {
-    const result = getPnlColor(100.50)
+    const result = getPnlColor(100.5)
     expect(result).toEqual({
       text: 'text-green-600',
       bg: 'bg-green-50',
@@ -147,7 +147,7 @@ describe('getStatusColor', () => {
 
 describe('getPositionColor', () => {
   it('returns P&L-based colors when P&L is positive', () => {
-    const result = getPositionColor('STOCK', 150.50)
+    const result = getPositionColor('STOCK', 150.5)
     expect(result).toEqual({
       text: 'text-green-600',
       bg: 'bg-green-50',
@@ -372,12 +372,7 @@ describe('Edge cases and integration', () => {
   })
 
   it('all status types return valid color variants', () => {
-    const statuses: Array<TradeStatus | PositionStatus> = [
-      'OPEN',
-      'CLOSED',
-      'EXPIRED',
-      'ASSIGNED',
-    ]
+    const statuses: Array<TradeStatus | PositionStatus> = ['OPEN', 'CLOSED', 'EXPIRED', 'ASSIGNED']
 
     statuses.forEach((status) => {
       const result = getStatusColor(status)

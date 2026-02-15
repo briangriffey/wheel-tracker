@@ -131,8 +131,8 @@ export function AssignCallDialog({
               </p>
               <div className="rounded-md bg-blue-50 p-3 border border-blue-200">
                 <p className="text-sm text-blue-800">
-                  <strong>Tip:</strong> Starting a new PUT immediately helps you continue
-                  collecting premium and compound your returns.
+                  <strong>Tip:</strong> Starting a new PUT immediately helps you continue collecting
+                  premium and compound your returns.
                 </p>
               </div>
             </div>
@@ -304,7 +304,8 @@ export function AssignCallDialog({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">
-                      Total Premiums ({formatCurrency(putPremium)} + {formatCurrency(coveredCall.premium)}):
+                      Total Premiums ({formatCurrency(putPremium)} +{' '}
+                      {formatCurrency(coveredCall.premium)}):
                     </span>
                     <span className="font-medium text-green-600">
                       +{formatCurrency(totalPremiums)}
@@ -312,18 +313,19 @@ export function AssignCallDialog({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">
-                      Stock Gain (${coveredCall.strikePrice.toFixed(2)} - ${costBasis.toFixed(2)} cost basis):
+                      Stock Gain (${coveredCall.strikePrice.toFixed(2)} - ${costBasis.toFixed(2)}{' '}
+                      cost basis):
                     </span>
-                    <span className={`font-medium ${stockGain >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span
+                      className={`font-medium ${stockGain >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                    >
                       {stockGain >= 0 ? '+' : ''}
                       {formatCurrency(stockGain)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Total Cost:</span>
-                    <span className="font-medium text-red-600">
-                      -{formatCurrency(totalCost)}
-                    </span>
+                    <span className="font-medium text-red-600">-{formatCurrency(totalCost)}</span>
                   </div>
                   <div className="pt-2 border-t border-gray-300 flex justify-between items-baseline">
                     <span className="font-semibold text-gray-700">Total Realized Profit:</span>

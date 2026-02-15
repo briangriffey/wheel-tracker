@@ -354,7 +354,9 @@ describe('WithdrawalForm', () => {
 
     render(<WithdrawalForm />)
 
-    const amountInput = screen.getByRole('spinbutton', { name: /withdrawal amount/i }) as HTMLInputElement
+    const amountInput = screen.getByRole('spinbutton', {
+      name: /withdrawal amount/i,
+    }) as HTMLInputElement
 
     await user.clear(amountInput)
     await user.type(amountInput, '1000')

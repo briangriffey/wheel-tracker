@@ -67,11 +67,7 @@ interface HelpTooltipProps {
  * @param content - Tooltip text
  * @param position - Tooltip position relative to element
  */
-export function HelpTooltip({
-  children,
-  content,
-  position = 'top',
-}: HelpTooltipProps) {
+export function HelpTooltip({ children, content, position = 'top' }: HelpTooltipProps) {
   const [showTooltip, setShowTooltip] = useState(false)
 
   const positionClasses = {

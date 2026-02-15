@@ -39,7 +39,7 @@ describe('Deposits Export API - GET /api/export/deposits', () => {
       type: 'WITHDRAWAL',
       depositDate: new Date('2026-02-01'),
       notes: null,
-      spyPrice: 455.50,
+      spyPrice: 455.5,
       spyShares: -2.1956,
       createdAt: new Date('2026-02-01'),
       updatedAt: new Date('2026-02-01'),

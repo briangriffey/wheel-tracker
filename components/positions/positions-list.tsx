@@ -210,8 +210,6 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
     }
   }
 
-
-
   // Format currency
   const formatCurrency = (value: number | Prisma.Decimal | string) => {
     return `$${toDecimalNumber(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -392,7 +390,10 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
 
           {/* Sort Direction */}
           <div>
-            <label htmlFor="sort-direction" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="sort-direction"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Direction
             </label>
             <select
@@ -447,8 +448,8 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
           <h3 className="mt-2 text-lg font-medium text-gray-900">No positions found</h3>
           <p className="mt-1 text-sm text-gray-500">
             {positions.length === 0
-              ? 'You don\'t have any stock positions yet. Positions are created when PUT options are assigned.'
-              : 'Try adjusting your filters to find what you\'re looking for.'}
+              ? "You don't have any stock positions yet. Positions are created when PUT options are assigned."
+              : "Try adjusting your filters to find what you're looking for."}
           </p>
         </div>
       )}

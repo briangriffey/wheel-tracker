@@ -78,9 +78,7 @@ export interface PositionData {
  * const metrics = await getPortfolioMetrics('user_123');
  * console.log(`Total P&L: $${metrics.totalRealizedPL}`);
  */
-export async function getPortfolioMetrics(
-  userId: string
-): Promise<PortfolioMetrics> {
+export async function getPortfolioMetrics(userId: string): Promise<PortfolioMetrics> {
   // Fetch all wheels for user
   const wheels = await prisma.wheel.findMany({
     where: { userId },
@@ -151,22 +149,13 @@ export function calculatePortfolioMetrics(
   )
 
   // Calculate total capital deployed (sum of open position costs)
-  const totalCapitalDeployed = positions.reduce(
-    (sum, position) => sum + position.totalCost,
-    0
-  )
+  const totalCapitalDeployed = positions.reduce((sum, position) => sum + position.totalCost, 0)
 
   // Calculate total premiums collected (sum across all wheels)
-  const totalPremiumsCollected = wheels.reduce(
-    (sum, wheel) => sum + wheel.totalPremiums,
-    0
-  )
+  const totalPremiumsCollected = wheels.reduce((sum, wheel) => sum + wheel.totalPremiums, 0)
 
   // Calculate total realized P&L (sum across all wheels)
-  const totalRealizedPL = wheels.reduce(
-    (sum, wheel) => sum + wheel.totalRealizedPL,
-    0
-  )
+  const totalRealizedPL = wheels.reduce((sum, wheel) => sum + wheel.totalRealizedPL, 0)
 
   // Calculate overall win rate
   const overallWinRate = calculateOverallWinRate(wheels)
@@ -175,9 +164,7 @@ export function calculatePortfolioMetrics(
   const tickerPerformances = calculateTickerPerformances(wheels)
 
   // Sort by total realized P&L for best/worst
-  const sortedByPL = [...tickerPerformances].sort(
-    (a, b) => b.totalRealizedPL - a.totalRealizedPL
-  )
+  const sortedByPL = [...tickerPerformances].sort((a, b) => b.totalRealizedPL - a.totalRealizedPL)
 
   // Get top 5 best and worst (or fewer if not enough data)
   const bestPerformingTickers = sortedByPL.slice(0, 5)
@@ -229,10 +216,7 @@ export function calculateOverallWinRate(wheels: WheelData[]): number {
   }
 
   // Calculate total cycles across all wheels
-  const totalCycles = wheelsWithCycles.reduce(
-    (sum, wheel) => sum + wheel.cycleCount,
-    0
-  )
+  const totalCycles = wheelsWithCycles.reduce((sum, wheel) => sum + wheel.cycleCount, 0)
 
   if (totalCycles === 0) {
     return 0
@@ -241,16 +225,11 @@ export function calculateOverallWinRate(wheels: WheelData[]): number {
   // Count profitable wheels (assuming all cycles in a profitable wheel are profitable)
   // Note: This is a simplification. A more accurate calculation would track
   // individual cycle profitability, but that requires detailed cycle history.
-  const profitableWheels = wheelsWithCycles.filter(
-    (wheel) => wheel.totalRealizedPL > 0
-  )
+  const profitableWheels = wheelsWithCycles.filter((wheel) => wheel.totalRealizedPL > 0)
 
   // Calculate approximate profitable cycles
   // This assumes profit is distributed evenly across cycles
-  const profitableCycles = profitableWheels.reduce(
-    (sum, wheel) => sum + wheel.cycleCount,
-    0
-  )
+  const profitableCycles = profitableWheels.reduce((sum, wheel) => sum + wheel.cycleCount, 0)
 
   const winRate = (profitableCycles / totalCycles) * 100
 
@@ -266,9 +245,7 @@ export function calculateOverallWinRate(wheels: WheelData[]): number {
  * @param wheels - Array of wheel data
  * @returns Array of ticker performance metrics
  */
-export function calculateTickerPerformances(
-  wheels: WheelData[]
-): TickerPerformance[] {
+export function calculateTickerPerformances(wheels: WheelData[]): TickerPerformance[] {
   return wheels.map((wheel) => ({
     ticker: wheel.ticker,
     wheelId: wheel.id,

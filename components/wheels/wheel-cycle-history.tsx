@@ -17,9 +17,7 @@ interface WheelCycleHistoryProps {
   closedPositions: Position[]
 }
 
-export function WheelCycleHistory({
-  closedPositions,
-}: WheelCycleHistoryProps) {
+export function WheelCycleHistory({ closedPositions }: WheelCycleHistoryProps) {
   const [expandedCycle, setExpandedCycle] = useState<number | null>(null)
 
   if (closedPositions.length === 0) {
@@ -42,12 +40,14 @@ export function WheelCycleHistory({
       {sortedPositions.map((position, index) => {
         const cycleNumber = closedPositions.length - index
         const isExpanded = expandedCycle === cycleNumber
-        const duration = position.closedDate && position.acquiredDate
-          ? Math.ceil(
-              (new Date(position.closedDate).getTime() - new Date(position.acquiredDate).getTime()) /
-                (1000 * 60 * 60 * 24)
-            )
-          : 0
+        const duration =
+          position.closedDate && position.acquiredDate
+            ? Math.ceil(
+                (new Date(position.closedDate).getTime() -
+                  new Date(position.acquiredDate).getTime()) /
+                  (1000 * 60 * 60 * 24)
+              )
+            : 0
 
         return (
           <div key={position.id} className="bg-white shadow rounded-lg overflow-hidden">
@@ -60,9 +60,7 @@ export function WheelCycleHistory({
                   {cycleNumber}
                 </div>
                 <div className="text-left">
-                  <h4 className="text-sm font-semibold text-gray-900">
-                    Cycle {cycleNumber}
-                  </h4>
+                  <h4 className="text-sm font-semibold text-gray-900">Cycle {cycleNumber}</h4>
                   <p className="text-xs text-gray-500">
                     {new Date(position.acquiredDate).toLocaleDateString()} -{' '}
                     {position.closedDate
@@ -110,9 +108,7 @@ export function WheelCycleHistory({
                 <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <dt className="text-xs font-medium text-gray-500">Shares</dt>
-                    <dd className="mt-1 text-sm font-semibold text-gray-900">
-                      {position.shares}
-                    </dd>
+                    <dd className="mt-1 text-sm font-semibold text-gray-900">{position.shares}</dd>
                   </div>
                   <div>
                     <dt className="text-xs font-medium text-gray-500">Cost Basis</dt>
@@ -123,7 +119,8 @@ export function WheelCycleHistory({
                   <div>
                     <dt className="text-xs font-medium text-gray-500">Total Cost</dt>
                     <dd className="mt-1 text-sm font-semibold text-gray-900">
-                      ${position.totalCost.toLocaleString(undefined, {
+                      $
+                      {position.totalCost.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -131,26 +128,20 @@ export function WheelCycleHistory({
                   </div>
                   <div>
                     <dt className="text-xs font-medium text-gray-500">Duration</dt>
-                    <dd className="mt-1 text-sm font-semibold text-gray-900">
-                      {duration} days
-                    </dd>
+                    <dd className="mt-1 text-sm font-semibold text-gray-900">{duration} days</dd>
                   </div>
                 </div>
 
                 {position.realizedGainLoss !== null && duration > 0 && (
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-medium text-gray-500">
-                        Return on Capital
-                      </span>
+                      <span className="text-xs font-medium text-gray-500">Return on Capital</span>
                       <span className="text-sm font-semibold text-gray-900">
                         {((position.realizedGainLoss / position.totalCost) * 100).toFixed(2)}%
                       </span>
                     </div>
                     <div className="flex justify-between items-center mt-2">
-                      <span className="text-xs font-medium text-gray-500">
-                        Annualized Return
-                      </span>
+                      <span className="text-xs font-medium text-gray-500">Annualized Return</span>
                       <span className="text-sm font-semibold text-gray-900">
                         {(
                           ((position.realizedGainLoss / position.totalCost) * 365 * 100) /

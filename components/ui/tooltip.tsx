@@ -11,9 +11,7 @@ interface TooltipProps {
 
 export function Tooltip({ content, children, position = 'top', className = '' }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false)
-  const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number } | null>(
-    null
-  )
+  const [tooltipPosition, setTooltipPosition] = useState<{ top: number; left: number } | null>(null)
   const triggerRef = useRef<HTMLDivElement>(null)
   const tooltipRef = useRef<HTMLDivElement>(null)
 

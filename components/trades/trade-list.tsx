@@ -88,7 +88,16 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
     })
 
     return filtered
-  }, [trades, tickerFilter, statusFilter, typeFilter, dateRangeStart, dateRangeEnd, sortField, sortDirection])
+  }, [
+    trades,
+    tickerFilter,
+    statusFilter,
+    typeFilter,
+    dateRangeStart,
+    dateRangeEnd,
+    sortField,
+    sortDirection,
+  ])
 
   // Handle sort
   const handleSort = (field: SortField) => {
@@ -99,7 +108,6 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
       setSortDirection('asc')
     }
   }
-
 
   // Helper to safely convert Prisma Decimal (or serialized string/number) to number
   const toDecimalNumber = (value: Prisma.Decimal | number | string): number => {
@@ -140,7 +148,9 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
   const getMoneyStatus = (trade: Trade, currentPrice: number | undefined) => {
     if (!currentPrice) return null
 
-    const strikePrice = toDecimalNumber(trade.strikePrice as unknown as Prisma.Decimal | string | number)
+    const strikePrice = toDecimalNumber(
+      trade.strikePrice as unknown as Prisma.Decimal | string | number
+    )
 
     if (trade.type === 'PUT') {
       // For selling a put: OTM when strike > current, ITM when strike < current
@@ -161,7 +171,9 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
     }
     if (trade.status === 'CLOSED' && trade.closePremium != null) {
       const premium = toDecimalNumber(trade.premium as unknown as Prisma.Decimal | string | number)
-      const closePremium = toDecimalNumber(trade.closePremium as unknown as Prisma.Decimal | string | number)
+      const closePremium = toDecimalNumber(
+        trade.closePremium as unknown as Prisma.Decimal | string | number
+      )
       return (premium - closePremium) * 100 * trade.contracts
     }
     return null
@@ -269,7 +281,11 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
         </div>
 
         {/* Actions Row */}
-        {(tickerFilter || statusFilter !== 'ALL' || typeFilter !== 'ALL' || dateRangeStart || dateRangeEnd) && (
+        {(tickerFilter ||
+          statusFilter !== 'ALL' ||
+          typeFilter !== 'ALL' ||
+          dateRangeStart ||
+          dateRangeEnd) && (
           <div className="mt-4">
             <Button
               onClick={() => {
@@ -290,7 +306,12 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
       </div>
 
       {/* Results Count */}
-      <div className="text-sm text-gray-600 mb-4" role="status" aria-live="polite" aria-atomic="true">
+      <div
+        className="text-sm text-gray-600 mb-4"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         Showing {filteredTrades.length} of {trades.length} trades
       </div>
 
@@ -315,7 +336,7 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
           <p className="mt-1 text-sm text-gray-500">
             {trades.length === 0
               ? 'Get started by creating your first trade.'
-              : 'Try adjusting your filters to find what you\'re looking for.'}
+              : "Try adjusting your filters to find what you're looking for."}
           </p>
         </div>
       )}
@@ -324,16 +345,20 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
       {filteredTrades.length > 0 && (
         <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200" aria-label="Trades list">
-            <caption className="sr-only">
-              List of trades with filtering and sorting options
-            </caption>
+            <caption className="sr-only">List of trades with filtering and sorting options</caption>
             <thead className="bg-gray-50">
               <tr>
                 <th
                   scope="col"
                   onClick={() => handleSort('ticker')}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  aria-sort={sortField === 'ticker' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  aria-sort={
+                    sortField === 'ticker'
+                      ? sortDirection === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                      : 'none'
+                  }
                 >
                   <div className="flex items-center gap-1">
                     Ticker
@@ -344,20 +369,35 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                     )}
                   </div>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Current Price
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Type
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Strike
                 </th>
                 <th
                   scope="col"
                   onClick={() => handleSort('premium')}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  aria-sort={sortField === 'premium' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  aria-sort={
+                    sortField === 'premium'
+                      ? sortDirection === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                      : 'none'
+                  }
                 >
                   <div className="flex items-center gap-1">
                     Premium
@@ -372,7 +412,13 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                   scope="col"
                   onClick={() => handleSort('expirationDate')}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  aria-sort={sortField === 'expirationDate' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  aria-sort={
+                    sortField === 'expirationDate'
+                      ? sortDirection === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                      : 'none'
+                  }
                 >
                   <div className="flex items-center gap-1">
                     Expiration
@@ -383,13 +429,22 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                     )}
                   </div>
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Status
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   P&L
                 </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Actions
                 </th>
               </tr>
@@ -422,12 +477,16 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}
+                      >
                         {trade.type}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
+                      {formatCurrency(
+                        trade.strikePrice as unknown as Prisma.Decimal | string | number
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
@@ -436,7 +495,9 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                       {formatDate(trade.expirationDate)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}
+                      >
                         {trade.status}
                       </span>
                     </td>
@@ -447,12 +508,16 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                         const colors = getPnlColor(pnl)
                         return (
                           <span className={`font-semibold ${colors.text}`}>
-                            {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}
+                            {pnl >= 0 ? '+' : ''}
+                            {formatCurrency(pnl)}
                           </span>
                         )
                       })()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium" onClick={(e) => e.stopPropagation()}>
+                    <td
+                      className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -490,16 +555,24 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
                     {currentPrice && (
-                      <div className={`text-sm mt-1 ${isPriceStale(currentPrice.date) ? 'text-gray-500' : 'text-gray-700'}`}>
+                      <div
+                        className={`text-sm mt-1 ${isPriceStale(currentPrice.date) ? 'text-gray-500' : 'text-gray-700'}`}
+                      >
                         ${currentPrice.price.toFixed(2)}
-                        {isPriceStale(currentPrice.date) && <span className="text-xs"> (stale)</span>}
+                        {isPriceStale(currentPrice.date) && (
+                          <span className="text-xs"> (stale)</span>
+                        )}
                       </div>
                     )}
                     <div className="flex gap-2 mt-1">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}
+                      >
                         {trade.type}
                       </span>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}
+                      >
                         {trade.status}
                       </span>
                     </div>
@@ -511,7 +584,9 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Strike Price:</span>
                     <span className="font-medium text-gray-900">
-                      {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
+                      {formatCurrency(
+                        trade.strikePrice as unknown as Prisma.Decimal | string | number
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -538,7 +613,8 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                       <div className="flex justify-between">
                         <span className="text-gray-500">P&L:</span>
                         <span className={`font-semibold ${colors.text}`}>
-                          {pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}
+                          {pnl >= 0 ? '+' : ''}
+                          {formatCurrency(pnl)}
                         </span>
                       </div>
                     )
@@ -546,9 +622,7 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                 </div>
 
                 {/* Tap to view hint */}
-                <div className="mt-4 text-center text-xs text-gray-500">
-                  Tap to view actions
-                </div>
+                <div className="mt-4 text-center text-xs text-gray-500">Tap to view actions</div>
               </div>
             )
           })}

@@ -6,9 +6,7 @@ import { stripe, PLANS } from '@/lib/stripe'
 import { auth } from '@/lib/auth'
 import { recordAnalyticsEvent } from '@/lib/analytics-server'
 
-type ActionResult<T = unknown> =
-  | { success: true; data: T }
-  | { success: false; error: string }
+type ActionResult<T = unknown> = { success: true; data: T } | { success: false; error: string }
 
 async function getCurrentUserId(): Promise<string | null> {
   const session = await auth()
@@ -66,8 +64,7 @@ export async function createCheckoutSession(
       sessionParams.customer_email = user.email
     }
 
-    const session: Stripe.Checkout.Session =
-      await stripe.checkout.sessions.create(sessionParams)
+    const session: Stripe.Checkout.Session = await stripe.checkout.sessions.create(sessionParams)
 
     console.log(`Stripe session response ${JSON.stringify(session)}`)
 
@@ -111,11 +108,10 @@ export async function createPortalSession(): Promise<ActionResult<{ url: string 
       return { success: false, error: 'No billing account found. Please subscribe first.' }
     }
 
-    const session: Stripe.BillingPortal.Session =
-      await stripe.billingPortal.sessions.create({
-        customer: user.stripeCustomerId,
-        return_url: `${process.env.NEXTAUTH_URL}/billing`,
-      })
+    const session: Stripe.BillingPortal.Session = await stripe.billingPortal.sessions.create({
+      customer: user.stripeCustomerId,
+      return_url: `${process.env.NEXTAUTH_URL}/billing`,
+    })
 
     return { success: true, data: { url: session.url } }
   } catch (error) {

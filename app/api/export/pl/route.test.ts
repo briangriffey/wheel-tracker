@@ -97,7 +97,9 @@ describe('P&L Export API', () => {
       const csvContent = await response.text()
 
       expect(response.headers.get('Content-Type')).toBe('text/csv')
-      expect(response.headers.get('Content-Disposition')).toMatch(/attachment; filename="pl-report-/)
+      expect(response.headers.get('Content-Disposition')).toMatch(
+        /attachment; filename="pl-report-/
+      )
 
       // Check CSV header row
       const lines = csvContent.split('\n')
@@ -138,7 +140,9 @@ describe('P&L Export API', () => {
       const csvContent = await response.text()
 
       const lines = csvContent.split('\n')
-      expect(lines[1]).toBe('2026-02-01,2026-02-15,AAPL,PUT,150.00,250.00,1,CLOSED,250.00,Test trade')
+      expect(lines[1]).toBe(
+        '2026-02-01,2026-02-15,AAPL,PUT,150.00,250.00,1,CLOSED,250.00,Test trade'
+      )
     })
 
     it('should include summary section', async () => {
@@ -149,7 +153,7 @@ describe('P&L Export API', () => {
           ticker: 'AAPL',
           type: 'PUT',
           status: 'CLOSED',
-          strikePrice:150.0,
+          strikePrice: 150.0,
           premium: 250.0,
           contracts: 1,
           openDate: new Date('2026-02-01'),
@@ -164,7 +168,7 @@ describe('P&L Export API', () => {
           ticker: 'MSFT',
           type: 'CALL',
           status: 'OPEN',
-          strikePrice:400.0,
+          strikePrice: 400.0,
           premium: 300.0,
           contracts: 1,
           openDate: new Date('2026-02-05'),
@@ -210,7 +214,7 @@ describe('P&L Export API', () => {
           ticker: 'AAPL',
           type: 'PUT',
           status: 'CLOSED',
-          strikePrice:150.0,
+          strikePrice: 150.0,
           premium: 250.0,
           contracts: 1,
           openDate: new Date('2026-02-01'),
@@ -242,9 +246,7 @@ describe('P&L Export API', () => {
     it('should filter by start date', async () => {
       vi.mocked(prisma.trade.findMany).mockResolvedValue([])
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/export/pl?startDate=2026-01-01'
-      )
+      const request = new NextRequest('http://localhost:3000/api/export/pl?startDate=2026-01-01')
       await GET(request)
 
       expect(prisma.trade.findMany).toHaveBeenCalledWith(
@@ -261,9 +263,7 @@ describe('P&L Export API', () => {
     it('should filter by end date', async () => {
       vi.mocked(prisma.trade.findMany).mockResolvedValue([])
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/export/pl?endDate=2026-12-31'
-      )
+      const request = new NextRequest('http://localhost:3000/api/export/pl?endDate=2026-12-31')
       await GET(request)
 
       expect(prisma.trade.findMany).toHaveBeenCalledWith(
@@ -328,7 +328,7 @@ describe('P&L Export API', () => {
           ticker: 'AAPL',
           type: 'PUT',
           status: 'EXPIRED',
-          strikePrice:150.0,
+          strikePrice: 150.0,
           premium: 250.0,
           contracts: 1,
           openDate: new Date('2026-02-01'),
@@ -357,7 +357,7 @@ describe('P&L Export API', () => {
           ticker: 'AAPL',
           type: 'PUT',
           status: 'ASSIGNED',
-          strikePrice:150.0,
+          strikePrice: 150.0,
           premium: 250.0,
           contracts: 1,
           openDate: new Date('2026-02-01'),
@@ -389,7 +389,7 @@ describe('P&L Export API', () => {
           ticker: 'AAPL',
           type: 'PUT',
           status: 'OPEN',
-          strikePrice:150.0,
+          strikePrice: 150.0,
           premium: 250.0,
           contracts: 1,
           openDate: new Date('2026-02-01'),
@@ -421,9 +421,7 @@ describe('P&L Export API', () => {
     })
 
     it('should handle database errors gracefully', async () => {
-      vi.mocked(prisma.trade.findMany).mockRejectedValue(
-        new Error('Database connection failed')
-      )
+      vi.mocked(prisma.trade.findMany).mockRejectedValue(new Error('Database connection failed'))
 
       const request = new NextRequest('http://localhost:3000/api/export/pl')
       const response = await GET(request)
@@ -438,13 +436,9 @@ describe('P&L Export API', () => {
 
     it('should handle invalid date parameters', async () => {
       // Invalid dates cause database errors, so we expect error handling
-      vi.mocked(prisma.trade.findMany).mockRejectedValue(
-        new Error('Invalid date value')
-      )
+      vi.mocked(prisma.trade.findMany).mockRejectedValue(new Error('Invalid date value'))
 
-      const request = new NextRequest(
-        'http://localhost:3000/api/export/pl?startDate=invalid-date'
-      )
+      const request = new NextRequest('http://localhost:3000/api/export/pl?startDate=invalid-date')
 
       const response = await GET(request)
       const data = await response.json()

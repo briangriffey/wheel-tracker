@@ -214,40 +214,24 @@ const ButtonComponent = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         disabled={isDisabled}
-        className={cn(
-          baseStyles,
-          variantStyles[variant],
-          sizeStyles[size],
-          className
-        )}
+        className={cn(baseStyles, variantStyles[variant], sizeStyles[size], className)}
         aria-busy={loading}
         aria-disabled={isDisabled}
         {...props}
       >
         {/* Loading spinner (replaces left icon when loading) */}
-        {loading && (
-          <Spinner
-            size={size === 'sm' ? 'sm' : 'md'}
-            className="animate-spin"
-          />
-        )}
+        {loading && <Spinner size={size === 'sm' ? 'sm' : 'md'} className="animate-spin" />}
 
         {/* Left icon (hidden when loading) */}
         {!loading && leftIcon && (
-          <span className={cn('inline-flex', iconSizeStyles[size])}>
-            {leftIcon}
-          </span>
+          <span className={cn('inline-flex', iconSizeStyles[size])}>{leftIcon}</span>
         )}
 
         {/* Button text/content */}
         {children && <span>{children}</span>}
 
         {/* Right icon */}
-        {rightIcon && (
-          <span className={cn('inline-flex', iconSizeStyles[size])}>
-            {rightIcon}
-          </span>
-        )}
+        {rightIcon && <span className={cn('inline-flex', iconSizeStyles[size])}>{rightIcon}</span>}
       </button>
     )
   }

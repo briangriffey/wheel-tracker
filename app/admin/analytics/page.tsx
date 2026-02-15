@@ -28,9 +28,7 @@ export default async function AdminAnalyticsPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-neutral-900 mb-8">
-          Monitoring &amp; Analytics
-        </h1>
+        <h1 className="text-2xl font-bold text-neutral-900 mb-8">Monitoring &amp; Analytics</h1>
 
         {/* Subscription Overview */}
         <section className="mb-8">
@@ -132,33 +130,19 @@ function MetricCard({
       }`}
     >
       <p className="text-xs font-medium text-neutral-500 uppercase tracking-wide">{label}</p>
-      <p
-        className={`mt-1 text-2xl font-bold ${
-          alert ? 'text-red-700' : 'text-neutral-900'
-        }`}
-      >
+      <p className={`mt-1 text-2xl font-bold ${alert ? 'text-red-700' : 'text-neutral-900'}`}>
         {value}
       </p>
     </div>
   )
 }
 
-function FunnelRow({
-  label,
-  count,
-  rate,
-}: {
-  label: string
-  count: number
-  rate: string | null
-}) {
+function FunnelRow({ label, count, rate }: { label: string; count: number; rate: string | null }) {
   return (
     <tr className="border-b border-neutral-100">
       <td className="px-4 py-3 text-neutral-700">{label}</td>
       <td className="text-right px-4 py-3 font-mono text-neutral-900">{count}</td>
-      <td className="text-right px-4 py-3 font-mono text-neutral-500">
-        {rate ?? '\u2014'}
-      </td>
+      <td className="text-right px-4 py-3 font-mono text-neutral-500">{rate ?? '\u2014'}</td>
     </tr>
   )
 }

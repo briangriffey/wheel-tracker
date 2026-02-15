@@ -1,9 +1,6 @@
 'use server'
 
-import {
-  getPortfolioMetrics,
-  type PortfolioMetrics,
-} from '@/lib/calculations/portfolio'
+import { getPortfolioMetrics, type PortfolioMetrics } from '@/lib/calculations/portfolio'
 
 /**
  * Server action result type
@@ -50,9 +47,7 @@ async function getCurrentUserId(): Promise<string> {
  *   console.log(`Win Rate: ${result.data.overallWinRate}%`);
  * }
  */
-export async function getPortfolioAnalytics(): Promise<
-  ActionResult<PortfolioMetrics>
-> {
+export async function getPortfolioAnalytics(): Promise<ActionResult<PortfolioMetrics>> {
   try {
     // Get current user
     const userId = await getCurrentUserId()

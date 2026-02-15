@@ -51,9 +51,7 @@ export function DepositsClient({ initialDeposits, initialSummary }: DepositsClie
         <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Deposits & Withdrawals</h1>
-            <p className="text-gray-600 mt-2">
-              Track cash flow for accurate benchmark comparison
-            </p>
+            <p className="text-gray-600 mt-2">Track cash flow for accurate benchmark comparison</p>
           </div>
           <div className="flex-shrink-0 flex gap-3">
             <Button
@@ -81,9 +79,7 @@ export function DepositsClient({ initialDeposits, initialSummary }: DepositsClie
               <p className="text-2xl font-bold text-green-600">
                 {formatCurrency(initialSummary.totalDeposits)}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {initialSummary.depositCount} deposits
-              </p>
+              <p className="text-xs text-gray-500 mt-1">{initialSummary.depositCount} deposits</p>
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">
@@ -101,9 +97,7 @@ export function DepositsClient({ initialDeposits, initialSummary }: DepositsClie
               <p className="text-2xl font-bold text-blue-600">
                 {formatCurrency(initialSummary.netInvested)}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Current capital
-              </p>
+              <p className="text-xs text-gray-500 mt-1">Current capital</p>
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">
@@ -195,9 +189,7 @@ export function DepositsClient({ initialDeposits, initialSummary }: DepositsClie
                         {item.spyShares > 0 ? '+' : ''}
                         {item.spyShares.toFixed(4)}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {item.notes || '-'}
-                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{item.notes || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -218,12 +210,8 @@ export function DepositsClient({ initialDeposits, initialSummary }: DepositsClie
 
             <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
               <div className="mb-4">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Record Cash Deposit
-                </h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Add a new cash deposit to your account
-                </p>
+                <h3 className="text-lg font-medium leading-6 text-gray-900">Record Cash Deposit</h3>
+                <p className="mt-1 text-sm text-gray-500">Add a new cash deposit to your account</p>
               </div>
               <DepositForm
                 onSuccess={handleDepositSuccess}

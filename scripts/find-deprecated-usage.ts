@@ -155,7 +155,7 @@ function groupByFile(findings: Finding[]): Map<string, Finding[]> {
 
 function printReport(findings: Finding[], showFix: boolean) {
   console.log('\n🔍 Deprecated Pattern Usage Report\n')
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
 
   if (findings.length === 0) {
     console.log('\n✅ No deprecated pattern usage found! Great job!\n')

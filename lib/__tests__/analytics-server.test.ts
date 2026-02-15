@@ -22,7 +22,11 @@ vi.mock('@/lib/constants', () => ({
 }))
 
 import { prisma } from '@/lib/db'
-import { recordAnalyticsEvent, getConversionFunnelMetrics, getWebhookHealthMetrics } from '../analytics-server'
+import {
+  recordAnalyticsEvent,
+  getConversionFunnelMetrics,
+  getWebhookHealthMetrics,
+} from '../analytics-server'
 
 describe('Analytics Server', () => {
   beforeEach(() => {
@@ -64,14 +68,10 @@ describe('Analytics Server', () => {
     })
 
     it('does not throw on database errors', async () => {
-      vi.mocked(prisma.analyticsEvent.create).mockRejectedValue(
-        new Error('DB connection lost')
-      )
+      vi.mocked(prisma.analyticsEvent.create).mockRejectedValue(new Error('DB connection lost'))
 
       // Should not throw
-      await expect(
-        recordAnalyticsEvent('checkout_started', 'user1')
-      ).resolves.toBeUndefined()
+      await expect(recordAnalyticsEvent('checkout_started', 'user1')).resolves.toBeUndefined()
     })
   })
 
@@ -79,9 +79,9 @@ describe('Analytics Server', () => {
     it('returns funnel counts and conversion rates', async () => {
       vi.mocked(prisma.analyticsEvent.count)
         .mockResolvedValueOnce(100 as never) // trade_limit_reached
-        .mockResolvedValueOnce(80 as never)  // upgrade_prompt_shown
-        .mockResolvedValueOnce(20 as never)  // checkout_started
-        .mockResolvedValueOnce(15 as never)  // subscription_activated
+        .mockResolvedValueOnce(80 as never) // upgrade_prompt_shown
+        .mockResolvedValueOnce(20 as never) // checkout_started
+        .mockResolvedValueOnce(15 as never) // subscription_activated
 
       const result = await getConversionFunnelMetrics(30)
 
@@ -98,8 +98,7 @@ describe('Analytics Server', () => {
     })
 
     it('handles zero counts gracefully', async () => {
-      vi.mocked(prisma.analyticsEvent.count)
-        .mockResolvedValue(0 as never)
+      vi.mocked(prisma.analyticsEvent.count).mockResolvedValue(0 as never)
 
       const result = await getConversionFunnelMetrics(30)
 
@@ -112,7 +111,7 @@ describe('Analytics Server', () => {
     it('returns health metrics with success rate', async () => {
       vi.mocked(prisma.webhookLog.count)
         .mockResolvedValueOnce(100 as never) // total
-        .mockResolvedValueOnce(2 as never)   // failures
+        .mockResolvedValueOnce(2 as never) // failures
 
       const result = await getWebhookHealthMetrics(7)
 
@@ -123,8 +122,7 @@ describe('Analytics Server', () => {
     })
 
     it('returns 100% success rate when no webhooks processed', async () => {
-      vi.mocked(prisma.webhookLog.count)
-        .mockResolvedValue(0 as never)
+      vi.mocked(prisma.webhookLog.count).mockResolvedValue(0 as never)
 
       const result = await getWebhookHealthMetrics(7)
 

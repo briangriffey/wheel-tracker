@@ -22,20 +22,29 @@ const LoadingCard = ({ height = 'h-96' }: { height?: string }) => (
 )
 
 // Dynamically import chart components to reduce initial bundle size
-const PLOverTimeChart = dynamic(() => import('./pl-over-time-chart').then(mod => ({ default: mod.PLOverTimeChart })), {
-  loading: () => <LoadingCard height="h-96" />,
-  ssr: false,
-})
+const PLOverTimeChart = dynamic(
+  () => import('./pl-over-time-chart').then((mod) => ({ default: mod.PLOverTimeChart })),
+  {
+    loading: () => <LoadingCard height="h-96" />,
+    ssr: false,
+  }
+)
 
-const PLByTickerChart = dynamic(() => import('./pl-by-ticker-chart').then(mod => ({ default: mod.PLByTickerChart })), {
-  loading: () => <LoadingCard height="h-96" />,
-  ssr: false,
-})
+const PLByTickerChart = dynamic(
+  () => import('./pl-by-ticker-chart').then((mod) => ({ default: mod.PLByTickerChart })),
+  {
+    loading: () => <LoadingCard height="h-96" />,
+    ssr: false,
+  }
+)
 
-const WinRateChart = dynamic(() => import('./win-rate-chart').then(mod => ({ default: mod.WinRateChart })), {
-  loading: () => <LoadingCard height="h-64" />,
-  ssr: false,
-})
+const WinRateChart = dynamic(
+  () => import('./win-rate-chart').then((mod) => ({ default: mod.WinRateChart })),
+  {
+    loading: () => <LoadingCard height="h-64" />,
+    ssr: false,
+  }
+)
 
 interface PLDashboardProps {
   initialMetrics: DashboardMetrics

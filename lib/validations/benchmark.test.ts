@@ -71,9 +71,7 @@ describe('Benchmark Validation Schemas', () => {
         setupDate: new Date('2024-01-01'),
       }
 
-      expect(() => SetupBenchmarkSchema.parse(input)).toThrow(
-        'Initial capital must be positive'
-      )
+      expect(() => SetupBenchmarkSchema.parse(input)).toThrow('Initial capital must be positive')
     })
 
     it('should reject infinite initial capital', () => {

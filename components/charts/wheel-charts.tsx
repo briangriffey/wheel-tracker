@@ -74,16 +74,11 @@ function formatCurrency(value: number): string {
 }
 
 // Helper to calculate cycle duration in days
-function calculateCycleDuration(
-  position: Position,
-  trades: Trade[]
-): number | null {
+function calculateCycleDuration(position: Position, trades: Trade[]): number | null {
   if (!position.closedDate) return null
 
   // Find the PUT trade that created this position
-  const assignmentTrade = trades.find(
-    (t) => t.status === 'ASSIGNED' && t.type === 'PUT'
-  )
+  const assignmentTrade = trades.find((t) => t.status === 'ASSIGNED' && t.type === 'PUT')
 
   if (!assignmentTrade) return null
 
@@ -154,10 +149,7 @@ function PLOverTimeChart({ trades }: { trades: Trade[] }) {
               textAnchor="end"
               height={80}
             />
-            <YAxis
-              tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `$${value.toFixed(0)}`}
-            />
+            <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `$${value.toFixed(0)}`} />
             <Tooltip
               formatter={(value: number | undefined) =>
                 value !== undefined ? formatCurrency(value) : 'N/A'
@@ -248,10 +240,7 @@ function PremiumsByMonthChart({ trades }: { trades: Trade[] }) {
               textAnchor="end"
               height={80}
             />
-            <YAxis
-              tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `$${value.toFixed(0)}`}
-            />
+            <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `$${value.toFixed(0)}`} />
             <Tooltip
               formatter={(value: number | undefined) =>
                 value !== undefined ? formatCurrency(value) : 'N/A'
@@ -273,7 +262,9 @@ function PremiumsByMonthChart({ trades }: { trades: Trade[] }) {
  */
 function WinRateChart({ positions }: { positions: Position[] }) {
   const chartData = useMemo(() => {
-    const closedPositions = positions.filter((p) => p.status === 'CLOSED' && p.realizedGainLoss !== null)
+    const closedPositions = positions.filter(
+      (p) => p.status === 'CLOSED' && p.realizedGainLoss !== null
+    )
 
     if (closedPositions.length === 0) {
       return { data: [], total: 0, winRate: 0, winners: 0 }
@@ -321,9 +312,7 @@ function WinRateChart({ positions }: { positions: Position[] }) {
       </CardHeader>
       <CardContent>
         <div className="text-center mb-4">
-          <p className="text-4xl font-bold text-gray-900">
-            {chartData.winRate.toFixed(1)}%
-          </p>
+          <p className="text-4xl font-bold text-gray-900">{chartData.winRate.toFixed(1)}%</p>
           <p className="text-sm text-gray-500">
             {chartData.winners} winners out of {chartData.total} closed positions
           </p>
@@ -409,9 +398,7 @@ function CycleDurationChart({ positions, trades }: { positions: Position[]; trad
       </CardHeader>
       <CardContent>
         <div className="text-center mb-4">
-          <p className="text-2xl font-bold text-gray-900">
-            {avgDuration.toFixed(0)} days
-          </p>
+          <p className="text-2xl font-bold text-gray-900">{avgDuration.toFixed(0)} days</p>
           <p className="text-sm text-gray-500">Average cycle duration</p>
         </div>
         <ResponsiveContainer width="100%" height={250}>

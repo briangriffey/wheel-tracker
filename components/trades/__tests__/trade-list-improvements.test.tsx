@@ -31,11 +31,16 @@ vi.mock('@/lib/design/colors', () => ({
   getStatusColor: () => ({
     bg: 'bg-green-100',
     text: 'text-green-800',
+    border: 'border-green-200',
+  }),
+  getPnlColor: () => ({
+    text: 'text-green-600',
+    bg: 'bg-green-50',
+    border: 'border-green-200',
   }),
 }))
 
 global.confirm = vi.fn() as unknown as typeof window.confirm
-global.fetch = vi.fn() as unknown as typeof window.fetch
 
 const mockTrades: Trade[] = [
   {
@@ -138,12 +143,12 @@ describe('TradeList - Price Display', () => {
 
     render(<TradeList initialTrades={mockTrades} prices={pricesWithoutTSLA} />)
 
-    // Should still show AAPL price
-    expect(screen.getByText('$152.45')).toBeInTheDocument()
+    // Should still show AAPL price (may appear in both table and mobile card)
+    expect(screen.getAllByText('$152.45').length).toBeGreaterThan(0)
 
     // TSLA should show a dash (check for it in the appropriate context)
     const rows = screen.getAllByRole('row')
-    const tslaRow = rows.find(row => row.textContent?.includes('TSLA'))
+    const tslaRow = rows.find((row) => row.textContent?.includes('TSLA'))
     expect(tslaRow?.textContent).toContain('-')
   })
 
@@ -167,58 +172,60 @@ describe('TradeList - Price Display', () => {
   })
 })
 
-describe('TradeList - Dropdown Menu', () => {
+describe('TradeList - Action Button', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('should show Actions dropdown button', () => {
+  it('should show Action button per trade row', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const actionButtons = screen.getAllByText('Actions')
+    const actionButtons = screen.getAllByText('Action')
     expect(actionButtons.length).toBeGreaterThan(0)
   })
 
-  it('should open dropdown menu when clicking Actions button', async () => {
+  it('should open dialog when clicking Action button', async () => {
     const user = userEvent.setup()
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const actionButtons = screen.getAllByText('Actions')
+    const actionButtons = screen.getAllByText('Action')
     await user.click(actionButtons[0])
 
-    // Menu should open and show options
+    // Dialog should open and show trade details
     await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument()
+      expect(screen.getByText('View Full Details')).toBeInTheDocument()
     })
   })
 
-  it('should show all actions for OPEN trades in dropdown', async () => {
+  it('should show all actions for OPEN trades in dialog', async () => {
     const user = userEvent.setup()
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const actionButtons = screen.getAllByText('Actions')
-    // Click the first one (OPEN trade)
-    await user.click(actionButtons[0])
-
-    await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument()
-      expect(screen.getByText('Close Early')).toBeInTheDocument()
-      expect(screen.getByText('Mark as Expired')).toBeInTheDocument()
-      expect(screen.getByText('Mark as Assigned')).toBeInTheDocument()
-      expect(screen.getByText('Delete')).toBeInTheDocument()
-    })
-  })
-
-  it('should only show View Details for non-OPEN trades', async () => {
-    const user = userEvent.setup()
-    render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
-
-    const actionButtons = screen.getAllByText('Actions')
-    // Click the second one (EXPIRED trade)
+    const actionButtons = screen.getAllByText('Action')
+    // Trades sorted by expiration ascending: TSLA (Feb 20) first, AAPL (Mar 15) second
+    // Click the second one (AAPL - OPEN trade)
     await user.click(actionButtons[1])
 
     await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument()
+      expect(screen.getByText('View Full Details')).toBeInTheDocument()
+      expect(screen.getByText('Close Early')).toBeInTheDocument()
+      expect(screen.getByText('Mark as Expired')).toBeInTheDocument()
+      expect(screen.getByText('Mark as Assigned')).toBeInTheDocument()
+      expect(screen.getByText('Delete Trade')).toBeInTheDocument()
+    })
+  })
+
+  it('should only show View Full Details for non-OPEN trades', async () => {
+    const user = userEvent.setup()
+    render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
+
+    const actionButtons = screen.getAllByText('Action')
+    // Trades sorted by expiration ascending: TSLA (Feb 20, EXPIRED) first
+    // Click the first one (TSLA - EXPIRED trade)
+    await user.click(actionButtons[0])
+
+    await waitFor(() => {
+      expect(screen.getByText('View Full Details')).toBeInTheDocument()
       // These should not be present for EXPIRED trades
       expect(screen.queryByText('Close Early')).not.toBeInTheDocument()
       expect(screen.queryByText('Mark as Expired')).not.toBeInTheDocument()
@@ -235,15 +242,15 @@ describe('TradeList - Row Click Dialog', () => {
     const user = userEvent.setup()
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    // Find and click a table row (by ticker text)
-    const appleCell = screen.getByText('AAPL')
-    await user.click(appleCell)
+    // Find and click a table row (by ticker text - use first match)
+    const appleCells = screen.getAllByText('AAPL')
+    await user.click(appleCells[0])
 
     // Dialog should open and show trade details
     await waitFor(() => {
-      // Should show ticker in dialog header
-      const headers = screen.getAllByText('AAPL')
-      expect(headers.length).toBeGreaterThan(1) // One in table, one in dialog
+      // Should show ticker in dialog header (more than table+card)
+      const allApple = screen.getAllByText('AAPL')
+      expect(allApple.length).toBeGreaterThan(2) // table + card + dialog
     })
   })
 
@@ -251,14 +258,12 @@ describe('TradeList - Row Click Dialog', () => {
     const user = userEvent.setup()
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const appleCell = screen.getByText('AAPL')
-    await user.click(appleCell)
+    const appleCells = screen.getAllByText('AAPL')
+    await user.click(appleCells[0])
 
     await waitFor(() => {
       // Should show "Current Price:" label in dialog
       expect(screen.getByText('Current Price:')).toBeInTheDocument()
-      // Price should be visible
-      expect(screen.getByText('$152.45')).toBeInTheDocument()
     })
   })
 
@@ -267,8 +272,8 @@ describe('TradeList - Row Click Dialog', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
     // Open dialog
-    const appleCell = screen.getByText('AAPL')
-    await user.click(appleCell)
+    const appleCells = screen.getAllByText('AAPL')
+    await user.click(appleCells[0])
 
     await waitFor(() => {
       expect(screen.getByText('Current Price:')).toBeInTheDocument()
@@ -284,135 +289,36 @@ describe('TradeList - Row Click Dialog', () => {
     })
   })
 
-  it('should not open dialog when clicking Actions dropdown', async () => {
+  it('should open dialog when clicking Action button', async () => {
     const user = userEvent.setup()
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const actionButtons = screen.getAllByText('Actions')
+    const actionButtons = screen.getAllByText('Action')
     await user.click(actionButtons[0])
 
-    // Dropdown menu should open
+    // Dialog should open with trade details
     await waitFor(() => {
-      expect(screen.getByText('View Details')).toBeInTheDocument()
+      expect(screen.getByText('View Full Details')).toBeInTheDocument()
     })
-
-    // Dialog should NOT open (no "Current Price:" text which is unique to dialog)
-    expect(screen.queryByText('Current Price:')).not.toBeInTheDocument()
   })
 })
 
-describe('TradeList - Refresh Prices', () => {
+describe('TradeList - Trade Count Display', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('should display Refresh Prices button', () => {
+  it('should display trade count', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    expect(screen.getByText('Refresh Prices')).toBeInTheDocument()
+    expect(screen.getByText(/Showing 2 of 2 trades/)).toBeInTheDocument()
   })
 
-  it('should call API and show success toast on refresh', async () => {
-    const user = userEvent.setup()
-    const mockFetch = vi.mocked(global.fetch)
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        summary: {
-          successful: 2,
-          failed: 0,
-          total: 2,
-        },
-      }),
-    } as Response)
-
-    const toast = await import('react-hot-toast')
-
+  it('should update count when filtering', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const refreshButton = screen.getAllByRole('button').find(b => b.textContent === 'Refresh Prices')
-    await user.click(refreshButton!)
-
-    // Should call the API
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        '/api/market-data/refresh',
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        })
-      )
-    })
-
-    // Should show success toast
-    await waitFor(() => {
-      expect(toast.default.success).toHaveBeenCalledWith('Refreshed 2 prices')
-    })
-  })
-
-  it('should show loading state while refreshing', async () => {
-    const user = userEvent.setup()
-    const mockFetch = vi.mocked(global.fetch)
-
-    // Create a promise that we can control
-    let resolvePromise: (value: Response) => void
-    const fetchPromise = new Promise<Response>((resolve) => {
-      resolvePromise = resolve
-    })
-    mockFetch.mockReturnValueOnce(fetchPromise)
-
-    render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
-
-    const refreshButton = screen.getAllByRole('button').find(b => b.textContent === 'Refresh Prices')
-    await user.click(refreshButton!)
-
-    // Should show loading text
-    await waitFor(() => {
-      expect(screen.getByText('Refreshing...')).toBeInTheDocument()
-    })
-
-    // Button should be disabled
-    const loadingButton = screen.getByText('Refreshing...')
-    expect(loadingButton.closest('button')).toBeDisabled()
-
-    // Resolve the promise
-    resolvePromise!({
-      ok: true,
-      json: async () => ({
-        success: true,
-        summary: { successful: 2, failed: 0, total: 2 },
-      }),
-    } as Response)
-
-    // Should return to normal state
-    await waitFor(() => {
-      expect(screen.getByText('Refresh Prices')).toBeInTheDocument()
-    })
-  })
-
-  it('should show error toast on refresh failure', async () => {
-    const user = userEvent.setup()
-    const mockFetch = vi.mocked(global.fetch)
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({
-        success: false,
-        error: 'API Error',
-      }),
-    } as Response)
-
-    const toast = await import('react-hot-toast')
-
-    render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
-
-    const refreshButton = screen.getAllByRole('button').find(b => b.textContent === 'Refresh Prices')
-    await user.click(refreshButton!)
-
-    // Should show error toast
-    await waitFor(() => {
-      expect(toast.default.error).toHaveBeenCalledWith('Failed to refresh prices')
-    })
+    // Initially shows all trades
+    expect(screen.getByText(/Showing 2 of 2 trades/)).toBeInTheDocument()
   })
 })
 

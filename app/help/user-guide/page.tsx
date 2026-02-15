@@ -18,12 +18,10 @@ export default function UserGuidePage() {
           >
             &larr; Back to Help Center
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            User Guide
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">User Guide</h1>
           <p className="text-gray-600">
-            A complete walkthrough of the Wheel Tracker workflow, from funding
-            your account to reading your dashboard.
+            A complete walkthrough of the Wheel Tracker workflow, from funding your account to
+            reading your dashboard.
           </p>
         </div>
 
@@ -82,9 +80,9 @@ export default function UserGuidePage() {
             1. Adding Cash
           </h2>
           <p className="text-gray-700 mb-4">
-            Before you start trading, record the cash you have available in your
-            brokerage account. This lets Wheel Tracker compare your portfolio
-            performance against a SPY buy-and-hold benchmark.
+            Before you start trading, record the cash you have available in your brokerage account.
+            This lets Wheel Tracker compare your portfolio performance against a SPY buy-and-hold
+            benchmark.
           </p>
           <ol className="list-decimal list-inside space-y-2 text-gray-700 mb-4">
             <li>
@@ -93,23 +91,22 @@ export default function UserGuidePage() {
             <li>
               Click <strong>Add Deposit</strong>.
             </li>
+            <li>Enter the amount and date that match your brokerage account deposit.</li>
             <li>
-              Enter the amount and date that match your brokerage account deposit.
+              Click <strong>Save</strong>.
             </li>
-            <li>Click <strong>Save</strong>.</li>
           </ol>
           <div className="bg-blue-50 rounded-lg p-4">
             <p className="text-sm text-gray-700">
-              <strong>Why track deposits?</strong> Wheel Tracker uses your deposit
-              history to calculate a &ldquo;what if you had bought SPY instead?&rdquo;
-              benchmark. Each deposit is assumed to purchase SPY at the closing
-              price on that date, so keeping deposits accurate makes the
-              comparison meaningful.
+              <strong>Why track deposits?</strong> Wheel Tracker uses your deposit history to
+              calculate a &ldquo;what if you had bought SPY instead?&rdquo; benchmark. Each deposit
+              is assumed to purchase SPY at the closing price on that date, so keeping deposits
+              accurate makes the comparison meaningful.
             </p>
           </div>
           <p className="text-gray-700 mt-4">
-            If you withdraw money from your brokerage account, record a
-            withdrawal on the same page so the benchmark stays in sync.
+            If you withdraw money from your brokerage account, record a withdrawal on the same page
+            so the benchmark stays in sync.
           </p>
         </section>
 
@@ -118,17 +115,15 @@ export default function UserGuidePage() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4 border-b-2 border-green-500 pb-2">
             2. Opening Trades
           </h2>
-          <p className="text-gray-700 mb-4">
-            There are two ways to create a new trade:
-          </p>
+          <p className="text-gray-700 mb-4">There are two ways to create a new trade:</p>
           <ul className="list-disc list-inside space-y-1 text-gray-700 mb-4">
             <li>
-              <strong>From the Wheels page</strong> &mdash; click <strong>Sell PUT</strong>{' '}
-              on any wheel card to open a pre-filled trade form for that ticker.
+              <strong>From the Wheels page</strong> &mdash; click <strong>Sell PUT</strong> on any
+              wheel card to open a pre-filled trade form for that ticker.
             </li>
             <li>
-              <strong>From the Trades page</strong> &mdash; click{' '}
-              <strong>New Trade</strong> to open a blank form.
+              <strong>From the Trades page</strong> &mdash; click <strong>New Trade</strong> to open
+              a blank form.
             </li>
           </ul>
 
@@ -148,9 +143,7 @@ export default function UserGuidePage() {
               <tbody className="divide-y divide-gray-200">
                 <tr>
                   <td className="px-4 py-2 font-medium text-gray-900">Ticker</td>
-                  <td className="px-4 py-2 text-gray-700">
-                    Stock symbol, e.g. AAPL, MSFT
-                  </td>
+                  <td className="px-4 py-2 text-gray-700">Stock symbol, e.g. AAPL, MSFT</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2 font-medium text-gray-900">Type</td>
@@ -182,9 +175,7 @@ export default function UserGuidePage() {
                 </tr>
                 <tr>
                   <td className="px-4 py-2 font-medium text-gray-900">Expiration</td>
-                  <td className="px-4 py-2 text-gray-700">
-                    Date the option contract expires
-                  </td>
+                  <td className="px-4 py-2 text-gray-700">Date the option contract expires</td>
                 </tr>
                 <tr>
                   <td className="px-4 py-2 font-medium text-gray-900">Notes</td>
@@ -198,10 +189,9 @@ export default function UserGuidePage() {
 
           <div className="bg-yellow-50 rounded-lg p-4 mt-4">
             <p className="text-sm text-gray-700">
-              <strong>Tracking only:</strong> Wheel Tracker does not connect to
-              your broker. You still need to place the actual trade with your
-              brokerage. Enter the trade here after you&apos;ve executed it so
-              your performance tracking stays accurate.
+              <strong>Tracking only:</strong> Wheel Tracker does not connect to your broker. You
+              still need to place the actual trade with your brokerage. Enter the trade here after
+              you&apos;ve executed it so your performance tracking stays accurate.
             </p>
           </div>
         </section>
@@ -213,47 +203,52 @@ export default function UserGuidePage() {
           </h2>
           <p className="text-gray-700 mb-4">
             Open trades appear on the Trades page with status{' '}
-            <span className="font-mono text-sm bg-gray-100 px-1 rounded">OPEN</span>.
-            Each trade has action buttons depending on its type:
+            <span className="font-mono text-sm bg-gray-100 px-1 rounded">OPEN</span>. Each trade has
+            action buttons depending on its type:
           </p>
 
           <div className="space-y-4">
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-bold text-gray-900 mb-1">Mark as Expired</h3>
               <p className="text-sm text-gray-700">
-                Use this when the option expires worthless. The trade status
-                changes to <span className="font-mono text-xs bg-green-100 text-green-800 px-1 rounded">EXPIRED</span> and
-                you keep the full premium as profit.
+                Use this when the option expires worthless. The trade status changes to{' '}
+                <span className="font-mono text-xs bg-green-100 text-green-800 px-1 rounded">
+                  EXPIRED
+                </span>{' '}
+                and you keep the full premium as profit.
               </p>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-bold text-gray-900 mb-1">
-                Close Early (Buy to Close)
-              </h3>
+              <h3 className="font-bold text-gray-900 mb-1">Close Early (Buy to Close)</h3>
               <p className="text-sm text-gray-700">
-                Buy back the option before expiration. Enter the closing premium
-                you paid. Your P&amp;L is the difference between the premium you
-                collected and the cost to close. Status changes
-                to <span className="font-mono text-xs bg-gray-200 text-gray-800 px-1 rounded">CLOSED</span>.
+                Buy back the option before expiration. Enter the closing premium you paid. Your
+                P&amp;L is the difference between the premium you collected and the cost to close.
+                Status changes to{' '}
+                <span className="font-mono text-xs bg-gray-200 text-gray-800 px-1 rounded">
+                  CLOSED
+                </span>
+                .
               </p>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-bold text-gray-900 mb-1">Mark as Assigned</h3>
               <p className="text-sm text-gray-700">
-                Use this when a PUT is exercised and you receive shares. Wheel
-                Tracker automatically creates a new position for you (see next
-                section). Status changes
-                to <span className="font-mono text-xs bg-orange-100 text-orange-800 px-1 rounded">ASSIGNED</span>.
+                Use this when a PUT is exercised and you receive shares. Wheel Tracker automatically
+                creates a new position for you (see next section). Status changes to{' '}
+                <span className="font-mono text-xs bg-orange-100 text-orange-800 px-1 rounded">
+                  ASSIGNED
+                </span>
+                .
               </p>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-bold text-gray-900 mb-1">Delete</h3>
               <p className="text-sm text-gray-700">
-                Remove a trade entered by mistake. This cannot be undone, so
-                double-check before deleting.
+                Remove a trade entered by mistake. This cannot be undone, so double-check before
+                deleting.
               </p>
             </div>
           </div>
@@ -265,17 +260,16 @@ export default function UserGuidePage() {
             4. Positions from Assignment
           </h2>
           <p className="text-gray-700 mb-4">
-            When you mark a PUT trade as assigned, Wheel Tracker automatically
-            creates a stock position:
+            When you mark a PUT trade as assigned, Wheel Tracker automatically creates a stock
+            position:
           </p>
           <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
             <li>
-              <strong>Ticker &amp; shares</strong> are copied from the original
-              PUT trade (contracts &times; 100).
+              <strong>Ticker &amp; shares</strong> are copied from the original PUT trade (contracts
+              &times; 100).
             </li>
             <li>
-              <strong>Cost basis</strong> is set to the strike price of the
-              assigned PUT.
+              <strong>Cost basis</strong> is set to the strike price of the assigned PUT.
             </li>
             <li>
               The new position appears on the <strong>Positions</strong> page.
@@ -284,19 +278,17 @@ export default function UserGuidePage() {
 
           <div className="bg-orange-50 rounded-lg p-4 mb-4">
             <p className="text-sm text-gray-700">
-              <strong>Cost basis example:</strong> You sold a $175 PUT on AAPL
-              for $3.00 premium and got assigned. Your position cost basis is
-              $175 per share. The $300 premium you collected is tracked
-              separately as trade P&amp;L, effectively making your break-even
+              <strong>Cost basis example:</strong> You sold a $175 PUT on AAPL for $3.00 premium and
+              got assigned. Your position cost basis is $175 per share. The $300 premium you
+              collected is tracked separately as trade P&amp;L, effectively making your break-even
               price $172.
             </p>
           </div>
 
           <p className="text-gray-700">
-            While a position is open, Wheel Tracker fetches the current stock
-            price and shows your <strong>unrealized P&amp;L</strong>{' '}
-            (current market value minus cost basis). This updates each time you
-            visit the Positions page.
+            While a position is open, Wheel Tracker fetches the current stock price and shows your{' '}
+            <strong>unrealized P&amp;L</strong> (current market value minus cost basis). This
+            updates each time you visit the Positions page.
           </p>
         </section>
 
@@ -306,61 +298,51 @@ export default function UserGuidePage() {
             5. Selling Covered Calls
           </h2>
           <p className="text-gray-700 mb-4">
-            Once you own shares from a PUT assignment, you can sell covered CALLs
-            to collect additional premium.
+            Once you own shares from a PUT assignment, you can sell covered CALLs to collect
+            additional premium.
           </p>
           <ol className="list-decimal list-inside space-y-2 text-gray-700 mb-4">
             <li>
-              Go to the <strong>Wheels</strong> page and find the position card
-              for that ticker.
+              Go to the <strong>Wheels</strong> page and find the position card for that ticker.
             </li>
             <li>
-              Click <strong>Sell CALL</strong>. The form is pre-filled with the
-              ticker and type set to CALL.
+              Click <strong>Sell CALL</strong>. The form is pre-filled with the ticker and type set
+              to CALL.
             </li>
-            <li>
-              Enter the strike price, premium, contracts, and expiration date.
-            </li>
+            <li>Enter the strike price, premium, contracts, and expiration date.</li>
             <li>Submit the trade.</li>
           </ol>
 
-          <h3 className="font-bold text-gray-900 mb-3">
-            Three possible outcomes
-          </h3>
+          <h3 className="font-bold text-gray-900 mb-3">Three possible outcomes</h3>
           <div className="space-y-3">
             <div className="flex items-start">
               <span className="text-green-600 font-bold mr-3 mt-0.5">1.</span>
               <div>
                 <p className="font-semibold text-gray-900">CALL expires worthless</p>
                 <p className="text-sm text-gray-700">
-                  You keep the premium and still own the shares. Sell another
-                  CALL to collect more premium.
+                  You keep the premium and still own the shares. Sell another CALL to collect more
+                  premium.
                 </p>
               </div>
             </div>
             <div className="flex items-start">
               <span className="text-blue-600 font-bold mr-3 mt-0.5">2.</span>
               <div>
-                <p className="font-semibold text-gray-900">
-                  CALL is assigned (shares called away)
-                </p>
+                <p className="font-semibold text-gray-900">CALL is assigned (shares called away)</p>
                 <p className="text-sm text-gray-700">
-                  You sell your shares at the strike price. The position closes
-                  and your realized P&amp;L includes the stock gain plus all
-                  premiums collected. The wheel cycle is complete.
+                  You sell your shares at the strike price. The position closes and your realized
+                  P&amp;L includes the stock gain plus all premiums collected. The wheel cycle is
+                  complete.
                 </p>
               </div>
             </div>
             <div className="flex items-start">
               <span className="text-purple-600 font-bold mr-3 mt-0.5">3.</span>
               <div>
-                <p className="font-semibold text-gray-900">
-                  You close the CALL early
-                </p>
+                <p className="font-semibold text-gray-900">You close the CALL early</p>
                 <p className="text-sm text-gray-700">
-                  Buy back the CALL before expiration. Your P&amp;L is the
-                  difference between the premium collected and the closing cost.
-                  You still own the shares.
+                  Buy back the CALL before expiration. Your P&amp;L is the difference between the
+                  premium collected and the closing cost. You still own the shares.
                 </p>
               </div>
             </div>
@@ -373,8 +355,7 @@ export default function UserGuidePage() {
             6. The Wheel Cycle
           </h2>
           <p className="text-gray-700 mb-6">
-            The wheel strategy is a repeating cycle. Here&apos;s how all the
-            pieces fit together:
+            The wheel strategy is a repeating cycle. Here&apos;s how all the pieces fit together:
           </p>
 
           {/* Visual cycle diagram */}
@@ -402,15 +383,13 @@ export default function UserGuidePage() {
           </div>
 
           <div className="text-center text-sm text-gray-500 mb-6">
-            If a PUT or CALL expires worthless, you keep the premium and repeat
-            that step.
+            If a PUT or CALL expires worthless, you keep the premium and repeat that step.
           </div>
 
           <p className="text-gray-700">
-            The <strong>Wheels</strong> page groups your trades and positions by
-            ticker so you can see exactly where each stock is in its wheel
-            cycle. Each wheel card shows open PUTs, active positions, and
-            covered CALLs for that ticker in one place.
+            The <strong>Wheels</strong> page groups your trades and positions by ticker so you can
+            see exactly where each stock is in its wheel cycle. Each wheel card shows open PUTs,
+            active positions, and covered CALLs for that ticker in one place.
           </p>
         </section>
 
@@ -420,58 +399,50 @@ export default function UserGuidePage() {
             7. Reading Your Dashboard
           </h2>
           <p className="text-gray-700 mb-4">
-            The Dashboard gives you a top-level view of your portfolio. It is
-            organized into three rows:
+            The Dashboard gives you a top-level view of your portfolio. It is organized into three
+            rows:
           </p>
 
           <div className="space-y-4 mb-6">
             <div className="border border-gray-200 rounded-lg p-4">
-              <h3 className="font-bold text-gray-900 mb-2">
-                Portfolio Overview
-              </h3>
+              <h3 className="font-bold text-gray-900 mb-2">Portfolio Overview</h3>
               <p className="text-sm text-gray-700">
-                Summary cards showing total deposited capital, current portfolio
-                value, overall P&amp;L (dollar and percentage), and how your
-                returns compare to the SPY benchmark over the same period.
+                Summary cards showing total deposited capital, current portfolio value, overall
+                P&amp;L (dollar and percentage), and how your returns compare to the SPY benchmark
+                over the same period.
               </p>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-bold text-gray-900 mb-2">Stocks</h3>
               <p className="text-sm text-gray-700">
-                A breakdown of each stock position you hold: shares, cost basis,
-                current price, unrealized P&amp;L, and the total premium
-                collected from covered CALLs on that position.
+                A breakdown of each stock position you hold: shares, cost basis, current price,
+                unrealized P&amp;L, and the total premium collected from covered CALLs on that
+                position.
               </p>
             </div>
 
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-bold text-gray-900 mb-2">Options</h3>
               <p className="text-sm text-gray-700">
-                All open option trades with expiration dates, strike prices,
-                premium collected, and days remaining. Trades expiring within 7
-                days are highlighted so you can plan ahead.
+                All open option trades with expiration dates, strike prices, premium collected, and
+                days remaining. Trades expiring within 7 days are highlighted so you can plan ahead.
               </p>
             </div>
           </div>
 
           <h3 className="font-bold text-gray-900 mb-3">Charts</h3>
           <p className="text-gray-700">
-            Below the summary cards you&apos;ll find performance charts
-            including cumulative P&amp;L over time, a portfolio value line
-            chart compared to the SPY benchmark, and a breakdown of premium
-            income by month.
+            Below the summary cards you&apos;ll find performance charts including cumulative P&amp;L
+            over time, a portfolio value line chart compared to the SPY benchmark, and a breakdown
+            of premium income by month.
           </p>
         </section>
 
         {/* Footer links */}
         <div className="bg-blue-50 rounded-lg p-6 mt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">
-            More resources
-          </h2>
-          <p className="text-gray-700 mb-4">
-            Dive deeper into specific topics:
-          </p>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">More resources</h2>
+          <p className="text-gray-700 mb-4">Dive deeper into specific topics:</p>
           <div className="space-y-2">
             <Link
               href="/help/faq"
@@ -485,10 +456,7 @@ export default function UserGuidePage() {
             >
               &#128218; Options Trading Glossary
             </Link>
-            <Link
-              href="/help"
-              className="block text-blue-600 hover:text-blue-800 hover:underline"
-            >
+            <Link href="/help" className="block text-blue-600 hover:text-blue-800 hover:underline">
               &#127968; Help Center
             </Link>
           </div>

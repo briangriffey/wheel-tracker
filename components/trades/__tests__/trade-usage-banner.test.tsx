@@ -32,23 +32,17 @@ describe('TradeUsageBanner', () => {
     })
 
     it('renders nothing at 0 trades', () => {
-      const { container } = render(
-        <TradeUsageBanner usage={makeUsage({ tradesUsed: 0 })} />
-      )
+      const { container } = render(<TradeUsageBanner usage={makeUsage({ tradesUsed: 0 })} />)
       expect(container.firstChild).toBeNull()
     })
 
     it('renders nothing at 10 trades', () => {
-      const { container } = render(
-        <TradeUsageBanner usage={makeUsage({ tradesUsed: 10 })} />
-      )
+      const { container } = render(<TradeUsageBanner usage={makeUsage({ tradesUsed: 10 })} />)
       expect(container.firstChild).toBeNull()
     })
 
     it('renders nothing at 14 trades', () => {
-      const { container } = render(
-        <TradeUsageBanner usage={makeUsage({ tradesUsed: 14 })} />
-      )
+      const { container } = render(<TradeUsageBanner usage={makeUsage({ tradesUsed: 14 })} />)
       expect(container.firstChild).toBeNull()
     })
   })
@@ -86,7 +80,9 @@ describe('TradeUsageBanner', () => {
     it('shows remaining count and upgrade link at 18 trades', () => {
       render(<TradeUsageBanner usage={makeUsage({ tradesUsed: 18 })} />)
       expect(screen.getByText(/2 trades remaining/)).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: /upgrade for unlimited tracking/i })).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: /upgrade for unlimited tracking/i })
+      ).toBeInTheDocument()
     })
 
     it('links to /pricing', () => {
@@ -131,9 +127,7 @@ describe('TradeUsageBanner', () => {
 
   describe('progressive escalation', () => {
     it('escalates from neutral to warning styling as trades increase', () => {
-      const { rerender } = render(
-        <TradeUsageBanner usage={makeUsage({ tradesUsed: 15 })} />
-      )
+      const { rerender } = render(<TradeUsageBanner usage={makeUsage({ tradesUsed: 15 })} />)
       expect(screen.getByRole('status').className).toContain('bg-neutral-50')
 
       rerender(<TradeUsageBanner usage={makeUsage({ tradesUsed: 18 })} />)

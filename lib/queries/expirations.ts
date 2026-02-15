@@ -113,9 +113,7 @@ export async function getTradesByExpirationDate(date: Date): Promise<Trade[]> {
  * @param trades - Array of trades to group
  * @returns Map of date string to array of trades
  */
-export function groupTradesByExpiration(
-  trades: Trade[]
-): Map<string, Trade[]> {
+export function groupTradesByExpiration(trades: Trade[]): Map<string, Trade[]> {
   const grouped = new Map<string, Trade[]>()
 
   for (const trade of trades) {

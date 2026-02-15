@@ -338,9 +338,7 @@ describe('PositionsList Component Logic', () => {
     })
 
     it('should have positions with profit', () => {
-      const profitablePositions = mockPositions.filter(
-        (p) => (p.unrealizedPL ?? 0) > 0
-      )
+      const profitablePositions = mockPositions.filter((p) => (p.unrealizedPL ?? 0) > 0)
       expect(profitablePositions.length).toBeGreaterThan(0)
     })
 

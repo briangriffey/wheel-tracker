@@ -207,9 +207,7 @@ describe('UpdateTradeSchema', () => {
   })
 
   it('should validate optional fields', () => {
-    expect(() =>
-      UpdateTradeSchema.parse({ ...validInput, strikePrice: -10 })
-    ).toThrow()
+    expect(() => UpdateTradeSchema.parse({ ...validInput, strikePrice: -10 })).toThrow()
     expect(() => UpdateTradeSchema.parse({ ...validInput, premium: 0 })).toThrow()
     expect(() => UpdateTradeSchema.parse({ ...validInput, contracts: 1.5 })).toThrow()
   })

@@ -78,9 +78,7 @@ describe('UpdatePositionSchema', () => {
 
   it('should reject notes longer than 1000 characters', () => {
     const longNotes = 'a'.repeat(1001)
-    expect(() =>
-      UpdatePositionSchema.parse({ id: 'clxyz12345678', notes: longNotes })
-    ).toThrow()
+    expect(() => UpdatePositionSchema.parse({ id: 'clxyz12345678', notes: longNotes })).toThrow()
   })
 
   it('should accept currentValue', () => {
@@ -92,15 +90,11 @@ describe('UpdatePositionSchema', () => {
   })
 
   it('should reject negative currentValue', () => {
-    expect(() =>
-      UpdatePositionSchema.parse({ id: 'clxyz12345678', currentValue: -100 })
-    ).toThrow()
+    expect(() => UpdatePositionSchema.parse({ id: 'clxyz12345678', currentValue: -100 })).toThrow()
   })
 
   it('should reject zero currentValue', () => {
-    expect(() =>
-      UpdatePositionSchema.parse({ id: 'clxyz12345678', currentValue: 0 })
-    ).toThrow()
+    expect(() => UpdatePositionSchema.parse({ id: 'clxyz12345678', currentValue: 0 })).toThrow()
   })
 
   it('should accept both notes and currentValue', () => {

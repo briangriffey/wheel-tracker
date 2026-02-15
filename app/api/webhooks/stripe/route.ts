@@ -133,17 +133,14 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
   }
 
   const subscriptionId =
-    typeof session.subscription === 'string'
-      ? session.subscription
-      : session.subscription?.id
+    typeof session.subscription === 'string' ? session.subscription : session.subscription?.id
 
   if (!subscriptionId) {
     console.error('[WEBHOOK] checkout.session.completed: missing subscription ID')
     return
   }
 
-  const customerId =
-    typeof session.customer === 'string' ? session.customer : session.customer?.id
+  const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
 
   if (!customerId) {
     console.error('[WEBHOOK] checkout.session.completed: missing customer ID')
@@ -151,8 +148,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session):
   }
 
   // Fetch the full subscription to get current_period_end from items
-  const subscription: Stripe.Subscription =
-    await stripe.subscriptions.retrieve(subscriptionId)
+  const subscription: Stripe.Subscription = await stripe.subscriptions.retrieve(subscriptionId)
   const periodEnd: Date | null = getSubscriptionPeriodEnd(subscription)
 
   await prisma.user.update({
@@ -183,12 +179,10 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<v
   }
 
   // Fetch the subscription for the updated period end from items
-  const subscription: Stripe.Subscription =
-    await stripe.subscriptions.retrieve(subscriptionId)
+  const subscription: Stripe.Subscription = await stripe.subscriptions.retrieve(subscriptionId)
   const periodEnd: Date | null = getSubscriptionPeriodEnd(subscription)
 
-  const customerId =
-    typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+  const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
 
   if (!customerId) {
     console.error('[WEBHOOK] invoice.payment_succeeded: missing customer ID')
@@ -201,9 +195,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<v
   })
 
   if (!user) {
-    console.error(
-      `[WEBHOOK] invoice.payment_succeeded: no user found for customer ${customerId}`
-    )
+    console.error(`[WEBHOOK] invoice.payment_succeeded: no user found for customer ${customerId}`)
     return
   }
 
@@ -219,8 +211,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<v
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
-  const customerId =
-    typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
+  const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
 
   if (!customerId) {
     console.error('[WEBHOOK] invoice.payment_failed: missing customer ID')
@@ -233,9 +224,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
   })
 
   if (!user) {
-    console.error(
-      `[WEBHOOK] invoice.payment_failed: no user found for customer ${customerId}`
-    )
+    console.error(`[WEBHOOK] invoice.payment_failed: no user found for customer ${customerId}`)
     return
   }
 
@@ -251,9 +240,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
   const customerId =
-    typeof subscription.customer === 'string'
-      ? subscription.customer
-      : subscription.customer?.id
+    typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id
 
   if (!customerId) {
     console.error('[WEBHOOK] customer.subscription.updated: missing customer ID')
@@ -289,9 +276,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
   const customerId =
-    typeof subscription.customer === 'string'
-      ? subscription.customer
-      : subscription.customer?.id
+    typeof subscription.customer === 'string' ? subscription.customer : subscription.customer?.id
 
   if (!customerId) {
     console.error('[WEBHOOK] customer.subscription.deleted: missing customer ID')
@@ -322,4 +307,3 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
 
   console.log(`[WEBHOOK] customer.subscription.deleted: reverted to FREE for user ${user.id}`)
 }
-

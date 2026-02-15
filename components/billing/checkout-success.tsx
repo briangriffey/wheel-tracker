@@ -40,26 +40,26 @@ export function CheckoutSuccess() {
   return (
     <div className="rounded-lg border border-green-200 bg-green-50 p-8 text-center">
       <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-        <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+        <svg
+          className="h-8 w-8 text-green-600"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth="2"
+          stroke="currentColor"
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
         </svg>
       </div>
-      <h2 className="text-2xl font-bold text-green-900">
-        Welcome to Pro!
-      </h2>
+      <h2 className="text-2xl font-bold text-green-900">Welcome to Pro!</h2>
       <p className="mt-2 text-green-700">
         Your upgrade is complete. You now have unlimited trade tracking.
       </p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <Link href="/trades/new">
-          <Button variant="primary">
-            Start Tracking Trades
-          </Button>
+          <Button variant="primary">Start Tracking Trades</Button>
         </Link>
         <Link href="/dashboard">
-          <Button variant="outline">
-            Go to Dashboard
-          </Button>
+          <Button variant="outline">Go to Dashboard</Button>
         </Link>
       </div>
     </div>

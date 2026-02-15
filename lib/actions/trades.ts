@@ -65,9 +65,7 @@ async function getCurrentUserId(): Promise<string | null> {
  *
  * @throws {Error} If validation fails or database operation fails
  */
-export async function createTrade(
-  input: CreateTradeInput
-): Promise<ActionResult<{ id: string }>> {
+export async function createTrade(input: CreateTradeInput): Promise<ActionResult<{ id: string }>> {
   let userId: string | null = null
   try {
     // Validate input
@@ -89,13 +87,14 @@ export async function createTrade(
       },
     })
 
-    const hasProAccess = user?.subscriptionTier === 'PRO' ||
+    const hasProAccess =
+      user?.subscriptionTier === 'PRO' ||
       (user?.subscriptionStatus === 'canceled' &&
-       user?.subscriptionEndsAt != null &&
-       new Date(user.subscriptionEndsAt) > new Date()) ||
+        user?.subscriptionEndsAt != null &&
+        new Date(user.subscriptionEndsAt) > new Date()) ||
       (user?.subscriptionStatus === 'past_due' &&
-       user?.subscriptionEndsAt != null &&
-       new Date(user.subscriptionEndsAt) > new Date())
+        user?.subscriptionEndsAt != null &&
+        new Date(user.subscriptionEndsAt) > new Date())
 
     // Calculate shares (contracts * 100)
     const shares = validated.contracts * 100
@@ -103,36 +102,39 @@ export async function createTrade(
     // Use a serializable transaction to atomically check the limit and create
     // the trade. This prevents race conditions where concurrent requests both
     // read the same count and both proceed past the limit.
-    const trade = await prisma.$transaction(async (tx) => {
-      if (!hasProAccess) {
-        const tradeCount = await tx.trade.count({
-          where: { userId: userId! },
-        })
+    const trade = await prisma.$transaction(
+      async (tx) => {
+        if (!hasProAccess) {
+          const tradeCount = await tx.trade.count({
+            where: { userId: userId! },
+          })
 
-        if (tradeCount >= FREE_TRADE_LIMIT) {
-          throw new TradeLimitError(tradeCount)
+          if (tradeCount >= FREE_TRADE_LIMIT) {
+            throw new TradeLimitError(tradeCount)
+          }
         }
-      }
 
-      return tx.trade.create({
-        data: {
-          userId: userId!,
-          ticker: validated.ticker,
-          type: validated.type,
-          action: validated.action,
-          strikePrice: new Prisma.Decimal(validated.strikePrice),
-          premium: new Prisma.Decimal(validated.premium),
-          contracts: validated.contracts,
-          shares,
-          expirationDate: validated.expirationDate,
-          openDate: validated.openDate ?? new Date(),
-          notes: validated.notes,
-          positionId: validated.positionId,
-        },
-      })
-    }, {
-      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-    })
+        return tx.trade.create({
+          data: {
+            userId: userId!,
+            ticker: validated.ticker,
+            type: validated.type,
+            action: validated.action,
+            strikePrice: new Prisma.Decimal(validated.strikePrice),
+            premium: new Prisma.Decimal(validated.premium),
+            contracts: validated.contracts,
+            shares,
+            expirationDate: validated.expirationDate,
+            openDate: validated.openDate ?? new Date(),
+            notes: validated.notes,
+            positionId: validated.positionId,
+          },
+        })
+      },
+      {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      }
+    )
 
     // Revalidate relevant paths
     revalidatePath('/trades')
@@ -172,9 +174,7 @@ export async function createTrade(
  *
  * @throws {Error} If trade not found, doesn't belong to user, or update fails
  */
-export async function updateTrade(
-  input: UpdateTradeInput
-): Promise<ActionResult<{ id: string }>> {
+export async function updateTrade(input: UpdateTradeInput): Promise<ActionResult<{ id: string }>> {
   try {
     // Validate input
     const validated = UpdateTradeSchema.parse(input)

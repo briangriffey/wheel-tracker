@@ -85,13 +85,16 @@ const mockTrades: Trade[] = [
 ]
 
 // Helper functions to test
-function filterTrades(trades: Trade[], filters: {
-  ticker?: string
-  status?: string
-  type?: string
-  dateStart?: string
-  dateEnd?: string
-}) {
+function filterTrades(
+  trades: Trade[],
+  filters: {
+    ticker?: string
+    status?: string
+    type?: string
+    dateStart?: string
+    dateEnd?: string
+  }
+) {
   let filtered = [...trades]
 
   if (filters.ticker) {
@@ -158,7 +161,7 @@ describe('TradeList Component Logic', () => {
     it('should filter trades by ticker', () => {
       const filtered = filterTrades(mockTrades, { ticker: 'AAPL' })
       expect(filtered).toHaveLength(2)
-      expect(filtered.every(t => t.ticker === 'AAPL')).toBe(true)
+      expect(filtered.every((t) => t.ticker === 'AAPL')).toBe(true)
     })
 
     it('should filter trades by status', () => {
@@ -176,7 +179,7 @@ describe('TradeList Component Logic', () => {
     it('should filter trades by date range', () => {
       const filtered = filterTrades(mockTrades, {
         dateStart: '2026-03-01',
-        dateEnd: '2026-03-31'
+        dateEnd: '2026-03-31',
       })
       expect(filtered).toHaveLength(1)
       expect(filtered[0].ticker).toBe('AAPL')
@@ -195,7 +198,7 @@ describe('TradeList Component Logic', () => {
     it('should combine multiple filters', () => {
       const filtered = filterTrades(mockTrades, {
         ticker: 'AAPL',
-        type: 'PUT'
+        type: 'PUT',
       })
       expect(filtered).toHaveLength(1)
       expect(filtered[0].ticker).toBe('AAPL')
@@ -218,19 +221,19 @@ describe('TradeList Component Logic', () => {
 
     it('should sort trades by premium ascending', () => {
       const sorted = sortTrades(mockTrades, 'premium', 'asc')
-      const premiums = sorted.map(t => (t.premium as Prisma.Decimal).toNumber())
+      const premiums = sorted.map((t) => (t.premium as Prisma.Decimal).toNumber())
       expect(premiums).toEqual([300, 500, 750])
     })
 
     it('should sort trades by premium descending', () => {
       const sorted = sortTrades(mockTrades, 'premium', 'desc')
-      const premiums = sorted.map(t => (t.premium as Prisma.Decimal).toNumber())
+      const premiums = sorted.map((t) => (t.premium as Prisma.Decimal).toNumber())
       expect(premiums).toEqual([750, 500, 300])
     })
 
     it('should sort trades by expiration date ascending', () => {
       const sorted = sortTrades(mockTrades, 'expirationDate', 'asc')
-      const dates = sorted.map(t => new Date(t.expirationDate).getTime())
+      const dates = sorted.map((t) => new Date(t.expirationDate).getTime())
       expect(dates[0]).toBeLessThan(dates[dates.length - 1])
     })
 
@@ -252,17 +255,17 @@ describe('TradeList Component Logic', () => {
     })
 
     it('should have OPEN trade for testing actions', () => {
-      const openTrades = mockTrades.filter(t => t.status === 'OPEN')
+      const openTrades = mockTrades.filter((t) => t.status === 'OPEN')
       expect(openTrades.length).toBeGreaterThan(0)
     })
 
     it('should have different trade types', () => {
-      const types = new Set(mockTrades.map(t => t.type))
+      const types = new Set(mockTrades.map((t) => t.type))
       expect(types.size).toBeGreaterThan(1)
     })
 
     it('should have different statuses', () => {
-      const statuses = new Set(mockTrades.map(t => t.status))
+      const statuses = new Set(mockTrades.map((t) => t.status))
       expect(statuses.size).toBeGreaterThan(1)
     })
   })

@@ -9,7 +9,7 @@ import {
   CheckCircle2,
   Repeat,
   Calculator,
-  LineChart
+  LineChart,
 } from 'lucide-react'
 
 export default async function Home() {
@@ -85,7 +85,8 @@ export default async function Home() {
 
             {/* Subheadline */}
             <p className="text-xl sm:text-2xl text-neutral-600 mb-12 leading-relaxed max-w-3xl mx-auto">
-              Track every premium, manage every position, and optimize your wheel strategy with precision.
+              Track every premium, manage every position, and optimize your wheel strategy with
+              precision.
               <span className="block mt-2 text-lg text-neutral-500">
                 The systematic options tracker for disciplined traders.
               </span>
@@ -147,7 +148,8 @@ export default async function Home() {
               Everything you need to master the wheel
             </h2>
             <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
-              Track, analyze, and optimize every aspect of your wheel strategy with precision tools built for systematic traders.
+              Track, analyze, and optimize every aspect of your wheel strategy with precision tools
+              built for systematic traders.
             </p>
           </div>
 
@@ -157,11 +159,10 @@ export default async function Home() {
               <div className="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center mb-6">
                 <Calculator className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-neutral-900 mb-3">
-                Track Your Greeks
-              </h3>
+              <h3 className="text-xl font-bold text-neutral-900 mb-3">Track Your Greeks</h3>
               <p className="text-neutral-600 mb-4">
-                Monitor Δ, Θ, Γ, and Vega across all positions. Understand how time decay and price movement affect your portfolio.
+                Monitor Δ, Θ, Γ, and Vega across all positions. Understand how time decay and price
+                movement affect your portfolio.
               </p>
               <div className="text-primary-600 font-medium text-sm">
                 Real-time Greek calculations →
@@ -173,15 +174,12 @@ export default async function Home() {
               <div className="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center mb-6">
                 <Repeat className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-neutral-900 mb-3">
-                Perfect Each Rotation
-              </h3>
+              <h3 className="text-xl font-bold text-neutral-900 mb-3">Perfect Each Rotation</h3>
               <p className="text-neutral-600 mb-4">
-                Track the complete cycle: cash-secured PUT → assignment → stock position → covered CALL. Optimize every step.
+                Track the complete cycle: cash-secured PUT → assignment → stock position → covered
+                CALL. Optimize every step.
               </p>
-              <div className="text-primary-600 font-medium text-sm">
-                PUT → Stock → CALL →
-              </div>
+              <div className="text-primary-600 font-medium text-sm">PUT → Stock → CALL →</div>
             </div>
 
             {/* Feature 3 */}
@@ -189,15 +187,12 @@ export default async function Home() {
               <div className="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center mb-6">
                 <DollarSign className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-neutral-900 mb-3">
-                Maximize Premium
-              </h3>
+              <h3 className="text-xl font-bold text-neutral-900 mb-3">Maximize Premium</h3>
               <p className="text-neutral-600 mb-4">
-                See exactly where your income comes from. Track premium collected, time decay captured, and total P&L per position.
+                See exactly where your income comes from. Track premium collected, time decay
+                captured, and total P&L per position.
               </p>
-              <div className="text-primary-600 font-medium text-sm">
-                Premium analytics →
-              </div>
+              <div className="text-primary-600 font-medium text-sm">Premium analytics →</div>
             </div>
 
             {/* Feature 4 */}
@@ -205,15 +200,12 @@ export default async function Home() {
               <div className="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center mb-6">
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-xl font-bold text-neutral-900 mb-3">
-                Beat Benchmarks
-              </h3>
+              <h3 className="text-xl font-bold text-neutral-900 mb-3">Beat Benchmarks</h3>
               <p className="text-neutral-600 mb-4">
-                Compare your performance against SPY, QQQ, and custom benchmarks. Prove your strategy works with real data.
+                Compare your performance against SPY, QQQ, and custom benchmarks. Prove your
+                strategy works with real data.
               </p>
-              <div className="text-primary-600 font-medium text-sm">
-                Performance tracking →
-              </div>
+              <div className="text-primary-600 font-medium text-sm">Performance tracking →</div>
             </div>
           </div>
         </div>
@@ -227,7 +219,8 @@ export default async function Home() {
               The Wheel Strategy, Simplified
             </h2>
             <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
-              From your first PUT to consistent income, GreekWheel tracks every rotation with precision.
+              From your first PUT to consistent income, GreekWheel tracks every rotation with
+              precision.
             </p>
           </div>
 
@@ -242,16 +235,13 @@ export default async function Home() {
                   Sell Cash-Secured PUTs
                 </h3>
                 <p className="text-neutral-600 mb-4">
-                  Collect premium by selling PUTs on stocks you want to own. Track strike price, expiration, and Greeks.
+                  Collect premium by selling PUTs on stocks you want to own. Track strike price,
+                  expiration, and Greeks.
                 </p>
                 <div className="bg-primary-50 p-4 rounded-lg border border-primary-100">
                   <div className="text-sm text-neutral-600 mb-1">Example:</div>
-                  <div className="font-mono text-sm text-neutral-900">
-                    AAPL $170 PUT @ $2.50
-                  </div>
-                  <div className="text-xs text-primary-600 mt-1">
-                    Premium: $250 | Θ: -0.15
-                  </div>
+                  <div className="font-mono text-sm text-neutral-900">AAPL $170 PUT @ $2.50</div>
+                  <div className="text-xs text-primary-600 mt-1">Premium: $250 | Θ: -0.15</div>
                 </div>
               </div>
             </div>
@@ -266,16 +256,13 @@ export default async function Home() {
                   Get Assigned Stock
                 </h3>
                 <p className="text-neutral-600 mb-4">
-                  If assigned, your PUT converts to a stock position. GreekWheel automatically tracks your new cost basis.
+                  If assigned, your PUT converts to a stock position. GreekWheel automatically
+                  tracks your new cost basis.
                 </p>
                 <div className="bg-primary-50 p-4 rounded-lg border border-primary-100">
                   <div className="text-sm text-neutral-600 mb-1">Position:</div>
-                  <div className="font-mono text-sm text-neutral-900">
-                    100 AAPL @ $167.50
-                  </div>
-                  <div className="text-xs text-primary-600 mt-1">
-                    Cost: $170 - $2.50 premium
-                  </div>
+                  <div className="font-mono text-sm text-neutral-900">100 AAPL @ $167.50</div>
+                  <div className="text-xs text-primary-600 mt-1">Cost: $170 - $2.50 premium</div>
                 </div>
               </div>
             </div>
@@ -290,16 +277,13 @@ export default async function Home() {
                   Sell Covered CALLs
                 </h3>
                 <p className="text-neutral-600 mb-4">
-                  Collect more premium by selling CALLs against your stock. Track P&L and Greeks for the complete rotation.
+                  Collect more premium by selling CALLs against your stock. Track P&L and Greeks for
+                  the complete rotation.
                 </p>
                 <div className="bg-primary-50 p-4 rounded-lg border border-primary-100">
                   <div className="text-sm text-neutral-600 mb-1">Trade:</div>
-                  <div className="font-mono text-sm text-neutral-900">
-                    AAPL $175 CALL @ $3.00
-                  </div>
-                  <div className="text-xs text-primary-600 mt-1">
-                    Total Premium: $550
-                  </div>
+                  <div className="font-mono text-sm text-neutral-900">AAPL $175 CALL @ $3.00</div>
+                  <div className="text-xs text-primary-600 mt-1">Total Premium: $550</div>
                 </div>
               </div>
             </div>
@@ -307,7 +291,8 @@ export default async function Home() {
 
           <div className="text-center mt-12">
             <p className="text-lg text-neutral-600 mb-6">
-              <span className="font-semibold text-neutral-900">Then repeat.</span> That&apos;s the wheel. GreekWheel makes it easy to track every rotation.
+              <span className="font-semibold text-neutral-900">Then repeat.</span> That&apos;s the
+              wheel. GreekWheel makes it easy to track every rotation.
             </p>
             {!session && (
               <Link
@@ -331,28 +316,38 @@ export default async function Home() {
                 Every Greek Tracked. Every Premium Counted.
               </h2>
               <p className="text-lg text-neutral-600 mb-8">
-                GreekWheel goes beyond simple trade logging. We calculate the Greeks that matter—Delta, Theta, Gamma, and Vega—so you understand exactly how your positions behave.
+                GreekWheel goes beyond simple trade logging. We calculate the Greeks that
+                matter—Delta, Theta, Gamma, and Vega—so you understand exactly how your positions
+                behave.
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start">
                   <CheckCircle2 className="w-6 h-6 text-primary-500 mr-3 flex-shrink-0 mt-0.5" />
                   <div>
-                    <div className="font-semibold text-neutral-900">Real-time Greek calculations</div>
-                    <div className="text-neutral-600">See how time decay and price movement impact your positions</div>
+                    <div className="font-semibold text-neutral-900">
+                      Real-time Greek calculations
+                    </div>
+                    <div className="text-neutral-600">
+                      See how time decay and price movement impact your positions
+                    </div>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle2 className="w-6 h-6 text-primary-500 mr-3 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-semibold text-neutral-900">Premium income tracking</div>
-                    <div className="text-neutral-600">Every dollar of premium collected, automatically calculated</div>
+                    <div className="text-neutral-600">
+                      Every dollar of premium collected, automatically calculated
+                    </div>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <CheckCircle2 className="w-6 h-6 text-primary-500 mr-3 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-semibold text-neutral-900">Position-level P&L</div>
-                    <div className="text-neutral-600">Track profit and loss across the entire wheel rotation</div>
+                    <div className="text-neutral-600">
+                      Track profit and loss across the entire wheel rotation
+                    </div>
                   </div>
                 </li>
               </ul>
@@ -421,28 +416,35 @@ export default async function Home() {
                 Are You Beating Buy-and-Hold? Prove It.
               </h2>
               <p className="text-lg text-neutral-600 mb-8">
-                Compare your wheel strategy performance against market benchmarks like SPY, QQQ, and VTI. See your true alpha with honest, transparent metrics.
+                Compare your wheel strategy performance against market benchmarks like SPY, QQQ, and
+                VTI. See your true alpha with honest, transparent metrics.
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start">
                   <TrendingUp className="w-6 h-6 text-primary-500 mr-3 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-semibold text-neutral-900">Benchmark comparisons</div>
-                    <div className="text-neutral-600">Track against SPY, QQQ, VTI, or custom benchmarks</div>
+                    <div className="text-neutral-600">
+                      Track against SPY, QQQ, VTI, or custom benchmarks
+                    </div>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <Target className="w-6 h-6 text-primary-500 mr-3 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-semibold text-neutral-900">Performance analytics</div>
-                    <div className="text-neutral-600">Win rate, average return, Sharpe ratio, and more</div>
+                    <div className="text-neutral-600">
+                      Win rate, average return, Sharpe ratio, and more
+                    </div>
                   </div>
                 </li>
                 <li className="flex items-start">
                   <BarChart3 className="w-6 h-6 text-primary-500 mr-3 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-semibold text-neutral-900">Visual charts</div>
-                    <div className="text-neutral-600">See your performance over time with beautiful, clear charts</div>
+                    <div className="text-neutral-600">
+                      See your performance over time with beautiful, clear charts
+                    </div>
                   </div>
                 </li>
               </ul>
@@ -518,9 +520,7 @@ export default async function Home() {
                 <div className="text-4xl font-bold text-neutral-900">
                   $8<span className="text-lg font-normal text-neutral-500">/month</span>
                 </div>
-                <div className="text-sm text-neutral-500 mt-1">
-                  or $72/year (save 25%)
-                </div>
+                <div className="text-sm text-neutral-500 mt-1">or $72/year (save 25%)</div>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
@@ -555,11 +555,10 @@ export default async function Home() {
       <section className="py-20 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Built by Greeks, for Greeks
-            </h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Built by Greeks, for Greeks</h2>
             <p className="text-xl text-neutral-400 max-w-2xl mx-auto">
-              GreekWheel was built by options traders who live and breathe the wheel strategy. We speak your language.
+              GreekWheel was built by options traders who live and breathe the wheel strategy. We
+              speak your language.
             </p>
           </div>
 
@@ -594,11 +593,10 @@ export default async function Home() {
       {/* Final CTA */}
       <section className="py-20 bg-gradient-to-br from-primary-500 to-primary-700 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl sm:text-5xl font-bold mb-6">
-            Ready to master the wheel?
-          </h2>
+          <h2 className="text-4xl sm:text-5xl font-bold mb-6">Ready to master the wheel?</h2>
           <p className="text-xl text-primary-100 mb-10 max-w-2xl mx-auto">
-            Join traders who track every Greek, optimize every rotation, and beat buy-and-hold with systematic precision.
+            Join traders who track every Greek, optimize every rotation, and beat buy-and-hold with
+            systematic precision.
           </p>
 
           {!session ? (
@@ -646,35 +644,72 @@ export default async function Home() {
                   <span className="text-primary-500">Greek</span>Wheel
                 </span>
               </div>
-              <p className="text-sm">
-                Master the Greeks. Perfect the Wheel.
-              </p>
+              <p className="text-sm">Master the Greeks. Perfect the Wheel.</p>
             </div>
 
             <div>
               <h3 className="text-white font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/dashboard" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/dashboard" className="hover:text-white transition-colors">Demo</Link></li>
+                <li>
+                  <Link href="/dashboard" className="hover:text-white transition-colors">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing" className="hover:text-white transition-colors">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="hover:text-white transition-colors">
+                    Demo
+                  </Link>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="text-white font-semibold mb-4">Resources</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link href="/help/faq" className="hover:text-white transition-colors">FAQ</Link></li>
-                <li><Link href="/help/glossary" className="hover:text-white transition-colors">Glossary</Link></li>
+                <li>
+                  <Link href="/help" className="hover:text-white transition-colors">
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/help/faq" className="hover:text-white transition-colors">
+                    FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/help/glossary" className="hover:text-white transition-colors">
+                    Glossary
+                  </Link>
+                </li>
               </ul>
             </div>
 
             <div>
               <h3 className="text-white font-semibold mb-4">Company</h3>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="https://github.com/greekwheel" className="hover:text-white transition-colors">GitHub</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    About
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/greekwheel"
+                    className="hover:text-white transition-colors"
+                  >
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-white transition-colors">
+                    Contact
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
@@ -682,9 +717,15 @@ export default async function Home() {
           <div className="border-t border-neutral-800 pt-8 flex flex-col sm:flex-row justify-between items-center text-sm">
             <p>© 2026 GreekWheel. Built for traders who speak Greek.</p>
             <div className="flex space-x-6 mt-4 sm:mt-0">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Security</a>
+              <a href="#" className="hover:text-white transition-colors">
+                Privacy
+              </a>
+              <a href="#" className="hover:text-white transition-colors">
+                Terms
+              </a>
+              <a href="#" className="hover:text-white transition-colors">
+                Security
+              </a>
             </div>
           </div>
         </div>

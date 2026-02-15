@@ -24,10 +24,7 @@ describe('Analytics - trackEvent', () => {
     trackEvent('trade_limit_reached', { tradesUsed: 20 })
 
     expect(sendBeaconSpy).toHaveBeenCalledOnce()
-    expect(sendBeaconSpy).toHaveBeenCalledWith(
-      '/api/analytics/track',
-      expect.any(String)
-    )
+    expect(sendBeaconSpy).toHaveBeenCalledWith('/api/analytics/track', expect.any(String))
 
     const payload = JSON.parse(sendBeaconSpy.mock.calls[0][1])
     expect(payload.event).toBe('trade_limit_reached')

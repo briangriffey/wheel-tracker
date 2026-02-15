@@ -20,8 +20,7 @@ export default function AuthError({
         <ErrorMessage
           title="Authentication Error"
           message={
-            error.message ||
-            'Unable to process your authentication request. Please try again.'
+            error.message || 'Unable to process your authentication request. Please try again.'
           }
           onRetry={reset}
         />

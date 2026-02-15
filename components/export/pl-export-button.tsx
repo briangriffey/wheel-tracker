@@ -66,18 +66,13 @@ export function PLExportButton() {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">
-        Export P&L Report
-      </h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-4">Export P&L Report</h2>
 
       <div className="space-y-4">
         {/* Date Range Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label
-              htmlFor="startDate"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
               Start Date
             </label>
             <input
@@ -91,10 +86,7 @@ export function PLExportButton() {
           </div>
 
           <div>
-            <label
-              htmlFor="endDate"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
               End Date
             </label>
             <input

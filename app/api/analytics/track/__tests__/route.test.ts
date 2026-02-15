@@ -62,11 +62,9 @@ describe('POST /api/analytics/track', () => {
     expect(response.status).toBe(200)
     const body = await response.json()
     expect(body.recorded).toBe(true)
-    expect(recordAnalyticsEvent).toHaveBeenCalledWith(
-      'trade_limit_reached',
-      'user1',
-      { tradesUsed: 20 }
-    )
+    expect(recordAnalyticsEvent).toHaveBeenCalledWith('trade_limit_reached', 'user1', {
+      tradesUsed: 20,
+    })
   })
 
   it('accepts all valid event types', async () => {

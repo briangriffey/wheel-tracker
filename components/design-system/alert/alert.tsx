@@ -176,12 +176,8 @@ const AlertComponent = function Alert({
       className={`rounded-lg border p-4 ${colors.bg} ${colors.border} ${className}`}
     >
       <div className="flex">
-        <div className={`flex-shrink-0 ${colors.text}`}>
-          {getAlertIcon(variant)}
-        </div>
-        <div className="ml-3 flex-1">
-          {children}
-        </div>
+        <div className={`flex-shrink-0 ${colors.text}`}>{getAlertIcon(variant)}</div>
+        <div className="ml-3 flex-1">{children}</div>
         {dismissible && (
           <div className="ml-auto pl-3">
             <button
@@ -198,9 +194,7 @@ const AlertComponent = function Alert({
                 fill="currentColor"
                 aria-hidden="true"
               >
-                <path
-                  d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"
-                />
+                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
               </svg>
             </button>
           </div>
@@ -231,11 +225,7 @@ export const Alert = memo(AlertComponent)
  * ```
  */
 const AlertTitleComponent = function AlertTitle({ className = '', children }: AlertTitleProps) {
-  return (
-    <h3 className={`text-sm font-medium ${className}`}>
-      {children}
-    </h3>
-  )
+  return <h3 className={`text-sm font-medium ${className}`}>{children}</h3>
 }
 
 /**
@@ -260,12 +250,11 @@ export const AlertTitle = memo(AlertTitleComponent)
  * </Alert>
  * ```
  */
-const AlertDescriptionComponent = function AlertDescription({ className = '', children }: AlertDescriptionProps) {
-  return (
-    <div className={`mt-2 text-sm ${className}`}>
-      {children}
-    </div>
-  )
+const AlertDescriptionComponent = function AlertDescription({
+  className = '',
+  children,
+}: AlertDescriptionProps) {
+  return <div className={`mt-2 text-sm ${className}`}>{children}</div>
 }
 
 /**

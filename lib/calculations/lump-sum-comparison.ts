@@ -102,8 +102,7 @@ export function calculateLumpSumComparison(
 
   // Calculate difference
   const difference = dcaCurrentValue - lumpSumCurrentValue
-  const differencePct =
-    lumpSumCurrentValue !== 0 ? (difference / lumpSumCurrentValue) * 100 : 0
+  const differencePct = lumpSumCurrentValue !== 0 ? (difference / lumpSumCurrentValue) * 100 : 0
   const timingBenefit = difference
   const timingBenefitPct = differencePct
 

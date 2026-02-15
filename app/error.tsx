@@ -31,10 +31,7 @@ export default function Error({
           onRetry={reset}
         />
         <div className="mt-6 text-center">
-          <a
-            href="/dashboard"
-            className="text-sm text-blue-600 hover:text-blue-500 font-medium"
-          >
+          <a href="/dashboard" className="text-sm text-blue-600 hover:text-blue-500 font-medium">
             Return to Dashboard
           </a>
         </div>

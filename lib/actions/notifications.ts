@@ -293,9 +293,7 @@ export async function getPositionsWithoutCalls(): Promise<
     })
 
     // Filter to positions without any OPEN covered calls
-    const positionsWithoutCalls = positions.filter(
-      (position) => position.coveredCalls.length === 0
-    )
+    const positionsWithoutCalls = positions.filter((position) => position.coveredCalls.length === 0)
 
     // Transform to notifications
     const notifications: PositionWithoutCallNotification[] = positionsWithoutCalls.map(

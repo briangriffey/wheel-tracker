@@ -147,10 +147,7 @@ async function fetchFromAlphaVantage(ticker: string): Promise<StockPriceResult> 
       throw new Error(`HTTP error: ${response.status} ${response.statusText}`)
     }
 
-    const data = (await response.json()) as
-      | AlphaVantageQuote
-      | AlphaVantageError
-      | AlphaVantageNote
+    const data = (await response.json()) as AlphaVantageQuote | AlphaVantageError | AlphaVantageNote
 
     // Check for API errors
     if ('Error Message' in data) {

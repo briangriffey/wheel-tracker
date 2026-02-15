@@ -187,12 +187,7 @@ const SelectComponent = forwardRef<HTMLSelectElement, SelectProps>(
             ref={ref}
             id={id}
             disabled={disabled}
-            className={cn(
-              baseStyles,
-              stateStyles[actualState],
-              sizeStyles[size],
-              className
-            )}
+            className={cn(baseStyles, stateStyles[actualState], sizeStyles[size], className)}
             style={{
               backgroundImage: `url("${dropdownArrow}")`,
             }}

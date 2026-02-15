@@ -35,7 +35,12 @@ describe('BillingContent', () => {
   it('renders free plan for free users', () => {
     render(
       <BillingContent
-        subscription={{ tier: 'FREE', status: null, currentPeriodEnd: null, stripeCustomerId: null }}
+        subscription={{
+          tier: 'FREE',
+          status: null,
+          currentPeriodEnd: null,
+          stripeCustomerId: null,
+        }}
         usage={{ tradesUsed: 5, tradeLimit: 20, tier: 'FREE', remaining: 15, limitReached: false }}
       />
     )
@@ -47,7 +52,12 @@ describe('BillingContent', () => {
   it('shows trade usage with progress bar for free users', () => {
     render(
       <BillingContent
-        subscription={{ tier: 'FREE', status: null, currentPeriodEnd: null, stripeCustomerId: null }}
+        subscription={{
+          tier: 'FREE',
+          status: null,
+          currentPeriodEnd: null,
+          stripeCustomerId: null,
+        }}
         usage={{ tradesUsed: 12, tradeLimit: 20, tier: 'FREE', remaining: 8, limitReached: false }}
       />
     )
@@ -65,7 +75,13 @@ describe('BillingContent', () => {
           currentPeriodEnd: new Date('2026-03-14'),
           stripeCustomerId: 'cus_123',
         }}
-        usage={{ tradesUsed: 50, tradeLimit: Infinity, tier: 'PRO', remaining: Infinity, limitReached: false }}
+        usage={{
+          tradesUsed: 50,
+          tradeLimit: Infinity,
+          tier: 'PRO',
+          remaining: Infinity,
+          limitReached: false,
+        }}
       />
     )
 
@@ -87,7 +103,13 @@ describe('BillingContent', () => {
           currentPeriodEnd: new Date('2026-03-14'),
           stripeCustomerId: 'cus_123',
         }}
-        usage={{ tradesUsed: 50, tradeLimit: Infinity, tier: 'PRO', remaining: Infinity, limitReached: false }}
+        usage={{
+          tradesUsed: 50,
+          tradeLimit: Infinity,
+          tier: 'PRO',
+          remaining: Infinity,
+          limitReached: false,
+        }}
       />
     )
 
@@ -101,7 +123,12 @@ describe('BillingContent', () => {
 
     render(
       <BillingContent
-        subscription={{ tier: 'FREE', status: null, currentPeriodEnd: null, stripeCustomerId: null }}
+        subscription={{
+          tier: 'FREE',
+          status: null,
+          currentPeriodEnd: null,
+          stripeCustomerId: null,
+        }}
         usage={{ tradesUsed: 5, tradeLimit: 20, tier: 'FREE', remaining: 15, limitReached: false }}
       />
     )
@@ -124,7 +151,13 @@ describe('BillingContent', () => {
           currentPeriodEnd: new Date('2026-03-14'),
           stripeCustomerId: 'cus_123',
         }}
-        usage={{ tradesUsed: 50, tradeLimit: Infinity, tier: 'PRO', remaining: Infinity, limitReached: false }}
+        usage={{
+          tradesUsed: 50,
+          tradeLimit: Infinity,
+          tier: 'PRO',
+          remaining: Infinity,
+          limitReached: false,
+        }}
       />
     )
 
@@ -142,7 +175,13 @@ describe('BillingContent', () => {
           currentPeriodEnd: new Date('2026-04-01'),
           stripeCustomerId: 'cus_123',
         }}
-        usage={{ tradesUsed: 30, tradeLimit: Infinity, tier: 'PRO', remaining: Infinity, limitReached: false }}
+        usage={{
+          tradesUsed: 30,
+          tradeLimit: Infinity,
+          tier: 'PRO',
+          remaining: Infinity,
+          limitReached: false,
+        }}
       />
     )
 
@@ -152,7 +191,12 @@ describe('BillingContent', () => {
   it('shows limit reached message with upgrade link', () => {
     render(
       <BillingContent
-        subscription={{ tier: 'FREE', status: null, currentPeriodEnd: null, stripeCustomerId: null }}
+        subscription={{
+          tier: 'FREE',
+          status: null,
+          currentPeriodEnd: null,
+          stripeCustomerId: null,
+        }}
         usage={{ tradesUsed: 20, tradeLimit: 20, tier: 'FREE', remaining: 0, limitReached: true }}
       />
     )

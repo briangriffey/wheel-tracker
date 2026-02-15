@@ -20,7 +20,13 @@ describe('CheckoutSuccess', () => {
 
   it('renders navigation links', () => {
     render(<CheckoutSuccess />)
-    expect(screen.getByRole('link', { name: /start tracking trades/i })).toHaveAttribute('href', '/trades/new')
-    expect(screen.getByRole('link', { name: /go to dashboard/i })).toHaveAttribute('href', '/dashboard')
+    expect(screen.getByRole('link', { name: /start tracking trades/i })).toHaveAttribute(
+      'href',
+      '/trades/new'
+    )
+    expect(screen.getByRole('link', { name: /go to dashboard/i })).toHaveAttribute(
+      'href',
+      '/dashboard'
+    )
   })
 })

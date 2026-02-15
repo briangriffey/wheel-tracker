@@ -17,10 +17,32 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/lib/actions/prices', () => ({
   refreshPositionPrices: vi.fn().mockResolvedValue({ success: true }),
   getLatestPrices: vi.fn().mockResolvedValue({ success: true, data: {} }),
+  refreshSinglePositionPrice: vi.fn(),
 }))
 
 vi.mock('@/lib/actions/trades', () => ({
   createTrade: vi.fn().mockResolvedValue({ success: true, data: { id: 'new-trade-id' } }),
+}))
+
+vi.mock('@/components/trades/close-option-dialog', () => ({
+  CloseOptionDialog: () => null,
+}))
+
+vi.mock('../assign-call-dialog', () => ({
+  AssignCallDialog: () => null,
+}))
+
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn().mockResolvedValue(null),
+}))
+
+vi.mock('@/lib/actions/billing', () => ({
+  createCheckoutSession: vi.fn(),
+  createPortalSession: vi.fn(),
+}))
+
+vi.mock('@/lib/actions/subscription', () => ({
+  getTradeUsage: vi.fn().mockResolvedValue({ used: 0, limit: 20, isAtLimit: false }),
 }))
 
 vi.mock('react-hot-toast', () => ({
@@ -102,10 +124,13 @@ describe('PositionsList Trade Entry Feature', () => {
     })
 
     // Check if form is present - look for the form element itself
-    await waitFor(() => {
-      const form = screen.getByRole('form', { name: /trade entry form/i })
-      expect(form).toBeDefined()
-    }, { timeout: 2000 })
+    await waitFor(
+      () => {
+        const form = screen.getByRole('form', { name: /trade entry form/i })
+        expect(form).toBeDefined()
+      },
+      { timeout: 2000 }
+    )
   })
 
   it('should close the modal when close button is clicked', async () => {

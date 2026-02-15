@@ -65,7 +65,7 @@ describe('Price Actions', () => {
       const mockPrice: StockPrice = {
         id: 'price1',
         ticker: 'AAPL',
-        price: new Prisma.Decimal(155.50),
+        price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
@@ -78,7 +78,7 @@ describe('Price Actions', () => {
       expect(result.success).toBe(true)
       if (result.success) {
         expect(result.data.ticker).toBe('AAPL')
-        expect(result.data.price).toBe(155.50)
+        expect(result.data.price).toBe(155.5)
         expect(result.data.source).toBe('alpha_vantage')
       }
 
@@ -91,7 +91,7 @@ describe('Price Actions', () => {
       const mockPrice: StockPrice = {
         id: 'price1',
         ticker: 'AAPL',
-        price: new Prisma.Decimal(155.50),
+        price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
@@ -113,7 +113,7 @@ describe('Price Actions', () => {
       const mockPrice: StockPrice = {
         id: 'price1',
         ticker: 'AAPL',
-        price: new Prisma.Decimal(155.50),
+        price: new Prisma.Decimal(155.5),
         updatedAt: twoHoursAgo,
         source: 'alpha_vantage',
         createdAt: new Date(),
@@ -137,7 +137,7 @@ describe('Price Actions', () => {
       const mockPrice: StockPrice = {
         id: 'price1',
         ticker: 'AAPL',
-        price: new Prisma.Decimal(155.50),
+        price: new Prisma.Decimal(155.5),
         updatedAt: thirtyMinutesAgo,
         source: 'alpha_vantage',
         createdAt: new Date(),
@@ -184,7 +184,7 @@ describe('Price Actions', () => {
       const mockPriceAAPL = {
         id: 'price1',
         ticker: 'AAPL',
-        price: new Prisma.Decimal(155.50),
+        price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
@@ -208,7 +208,7 @@ describe('Price Actions', () => {
       expect(result.success).toBe(true)
       if (result.success) {
         expect(Object.keys(result.data)).toHaveLength(2)
-        expect(result.data['AAPL'].price).toBe(155.50)
+        expect(result.data['AAPL'].price).toBe(155.5)
         expect(result.data['TSLA'].price).toBe(210.75)
       }
     })
@@ -217,7 +217,7 @@ describe('Price Actions', () => {
       const mockPriceAAPL = {
         id: 'price1',
         ticker: 'AAPL',
-        price: new Prisma.Decimal(155.50),
+        price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
@@ -232,7 +232,7 @@ describe('Price Actions', () => {
       expect(result.success).toBe(true)
       if (result.success) {
         expect(Object.keys(result.data)).toHaveLength(1)
-        expect(result.data['AAPL'].price).toBe(155.50)
+        expect(result.data['AAPL'].price).toBe(155.5)
       }
     })
 
@@ -266,7 +266,7 @@ describe('Price Actions', () => {
       const mockPriceAAPL = {
         id: 'price1',
         ticker: 'AAPL',
-        price: new Prisma.Decimal(155.50),
+        price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
@@ -319,7 +319,7 @@ describe('Price Actions', () => {
       const mockPriceAAPL = {
         id: 'price1',
         ticker: 'AAPL',
-        price: new Prisma.Decimal(155.50),
+        price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),
@@ -369,7 +369,7 @@ describe('Price Actions', () => {
       const mockPrice = {
         id: 'price1',
         ticker: 'AAPL',
-        price: new Prisma.Decimal(155.50),
+        price: new Prisma.Decimal(155.5),
         updatedAt: new Date('2026-02-07T14:00:00Z'),
         source: 'alpha_vantage',
         createdAt: new Date(),

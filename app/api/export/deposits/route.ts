@@ -49,14 +49,7 @@ export async function GET() {
     const csvRows: (string | number)[][] = []
 
     // Add header row
-    csvRows.push([
-      'Date',
-      'Type',
-      'Amount',
-      'SPY Price',
-      'SPY Shares',
-      'Notes',
-    ])
+    csvRows.push(['Date', 'Type', 'Amount', 'SPY Price', 'SPY Shares', 'Notes'])
 
     // Add data rows
     let totalDeposits = 0

@@ -132,8 +132,8 @@ export function LumpSumComparisonCard({ comparison }: LumpSumComparisonCardProps
             <p className="text-sm text-gray-700">
               {comparison.timingBenefit > 0 ? (
                 <>
-                  DCA helped you <span className="font-semibold">gain</span> by spreading
-                  purchases over time
+                  DCA helped you <span className="font-semibold">gain</span> by spreading purchases
+                  over time
                 </>
               ) : (
                 <>

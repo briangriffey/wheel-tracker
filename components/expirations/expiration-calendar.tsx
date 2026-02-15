@@ -19,8 +19,9 @@ export function ExpirationCalendar({ groupedTrades, prices }: ExpirationCalendar
 
   // Convert Map to sorted array for rendering
   const sortedGroups = useMemo(() => {
-    return Array.from(groupedTrades.entries())
-      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
+    return Array.from(groupedTrades.entries()).sort(([dateA], [dateB]) =>
+      dateA.localeCompare(dateB)
+    )
   }, [groupedTrades])
 
   // Helper to safely convert Prisma Decimal to number
@@ -194,12 +195,10 @@ export function ExpirationCalendar({ groupedTrades, prices }: ExpirationCalendar
       return { status: 'OTM' as const, message: 'No price data' }
     }
 
-    const strikePrice = toDecimalNumber(trade.strikePrice as unknown as Prisma.Decimal | string | number)
-    const result = calculateOptionMoneyness(
-      priceData.price,
-      strikePrice,
-      trade.type
+    const strikePrice = toDecimalNumber(
+      trade.strikePrice as unknown as Prisma.Decimal | string | number
     )
+    const result = calculateOptionMoneyness(priceData.price, strikePrice, trade.type)
 
     return {
       status: result.status,
@@ -307,7 +306,8 @@ export function ExpirationCalendar({ groupedTrades, prices }: ExpirationCalendar
                       {daysUntil === 0 && 'Expires today'}
                       {daysUntil === 1 && 'Expires tomorrow'}
                       {daysUntil > 1 && `Expires in ${daysUntil} days`}
-                      {daysUntil < 0 && `Expired ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} ago`}
+                      {daysUntil < 0 &&
+                        `Expired ${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? '' : 's'} ago`}
                     </p>
                   </div>
                 </div>
@@ -356,7 +356,10 @@ export function ExpirationCalendar({ groupedTrades, prices }: ExpirationCalendar
                         className={`hover:bg-gray-50 cursor-pointer ${selectedTrades.has(trade.id) ? 'bg-blue-50' : ''}`}
                         onClick={() => toggleTrade(trade.id)}
                       >
-                        <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                        <td
+                          className="px-6 py-4 whitespace-nowrap"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <input
                             type="checkbox"
                             checked={selectedTrades.has(trade.id)}
@@ -369,21 +372,31 @@ export function ExpirationCalendar({ groupedTrades, prices }: ExpirationCalendar
                           {trade.ticker}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}
+                          >
                             {trade.type}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
+                          {formatCurrency(
+                            trade.strikePrice as unknown as Prisma.Decimal | string | number
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
+                          {formatCurrency(
+                            trade.premium as unknown as Prisma.Decimal | string | number
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {prices[trade.ticker] ? `$${prices[trade.ticker].price.toFixed(2)}` : 'N/A'}
+                          {prices[trade.ticker]
+                            ? `$${prices[trade.ticker].price.toFixed(2)}`
+                            : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${moneynessColors.bg} ${moneynessColors.text}`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${moneynessColors.bg} ${moneynessColors.text}`}
+                          >
                             {moneyness.status}
                           </span>
                         </td>
@@ -417,12 +430,18 @@ export function ExpirationCalendar({ groupedTrades, prices }: ExpirationCalendar
                         {/* Header */}
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h4 className="text-base font-semibold text-gray-900">{trade.ticker}</h4>
+                            <h4 className="text-base font-semibold text-gray-900">
+                              {trade.ticker}
+                            </h4>
                             <div className="flex gap-2 mt-1">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
+                              <span
+                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}
+                              >
                                 {trade.type}
                               </span>
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${moneynessColors.bg} ${moneynessColors.text}`}>
+                              <span
+                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${moneynessColors.bg} ${moneynessColors.text}`}
+                              >
                                 {moneyness.status}
                               </span>
                             </div>
@@ -434,19 +453,25 @@ export function ExpirationCalendar({ groupedTrades, prices }: ExpirationCalendar
                           <div className="flex justify-between">
                             <span className="text-gray-500">Strike:</span>
                             <span className="font-medium text-gray-900">
-                              {formatCurrency(trade.strikePrice as unknown as Prisma.Decimal | string | number)}
+                              {formatCurrency(
+                                trade.strikePrice as unknown as Prisma.Decimal | string | number
+                              )}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-500">Premium:</span>
                             <span className="font-medium text-gray-900">
-                              {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
+                              {formatCurrency(
+                                trade.premium as unknown as Prisma.Decimal | string | number
+                              )}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-500">Current Price:</span>
                             <span className="font-medium text-gray-900">
-                              {prices[trade.ticker] ? `$${prices[trade.ticker].price.toFixed(2)}` : 'N/A'}
+                              {prices[trade.ticker]
+                                ? `$${prices[trade.ticker].price.toFixed(2)}`
+                                : 'N/A'}
                             </span>
                           </div>
                           <div className="flex justify-between">

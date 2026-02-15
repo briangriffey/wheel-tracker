@@ -19,8 +19,7 @@ export default function TradesError({
       <ErrorMessage
         title="Trades Error"
         message={
-          error.message ||
-          'Unable to load your trades. Please try again or check your connection.'
+          error.message || 'Unable to load your trades. Please try again or check your connection.'
         }
         onRetry={reset}
       />

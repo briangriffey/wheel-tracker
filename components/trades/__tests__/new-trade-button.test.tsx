@@ -14,13 +14,7 @@ vi.mock('next/navigation', () => ({
 
 // Mock the TradeEntryForm component
 vi.mock('@/components/forms/trade-entry-form', () => ({
-  TradeEntryForm: ({
-    onSuccess,
-    onCancel,
-  }: {
-    onSuccess?: () => void
-    onCancel?: () => void
-  }) => (
+  TradeEntryForm: ({ onSuccess, onCancel }: { onSuccess?: () => void; onCancel?: () => void }) => (
     <div data-testid="trade-entry-form">
       <button onClick={onSuccess} data-testid="form-submit">
         Submit

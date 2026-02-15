@@ -46,8 +46,6 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-
-
         {/* Alerts Widget */}
         <div className="mb-6">
           <AlertsWidget

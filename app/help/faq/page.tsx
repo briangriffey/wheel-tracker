@@ -17,9 +17,7 @@ function FAQItem({ question, answer }: FAQItemProps) {
     <details className="group border-b border-gray-200 pb-4 mb-4">
       <summary className="font-semibold text-gray-900 cursor-pointer list-none flex items-center justify-between py-2 hover:text-blue-600 transition-colors">
         {question}
-        <span className="ml-2 text-gray-500 group-open:rotate-180 transition-transform">
-          ▼
-        </span>
+        <span className="ml-2 text-gray-500 group-open:rotate-180 transition-transform">▼</span>
       </summary>
       <div className="mt-3 text-gray-700 leading-relaxed pl-4">{answer}</div>
     </details>
@@ -38,12 +36,9 @@ export default function FAQPage() {
           >
             ← Back to Dashboard
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Frequently Asked Questions
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Frequently Asked Questions</h1>
           <p className="text-gray-600">
-            Find answers to common questions about Wheel Tracker and the wheel
-            strategy.
+            Find answers to common questions about Wheel Tracker and the wheel strategy.
           </p>
         </div>
 
@@ -86,16 +81,14 @@ export default function FAQPage() {
 
         {/* Getting Started */}
         <section id="getting-started" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Getting Started
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Getting Started</h2>
 
           <FAQItem
             question="What is the wheel strategy?"
             answer={
               <>
-                The wheel strategy is a conservative options trading strategy
-                that involves three steps:
+                The wheel strategy is a conservative options trading strategy that involves three
+                steps:
                 <ol className="list-decimal list-inside mt-2 space-y-1">
                   <li>Sell cash-secured PUTs to collect premium</li>
                   <li>If assigned, own the stock at a reduced cost basis</li>
@@ -175,15 +168,14 @@ export default function FAQPage() {
                 You have several options:
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>
-                    <strong>Roll the option:</strong> Close the current position and
-                    open a new one at a different strike or expiration
+                    <strong>Roll the option:</strong> Close the current position and open a new one
+                    at a different strike or expiration
                   </li>
                   <li>
                     <strong>Buy it back:</strong> Close the option before expiration
                   </li>
                   <li>
-                    <strong>Choose safer strikes:</strong> Sell PUTs farther
-                    out-of-the-money
+                    <strong>Choose safer strikes:</strong> Sell PUTs farther out-of-the-money
                   </li>
                 </ul>
               </>
@@ -193,9 +185,7 @@ export default function FAQPage() {
 
         {/* Strategy Questions */}
         <section id="strategy" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Strategy & Best Practices
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Strategy & Best Practices</h2>
 
           <FAQItem
             question="Which stocks should I use for wheel strategy?"
@@ -204,25 +194,19 @@ export default function FAQPage() {
                 Choose stocks that meet these criteria:
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>
-                    <strong>Quality companies:</strong> Stocks you&apos;d actually want to
-                    own
+                    <strong>Quality companies:</strong> Stocks you&apos;d actually want to own
                   </li>
                   <li>
-                    <strong>Stable blue chips:</strong> Lower volatility = more
-                    predictable
+                    <strong>Stable blue chips:</strong> Lower volatility = more predictable
                   </li>
                   <li>
-                    <strong>Dividend payers:</strong> Extra income while holding
-                    shares
+                    <strong>Dividend payers:</strong> Extra income while holding shares
                   </li>
                   <li>
-                    <strong>Good liquidity:</strong> Adequate options volume for fair
-                    pricing
+                    <strong>Good liquidity:</strong> Adequate options volume for fair pricing
                   </li>
                 </ul>
-                <p className="mt-2">
-                  Popular choices: AAPL, MSFT, SPY, QQQ, INTC, F, AMD, NVDA
-                </p>
+                <p className="mt-2">Popular choices: AAPL, MSFT, SPY, QQQ, INTC, F, AMD, NVDA</p>
               </>
             }
           />
@@ -238,13 +222,13 @@ export default function FAQPage() {
               <>
                 <p>
                   <strong>For PUTs:</strong> Choose strikes below the current price
-                  (out-of-the-money) at a price where you&apos;d be happy owning the
-                  stock. Consider using technical support levels.
+                  (out-of-the-money) at a price where you&apos;d be happy owning the stock. Consider
+                  using technical support levels.
                 </p>
                 <p className="mt-2">
-                  <strong>For CALLs:</strong> Choose strikes above your cost basis
-                  to ensure profitability if assigned. Many traders aim for 2-5%
-                  above current price for weekly options.
+                  <strong>For CALLs:</strong> Choose strikes above your cost basis to ensure
+                  profitability if assigned. Many traders aim for 2-5% above current price for
+                  weekly options.
                 </p>
               </>
             }
@@ -268,29 +252,29 @@ export default function FAQPage() {
 
         {/* Technical Questions */}
         <section id="technical" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Technical Questions
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Technical Questions</h2>
 
           <FAQItem
             question="How is my profit & loss calculated?"
             answer={
               <>
                 <p>
-                  <strong>For trades:</strong> P&L = Premium Collected - Closing
-                  Cost (if any)
+                  <strong>For trades:</strong> P&L = Premium Collected - Closing Cost (if any)
                 </p>
                 <p className="mt-2">
-                  <strong>For positions:</strong> P&L = (Sale Price - Cost Basis) ×
-                  Shares + All Associated CALL Premiums
+                  <strong>For positions:</strong> P&L = (Sale Price - Cost Basis) × Shares + All
+                  Associated CALL Premiums
                 </p>
                 <p className="mt-2">
-                  <strong>Total portfolio:</strong> Sum of all trade premiums + all
-                  position gains/losses (both realized and unrealized)
+                  <strong>Total portfolio:</strong> Sum of all trade premiums + all position
+                  gains/losses (both realized and unrealized)
                 </p>
                 <p className="mt-2">
                   See the{' '}
-                  <Link href="/help/user-guide#profit--loss-calculations" className="text-blue-600 hover:underline">
+                  <Link
+                    href="/help/user-guide#profit--loss-calculations"
+                    className="text-blue-600 hover:underline"
+                  >
                     User Guide
                   </Link>{' '}
                   for detailed calculations.
@@ -314,19 +298,14 @@ export default function FAQPage() {
             answer={
               <>
                 <p>
-                  Benchmarks help you compare your wheel strategy performance
-                  against market indices like SPY or QQQ. To set up:
+                  Benchmarks help you compare your wheel strategy performance against market indices
+                  like SPY or QQQ. To set up:
                 </p>
                 <ol className="list-decimal list-inside mt-2 space-y-1">
                   <li>Go to Dashboard</li>
                   <li>Click &quot;Add Market Benchmark&quot;</li>
-                  <li>
-                    Enter a ticker (SPY, QQQ, VTI), initial capital, and start
-                    date
-                  </li>
-                  <li>
-                    View comparison charts to see if your strategy outperforms
-                  </li>
+                  <li>Enter a ticker (SPY, QQQ, VTI), initial capital, and start date</li>
+                  <li>View comparison charts to see if your strategy outperforms</li>
                 </ol>
               </>
             }
@@ -340,9 +319,7 @@ export default function FAQPage() {
 
         {/* Account Questions */}
         <section id="account" className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Account & Security
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Account & Security</h2>
 
           <FAQItem
             question="Is my data secure?"
@@ -367,12 +344,8 @@ export default function FAQPage() {
 
         {/* Still Need Help */}
         <div className="bg-blue-50 rounded-lg p-6 mt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-3">
-            Still need help?
-          </h2>
-          <p className="text-gray-700 mb-4">
-            Check out these additional resources:
-          </p>
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Still need help?</h2>
+          <p className="text-gray-700 mb-4">Check out these additional resources:</p>
           <div className="space-y-2">
             <Link
               href="/help/user-guide"

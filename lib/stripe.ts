@@ -18,7 +18,12 @@ function getStripe() {
 
 export const stripe = new Proxy({} as Stripe, {
   get(target, prop: string | symbol) {
-    if (prop === '$$typeof' || prop === 'constructor' || prop === 'then' || typeof prop === 'symbol') {
+    if (
+      prop === '$$typeof' ||
+      prop === 'constructor' ||
+      prop === 'then' ||
+      typeof prop === 'symbol'
+    ) {
       return Reflect.get(target, prop)
     }
 

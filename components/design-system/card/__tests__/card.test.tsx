@@ -2,14 +2,7 @@ import React, { createRef } from 'react'
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { axe, toHaveNoViolations } from 'jest-axe'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from '../card'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../card'
 
 // Extend expect with axe matchers
 expect.extend(toHaveNoViolations)
@@ -32,7 +25,11 @@ describe('Card', () => {
     })
 
     it('applies custom className', () => {
-      render(<Card className="custom-class" data-testid="card">Content</Card>)
+      render(
+        <Card className="custom-class" data-testid="card">
+          Content
+        </Card>
+      )
       const card = screen.getByTestId('card')
       expect(card.className).toContain('custom-class')
     })
@@ -222,7 +219,11 @@ describe('Card', () => {
 
     it('allows calling focus on ref', () => {
       const ref = createRef<HTMLDivElement>()
-      render(<Card ref={ref} onClick={() => {}}>Content</Card>)
+      render(
+        <Card ref={ref} onClick={() => {}}>
+          Content
+        </Card>
+      )
       ref.current?.focus()
       expect(ref.current).toHaveFocus()
     })
@@ -302,11 +303,7 @@ describe('CardDescription', () => {
     })
 
     it('renders as a p element', () => {
-      render(
-        <CardDescription data-testid="description">
-          Description
-        </CardDescription>
-      )
+      render(<CardDescription data-testid="description">Description</CardDescription>)
       const description = screen.getByTestId('description')
       expect(description.tagName).toBe('P')
     })

@@ -73,7 +73,8 @@ export function AssignPutDialog({
   // Calculate unrealized P&L if we have current price
   const currentValue = currentPrice ? currentPrice * trade.shares : null
   const unrealizedPL = currentValue ? currentValue - effectiveTotalCost : null
-  const unrealizedPLPercent = unrealizedPL && effectiveTotalCost ? (unrealizedPL / effectiveTotalCost) * 100 : null
+  const unrealizedPLPercent =
+    unrealizedPL && effectiveTotalCost ? (unrealizedPL / effectiveTotalCost) * 100 : null
 
   // Check if there's a significant unrealized loss (>10%)
   const hasSignificantLoss = unrealizedPLPercent !== null && unrealizedPLPercent < -10
@@ -152,8 +153,8 @@ export function AssignPutDialog({
               </p>
               <div className="rounded-md bg-blue-50 p-3 border border-blue-200">
                 <p className="text-sm text-blue-800">
-                  <strong>Tip:</strong> Selling a covered call is the next step in the wheel strategy.
-                  You collect premium while setting a target price for your shares.
+                  <strong>Tip:</strong> Selling a covered call is the next step in the wheel
+                  strategy. You collect premium while setting a target price for your shares.
                 </p>
               </div>
             </div>
@@ -248,8 +249,8 @@ export function AssignPutDialog({
                 <div className="ml-3">
                   <p className="text-sm text-yellow-800">
                     You are about to purchase {trade.shares} shares of {trade.ticker} at{' '}
-                    {formatCurrency(trade.strikePrice)} per share. This action creates a new position
-                    and cannot be undone.
+                    {formatCurrency(trade.strikePrice)} per share. This action creates a new
+                    position and cannot be undone.
                   </p>
                 </div>
               </div>
@@ -328,12 +329,8 @@ export function AssignPutDialog({
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">
-                      Strike Price × Shares ({trade.shares}):
-                    </span>
-                    <span className="font-medium text-gray-900">
-                      {formatCurrency(totalCost)}
-                    </span>
+                    <span className="text-gray-600">Strike Price × Shares ({trade.shares}):</span>
+                    <span className="font-medium text-gray-900">{formatCurrency(totalCost)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Premium Credit:</span>

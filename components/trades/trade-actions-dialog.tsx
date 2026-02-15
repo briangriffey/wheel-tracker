@@ -17,7 +17,12 @@ interface TradeActionsDialogProps {
   currentPrice?: StockPriceResult
 }
 
-export function TradeActionsDialog({ trade, isOpen, onClose, currentPrice }: TradeActionsDialogProps) {
+export function TradeActionsDialog({
+  trade,
+  isOpen,
+  onClose,
+  currentPrice,
+}: TradeActionsDialogProps) {
   const router = useRouter()
   const [loading, setLoading] = React.useState(false)
 
@@ -126,10 +131,14 @@ export function TradeActionsDialog({ trade, isOpen, onClose, currentPrice }: Tra
                   {trade.ticker}
                 </h2>
                 <div className="flex gap-2 mt-2">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}>
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}
+                  >
                     {trade.type}
                   </span>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}>
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trade.status).bg} ${getStatusColor(trade.status).text}`}
+                  >
                     {trade.status}
                   </span>
                 </div>
@@ -140,7 +149,12 @@ export function TradeActionsDialog({ trade, isOpen, onClose, currentPrice }: Tra
                 aria-label="Close dialog"
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>

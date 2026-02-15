@@ -46,9 +46,7 @@ describe('PLExportButton', () => {
 
     it('renders help text', () => {
       render(<PLExportButton />)
-      expect(
-        screen.getByText(/export includes all trades with premium/i)
-      ).toBeInTheDocument()
+      expect(screen.getByText(/export includes all trades with premium/i)).toBeInTheDocument()
     })
   })
 
@@ -361,10 +359,7 @@ describe('PLExportButton', () => {
       fireEvent.click(button)
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Error exporting CSV:',
-          expect.any(Error)
-        )
+        expect(consoleSpy).toHaveBeenCalledWith('Error exporting CSV:', expect.any(Error))
       })
 
       consoleSpy.mockRestore()

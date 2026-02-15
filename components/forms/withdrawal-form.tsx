@@ -111,7 +111,10 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
         {/* Amount */}
         <div>
           <label htmlFor="amount" className="block text-sm font-medium text-neutral-700">
-            Withdrawal Amount <span className="text-error" aria-hidden="true">*</span>
+            Withdrawal Amount{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
             <InfoTooltip
               content="The amount of cash you're withdrawing from your trading account. This will reduce your benchmark SPY shares accordingly."
               position="top"
@@ -135,7 +138,10 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
         {/* Withdrawal Date */}
         <div>
           <label htmlFor="depositDate" className="block text-sm font-medium text-neutral-700">
-            Withdrawal Date <span className="text-error" aria-hidden="true">*</span>
+            Withdrawal Date{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
             <InfoTooltip
               content="The date when the withdrawal was made. Used to fetch the SPY price for accurate benchmark tracking."
               position="top"
@@ -198,8 +204,9 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
                 </div>
                 <div className="mt-3 pt-3 border-t border-neutral-200">
                   <p className="text-xs text-neutral-500">
-                    Your ${amount} withdrawal will remove {Math.abs(preview.spyShares).toFixed(4)} SPY shares
-                    at ${preview.spyPrice.toFixed(2)} per share from your benchmark tracking.
+                    Your ${amount} withdrawal will remove {Math.abs(preview.spyShares).toFixed(4)}{' '}
+                    SPY shares at ${preview.spyPrice.toFixed(2)} per share from your benchmark
+                    tracking.
                   </p>
                 </div>
               </div>

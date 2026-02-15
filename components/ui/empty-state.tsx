@@ -8,13 +8,7 @@ interface EmptyStateProps {
   icon?: React.ReactNode
 }
 
-export function EmptyState({
-  title,
-  description,
-  actionLabel,
-  actionHref,
-  icon,
-}: EmptyStateProps) {
+export function EmptyState({ title, description, actionLabel, actionHref, icon }: EmptyStateProps) {
   return (
     <div className="text-center py-12 px-4">
       {icon && <div className="flex justify-center mb-4">{icon}</div>}

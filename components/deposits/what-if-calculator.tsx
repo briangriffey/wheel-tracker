@@ -75,10 +75,7 @@ export function WhatIfCalculator() {
           </div>
 
           <div>
-            <label
-              htmlFor="what-if-price"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="what-if-price" className="block text-sm font-medium text-gray-700 mb-1">
               SPY Price on That Date
             </label>
             <input

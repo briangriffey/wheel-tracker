@@ -42,9 +42,7 @@ describe('BenchmarkSelector', () => {
 
   it('reflects the selected benchmark', () => {
     const mockOnChange = vi.fn()
-    const { rerender } = render(
-      <BenchmarkSelector selected="SPY" onChange={mockOnChange} />
-    )
+    const { rerender } = render(<BenchmarkSelector selected="SPY" onChange={mockOnChange} />)
 
     expect(screen.getByLabelText('Select benchmark to compare against')).toHaveValue('SPY')
 

@@ -324,7 +324,9 @@ describe('DepositForm', () => {
 
     render(<DepositForm />)
 
-    const amountInput = screen.getByRole('spinbutton', { name: /deposit amount/i }) as HTMLInputElement
+    const amountInput = screen.getByRole('spinbutton', {
+      name: /deposit amount/i,
+    }) as HTMLInputElement
 
     await user.clear(amountInput)
     await user.type(amountInput, '1000')

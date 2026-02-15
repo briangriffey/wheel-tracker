@@ -69,7 +69,9 @@ async function getCurrentUserId(): Promise<string> {
  * Fetch SPY price for a given date
  * Uses cached price if available, otherwise fetches fresh
  */
-async function getSPYPriceForDate(date: Date): Promise<{ price: number; success: boolean; error?: string }> {
+async function getSPYPriceForDate(
+  date: Date
+): Promise<{ price: number; success: boolean; error?: string }> {
   try {
     // First check if we have a cached price for this date
     const cachedPrice = await getLatestPrice('SPY')
@@ -460,7 +462,10 @@ export async function getDepositSummary(): Promise<ActionResult<DepositSummary>>
     const withdrawalRecords = deposits.filter((d) => d.type === 'WITHDRAWAL')
 
     const totalDeposits = depositRecords.reduce((sum, d) => sum + d.amount.toNumber(), 0)
-    const totalWithdrawals = withdrawalRecords.reduce((sum, d) => sum + Math.abs(d.amount.toNumber()), 0)
+    const totalWithdrawals = withdrawalRecords.reduce(
+      (sum, d) => sum + Math.abs(d.amount.toNumber()),
+      0
+    )
     const netInvested = deposits.reduce((sum, d) => sum + d.amount.toNumber(), 0)
     const totalSpyShares = deposits.reduce((sum, d) => sum + d.spyShares.toNumber(), 0)
     const avgCostBasis = totalSpyShares !== 0 ? netInvested / totalSpyShares : 0
@@ -494,9 +499,7 @@ export async function getDepositSummary(): Promise<ActionResult<DepositSummary>>
  * Delete a cash deposit
  * WARNING: This will recalculate the benchmark
  */
-export async function deleteCashDeposit(
-  input: DeleteDepositInput
-): Promise<ActionResult<void>> {
+export async function deleteCashDeposit(input: DeleteDepositInput): Promise<ActionResult<void>> {
   try {
     const validated = DeleteDepositSchema.parse(input)
     const { id } = validated
@@ -548,9 +551,7 @@ export async function getLumpSumComparison(
   lumpSumDate?: Date
 ): Promise<ActionResult<import('@/lib/calculations/lump-sum-comparison').LumpSumComparison>> {
   try {
-    const { calculateLumpSumComparison } = await import(
-      '@/lib/calculations/lump-sum-comparison'
-    )
+    const { calculateLumpSumComparison } = await import('@/lib/calculations/lump-sum-comparison')
 
     const userId = await getCurrentUserId()
 
@@ -627,9 +628,7 @@ export async function getWhatIfComparison(
   whatIfPrice: number
 ): Promise<ActionResult<import('@/lib/calculations/lump-sum-comparison').LumpSumComparison>> {
   try {
-    const { calculateWhatIfScenario } = await import(
-      '@/lib/calculations/lump-sum-comparison'
-    )
+    const { calculateWhatIfScenario } = await import('@/lib/calculations/lump-sum-comparison')
 
     const userId = await getCurrentUserId()
 
@@ -672,12 +671,7 @@ export async function getWhatIfComparison(
     const currentPrice = currentPriceResult.price
 
     // Calculate what-if scenario
-    const comparison = calculateWhatIfScenario(
-      depositData,
-      whatIfDate,
-      whatIfPrice,
-      currentPrice
-    )
+    const comparison = calculateWhatIfScenario(depositData, whatIfDate, whatIfPrice, currentPrice)
 
     return {
       success: true,

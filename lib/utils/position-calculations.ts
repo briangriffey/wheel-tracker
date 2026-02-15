@@ -22,14 +22,11 @@
  * const result = calculateUnrealizedPnL(position, currentPrice)
  * // Returns: { unrealizedPnL, unrealizedPnLPercent, currentValue }
  */
-export function calculateUnrealizedPnL(
-  currentValue: number,
-  totalCost: number
-): number {
+export function calculateUnrealizedPnL(currentValue: number, totalCost: number): number {
   if (process.env.NODE_ENV === 'development') {
     console.warn(
       'calculateUnrealizedPnL from @/lib/utils/position-calculations is deprecated. ' +
-      'Use calculateUnrealizedPnL from @/lib/calculations/position instead.'
+        'Use calculateUnrealizedPnL from @/lib/calculations/position instead.'
     )
   }
   return currentValue - totalCost
@@ -52,14 +49,11 @@ export function calculateUnrealizedPnL(
  * const result = calculateUnrealizedPnL(position, currentPrice)
  * const percent = result.unrealizedPnLPercent
  */
-export function calculateUnrealizedPnLPercentage(
-  currentValue: number,
-  totalCost: number
-): number {
+export function calculateUnrealizedPnLPercentage(currentValue: number, totalCost: number): number {
   if (process.env.NODE_ENV === 'development') {
     console.warn(
       'calculateUnrealizedPnLPercentage from @/lib/utils/position-calculations is deprecated. ' +
-      'Use calculateUnrealizedPnL from @/lib/calculations/position instead (returns both amount and percent).'
+        'Use calculateUnrealizedPnL from @/lib/calculations/position instead (returns both amount and percent).'
     )
   }
   if (totalCost === 0) return 0
@@ -81,14 +75,11 @@ export function calculateUnrealizedPnLPercentage(
  * // New (recommended):
  * const price = shares > 0 ? currentValue / shares : 0
  */
-export function calculateCurrentPrice(
-  currentValue: number,
-  shares: number
-): number {
+export function calculateCurrentPrice(currentValue: number, shares: number): number {
   if (process.env.NODE_ENV === 'development') {
     console.warn(
       'calculateCurrentPrice from @/lib/utils/position-calculations is deprecated. ' +
-      'Calculate inline: currentValue / shares'
+        'Calculate inline: currentValue / shares'
     )
   }
   if (shares === 0) return 0
@@ -111,14 +102,11 @@ export function calculateCurrentPrice(
  * const endDate = closedDate ?? new Date()
  * const days = Math.ceil(Math.abs(endDate.getTime() - acquiredDate.getTime()) / (1000 * 60 * 60 * 24))
  */
-export function calculateDaysHeld(
-  acquiredDate: Date,
-  closedDate?: Date | null
-): number {
+export function calculateDaysHeld(acquiredDate: Date, closedDate?: Date | null): number {
   if (process.env.NODE_ENV === 'development') {
     console.warn(
       'calculateDaysHeld from @/lib/utils/position-calculations is deprecated. ' +
-      'Consider using a shared date utilities module or calculating inline.'
+        'Consider using a shared date utilities module or calculating inline.'
     )
   }
   const endDate = closedDate ?? new Date()
@@ -140,13 +128,11 @@ export function calculateDaysHeld(
  * // New (recommended - calculate inline):
  * const total = coveredCalls.reduce((sum, call) => sum + call.premium, 0)
  */
-export function calculateTotalCoveredCallPremium(
-  coveredCalls: Array<{ premium: number }>
-): number {
+export function calculateTotalCoveredCallPremium(coveredCalls: Array<{ premium: number }>): number {
   if (process.env.NODE_ENV === 'development') {
     console.warn(
       'calculateTotalCoveredCallPremium from @/lib/utils/position-calculations is deprecated. ' +
-      'Calculate inline with Array.reduce().'
+        'Calculate inline with Array.reduce().'
     )
   }
   return coveredCalls.reduce((sum, call) => sum + call.premium, 0)
@@ -193,7 +179,7 @@ export function formatCurrency(value: number): string {
   if (process.env.NODE_ENV === 'development') {
     console.warn(
       'formatCurrency from @/lib/utils/position-calculations is deprecated. ' +
-      'Create a dedicated formatting utilities module at @/lib/utils/format instead.'
+        'Create a dedicated formatting utilities module at @/lib/utils/format instead.'
     )
   }
   return new Intl.NumberFormat('en-US', {
@@ -226,7 +212,7 @@ export function formatPercentage(value: number): string {
   if (process.env.NODE_ENV === 'development') {
     console.warn(
       'formatPercentage from @/lib/utils/position-calculations is deprecated. ' +
-      'Create a dedicated formatting utilities module at @/lib/utils/format instead.'
+        'Create a dedicated formatting utilities module at @/lib/utils/format instead.'
     )
   }
   const sign = value >= 0 ? '+' : ''

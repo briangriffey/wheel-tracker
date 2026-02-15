@@ -159,7 +159,8 @@ export function WheelOverview({ wheel }: WheelOverviewProps) {
         <div>
           <dt className="text-sm font-medium text-gray-500">Total Premiums Collected</dt>
           <dd className="mt-1 text-2xl font-semibold text-gray-900">
-            ${wheel.totalPremiums.toLocaleString(undefined, {
+            $
+            {wheel.totalPremiums.toLocaleString(undefined, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}

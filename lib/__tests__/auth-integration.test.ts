@@ -14,6 +14,8 @@ const mockPrismaTradeUpdateStatus = vi.fn()
 const mockPrismaTradeFind = vi.fn()
 const mockPrismaTradeCount = vi.fn()
 
+const mockPrismaUserFindUnique = vi.fn().mockResolvedValue(null)
+
 vi.mock('@/lib/db', () => ({
   prisma: {
     trade: {
@@ -26,11 +28,20 @@ vi.mock('@/lib/db', () => ({
       count: (...args: unknown[]) => mockPrismaTradeCount(...args),
       aggregate: vi.fn().mockResolvedValue({ _sum: { premium: null } }),
     },
-    $transaction: vi.fn((callback) => callback({
-      trade: { update: mockPrismaTradeUpdateStatus },
-      position: { update: vi.fn() },
-      wheel: { update: vi.fn() },
-    })),
+    user: {
+      findUnique: (...args: unknown[]) => mockPrismaUserFindUnique(...args),
+    },
+    $transaction: vi.fn((callback) =>
+      callback({
+        trade: {
+          update: mockPrismaTradeUpdateStatus,
+          create: (...args: unknown[]) => mockPrismaTradeCreate(...args),
+          count: (...args: unknown[]) => mockPrismaTradeCount(...args),
+        },
+        position: { update: vi.fn() },
+        wheel: { update: vi.fn() },
+      })
+    ),
   },
 }))
 
@@ -241,7 +252,7 @@ describe('Authentication Integration - Action Functions', () => {
       })
 
       mockPrismaTradeCreate.mockResolvedValue({
-        id: 'trade1',
+        id: 'ctesttrade001',
         userId: 'user123',
       })
 
@@ -276,7 +287,7 @@ describe('Authentication Integration - Action Functions', () => {
       const { updateTrade } = await import('@/lib/actions/trades')
 
       const result = await updateTrade({
-        id: 'trade1',
+        id: 'ctesttrade001',
         notes: 'Updated notes',
       })
 
@@ -294,19 +305,19 @@ describe('Authentication Integration - Action Functions', () => {
       })
 
       mockPrismaTradeFind.mockResolvedValue({
-        id: 'trade1',
+        id: 'ctesttrade001',
         userId: 'user123',
         status: 'OPEN',
       })
 
       mockPrismaTradeUpdate.mockResolvedValue({
-        id: 'trade1',
+        id: 'ctesttrade001',
       })
 
       const { updateTrade } = await import('@/lib/actions/trades')
 
       const result = await updateTrade({
-        id: 'trade1',
+        id: 'ctesttrade001',
         notes: 'Updated notes',
       })
 
@@ -320,7 +331,7 @@ describe('Authentication Integration - Action Functions', () => {
       })
 
       mockPrismaTradeFind.mockResolvedValue({
-        id: 'trade1',
+        id: 'ctesttrade001',
         userId: 'different-user',
         status: 'OPEN',
       })
@@ -328,7 +339,7 @@ describe('Authentication Integration - Action Functions', () => {
       const { updateTrade } = await import('@/lib/actions/trades')
 
       const result = await updateTrade({
-        id: 'trade1',
+        id: 'ctesttrade001',
         notes: 'Updated notes',
       })
 
@@ -348,7 +359,7 @@ describe('Authentication Integration - Action Functions', () => {
       const { updateTradeStatus } = await import('@/lib/actions/trades')
 
       const result = await updateTradeStatus({
-        id: 'trade1',
+        id: 'ctesttrade001',
         status: 'EXPIRED',
       })
 
@@ -364,21 +375,21 @@ describe('Authentication Integration - Action Functions', () => {
       })
 
       mockPrismaTradeFind.mockResolvedValue({
-        id: 'trade1',
+        id: 'ctesttrade001',
         userId: 'user123',
         status: 'OPEN',
         expirationDate: new Date(),
       })
 
       mockPrismaTradeUpdate.mockResolvedValue({
-        id: 'trade1',
+        id: 'ctesttrade001',
         status: 'EXPIRED',
       })
 
       const { updateTradeStatus } = await import('@/lib/actions/trades')
 
       const result = await updateTradeStatus({
-        id: 'trade1',
+        id: 'ctesttrade001',
         status: 'EXPIRED',
       })
 
@@ -392,7 +403,7 @@ describe('Authentication Integration - Action Functions', () => {
 
       const { deleteTrade } = await import('@/lib/actions/trades')
 
-      const result = await deleteTrade('trade1')
+      const result = await deleteTrade('ctesttrade001')
 
       expect(result).toEqual({
         success: false,
@@ -408,22 +419,22 @@ describe('Authentication Integration - Action Functions', () => {
       })
 
       mockPrismaTradeFind.mockResolvedValue({
-        id: 'trade1',
+        id: 'ctesttrade001',
         userId: 'user123',
         status: 'OPEN',
       })
 
       mockPrismaTradeDelete.mockResolvedValue({
-        id: 'trade1',
+        id: 'ctesttrade001',
       })
 
       const { deleteTrade } = await import('@/lib/actions/trades')
 
-      const result = await deleteTrade('trade1')
+      const result = await deleteTrade('ctesttrade001')
 
       expect(result.success).toBe(true)
       expect(mockPrismaTradeDelete).toHaveBeenCalledWith({
-        where: { id: 'trade1' },
+        where: { id: 'ctesttrade001' },
       })
     })
   })
@@ -435,7 +446,7 @@ describe('Authentication Integration - Action Functions', () => {
       const { closeOption } = await import('@/lib/actions/trades')
 
       const result = await closeOption({
-        tradeId: 'trade1',
+        tradeId: 'ctesttrade001',
         closePremium: 250,
       })
 
@@ -451,12 +462,12 @@ describe('Authentication Integration - Action Functions', () => {
       })
 
       mockPrismaTradeFind.mockResolvedValue({
-        id: 'trade1',
+        id: 'ctesttrade001',
         userId: 'user123',
         status: 'OPEN',
         ticker: 'AAPL',
         type: 'PUT',
-        premium: { toNumber: () => 500 },
+        premium: 500,
         positionId: null,
         wheelId: null,
         position: null,
@@ -465,7 +476,7 @@ describe('Authentication Integration - Action Functions', () => {
       const { closeOption } = await import('@/lib/actions/trades')
 
       const result = await closeOption({
-        tradeId: 'trade1',
+        tradeId: 'ctesttrade001',
         closePremium: 250,
       })
 

@@ -39,9 +39,7 @@ export function LoadingOverlay({
       <div className="relative bg-white p-6 rounded-lg shadow-xl">
         <div className="flex flex-col items-center gap-4">
           <Spinner size="lg" />
-          {message && (
-            <p className="text-sm font-medium text-neutral-700">{message}</p>
-          )}
+          {message && <p className="text-sm font-medium text-neutral-700">{message}</p>}
         </div>
       </div>
     </div>
@@ -84,9 +82,7 @@ export function LoadingOverlayInline({
     >
       <div className="flex flex-col items-center gap-4">
         <Spinner size="md" />
-        {message && (
-          <p className="text-sm font-medium text-neutral-700">{message}</p>
-        )}
+        {message && <p className="text-sm font-medium text-neutral-700">{message}</p>}
       </div>
     </div>
   )

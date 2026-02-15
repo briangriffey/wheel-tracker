@@ -1,7 +1,12 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import { prisma } from '@/lib/db'
-import { assignPut, assignCall, getPositions, getActivePositions, getPosition } from './positions'
 import { Prisma } from '@/lib/generated/prisma'
+
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+}))
+
+import { assignPut, assignCall, getPositions, getActivePositions, getPosition } from './positions'
 
 // Test data IDs (will be set during test setup)
 let testUserId: string

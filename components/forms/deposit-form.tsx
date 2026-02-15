@@ -111,7 +111,10 @@ export function DepositForm({ onSuccess, onCancel }: DepositFormProps) {
         {/* Amount */}
         <div>
           <label htmlFor="amount" className="block text-sm font-medium text-neutral-700">
-            Deposit Amount <span className="text-error" aria-hidden="true">*</span>
+            Deposit Amount{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
             <InfoTooltip
               content="The amount of cash you're depositing into your trading account. This will be used to calculate equivalent SPY shares for benchmark comparison."
               position="top"
@@ -135,7 +138,10 @@ export function DepositForm({ onSuccess, onCancel }: DepositFormProps) {
         {/* Deposit Date */}
         <div>
           <label htmlFor="depositDate" className="block text-sm font-medium text-neutral-700">
-            Deposit Date <span className="text-error" aria-hidden="true">*</span>
+            Deposit Date{' '}
+            <span className="text-error" aria-hidden="true">
+              *
+            </span>
             <InfoTooltip
               content="The date when the deposit was made. Used to fetch the SPY price for accurate benchmark tracking."
               position="top"
@@ -186,8 +192,8 @@ export function DepositForm({ onSuccess, onCancel }: DepositFormProps) {
                 </div>
                 <div className="mt-3 pt-3 border-t border-neutral-200">
                   <p className="text-xs text-neutral-500">
-                    Your ${amount} deposit will be equivalent to {preview.spyShares.toFixed(4)} SPY shares
-                    at ${preview.spyPrice.toFixed(2)} per share for benchmark tracking.
+                    Your ${amount} deposit will be equivalent to {preview.spyShares.toFixed(4)} SPY
+                    shares at ${preview.spyPrice.toFixed(2)} per share for benchmark tracking.
                   </p>
                 </div>
               </div>

@@ -126,11 +126,7 @@ describe('BenchmarkComparisonSection', () => {
       expect(screen.getByText('Benchmark for SPY not found')).toBeInTheDocument()
     })
 
-    expect(
-      screen.getByText(
-        /You may need to set up a benchmark first/i
-      )
-    ).toBeInTheDocument()
+    expect(screen.getByText(/You may need to set up a benchmark first/i)).toBeInTheDocument()
   })
 
   it('changes benchmark when selector is used', async () => {
@@ -211,9 +207,7 @@ describe('BenchmarkComparisonSection', () => {
   it('handles exception during fetch gracefully', async () => {
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    vi.mocked(benchmarkActions.getComparison).mockRejectedValue(
-      new Error('Network error')
-    )
+    vi.mocked(benchmarkActions.getComparison).mockRejectedValue(new Error('Network error'))
 
     render(<BenchmarkComparisonSection timeRange="All" />)
 

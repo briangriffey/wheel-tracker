@@ -19,11 +19,10 @@ export default function DesignSystemTestPage() {
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Design System Component Testing
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Design System Component Testing</h1>
           <p className="text-gray-600">
-            Comprehensive testing of all design system components across variants, sizes, and states.
+            Comprehensive testing of all design system components across variants, sizes, and
+            states.
           </p>
         </div>
 
@@ -61,10 +60,13 @@ export default function DesignSystemTestPage() {
                 <Button>Normal</Button>
                 <Button loading>Loading</Button>
                 <Button disabled>Disabled</Button>
-                <Button loading={loading} onClick={() => {
-                  setLoading(true)
-                  setTimeout(() => setLoading(false), 2000)
-                }}>
+                <Button
+                  loading={loading}
+                  onClick={() => {
+                    setLoading(true)
+                    setTimeout(() => setLoading(false), 2000)
+                  }}
+                >
                   Click to Load
                 </Button>
               </div>
@@ -77,7 +79,12 @@ export default function DesignSystemTestPage() {
                 <Button
                   leftIcon={
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
                     </svg>
                   }
                 >
@@ -86,7 +93,12 @@ export default function DesignSystemTestPage() {
                 <Button
                   rightIcon={
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   }
                 >
@@ -95,12 +107,22 @@ export default function DesignSystemTestPage() {
                 <Button
                   leftIcon={
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      />
                     </svg>
                   }
                   rightIcon={
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
                     </svg>
                   }
                 >
@@ -111,17 +133,31 @@ export default function DesignSystemTestPage() {
 
             {/* Combinations */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Variant + Size Combinations</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Variant + Size Combinations
+              </h3>
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-4 items-center">
-                  <Button variant="primary" size="sm">Primary Small</Button>
-                  <Button variant="primary" size="md">Primary Medium</Button>
-                  <Button variant="primary" size="lg">Primary Large</Button>
+                  <Button variant="primary" size="sm">
+                    Primary Small
+                  </Button>
+                  <Button variant="primary" size="md">
+                    Primary Medium
+                  </Button>
+                  <Button variant="primary" size="lg">
+                    Primary Large
+                  </Button>
                 </div>
                 <div className="flex flex-wrap gap-4 items-center">
-                  <Button variant="destructive" size="sm">Destructive Small</Button>
-                  <Button variant="destructive" size="md">Destructive Medium</Button>
-                  <Button variant="destructive" size="lg">Destructive Large</Button>
+                  <Button variant="destructive" size="sm">
+                    Destructive Small
+                  </Button>
+                  <Button variant="destructive" size="md">
+                    Destructive Medium
+                  </Button>
+                  <Button variant="destructive" size="lg">
+                    Destructive Large
+                  </Button>
                 </div>
               </div>
             </div>
@@ -174,17 +210,31 @@ export default function DesignSystemTestPage() {
 
             {/* Combinations */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Variant + Size Combinations</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Variant + Size Combinations
+              </h3>
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-4 items-center">
-                  <Badge variant="success" size="sm">Success Small</Badge>
-                  <Badge variant="success" size="md">Success Medium</Badge>
-                  <Badge variant="success" size="lg">Success Large</Badge>
+                  <Badge variant="success" size="sm">
+                    Success Small
+                  </Badge>
+                  <Badge variant="success" size="md">
+                    Success Medium
+                  </Badge>
+                  <Badge variant="success" size="lg">
+                    Success Large
+                  </Badge>
                 </div>
                 <div className="flex flex-wrap gap-4 items-center">
-                  <Badge variant="error" size="sm">Error Small</Badge>
-                  <Badge variant="error" size="md">Error Medium</Badge>
-                  <Badge variant="error" size="lg">Error Large</Badge>
+                  <Badge variant="error" size="sm">
+                    Error Small
+                  </Badge>
+                  <Badge variant="error" size="md">
+                    Error Medium
+                  </Badge>
+                  <Badge variant="error" size="lg">
+                    Error Large
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -202,30 +252,22 @@ export default function DesignSystemTestPage() {
               <div className="space-y-4">
                 <Alert variant="info">
                   <AlertTitle>Information</AlertTitle>
-                  <AlertDescription>
-                    This is an informational alert message.
-                  </AlertDescription>
+                  <AlertDescription>This is an informational alert message.</AlertDescription>
                 </Alert>
 
                 <Alert variant="success">
                   <AlertTitle>Success</AlertTitle>
-                  <AlertDescription>
-                    Your action was completed successfully.
-                  </AlertDescription>
+                  <AlertDescription>Your action was completed successfully.</AlertDescription>
                 </Alert>
 
                 <Alert variant="warning">
                   <AlertTitle>Warning</AlertTitle>
-                  <AlertDescription>
-                    Please review this warning before proceeding.
-                  </AlertDescription>
+                  <AlertDescription>Please review this warning before proceeding.</AlertDescription>
                 </Alert>
 
                 <Alert variant="error">
                   <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>
-                    An error occurred. Please try again.
-                  </AlertDescription>
+                  <AlertDescription>An error occurred. Please try again.</AlertDescription>
                 </Alert>
               </div>
             </div>
@@ -236,9 +278,7 @@ export default function DesignSystemTestPage() {
               <div className="space-y-4">
                 <Alert variant="info" dismissible onDismiss={() => alert('Alert dismissed!')}>
                   <AlertTitle>Dismissible Info</AlertTitle>
-                  <AlertDescription>
-                    Click the X button to dismiss this alert.
-                  </AlertDescription>
+                  <AlertDescription>Click the X button to dismiss this alert.</AlertDescription>
                 </Alert>
 
                 <Alert variant="warning" dismissible>
@@ -288,9 +328,15 @@ export default function DesignSystemTestPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <Button className="w-full">Responsive Button 1</Button>
-              <Button className="w-full" variant="secondary">Responsive Button 2</Button>
-              <Button className="w-full" variant="outline">Responsive Button 3</Button>
-              <Button className="w-full" variant="ghost">Responsive Button 4</Button>
+              <Button className="w-full" variant="secondary">
+                Responsive Button 2
+              </Button>
+              <Button className="w-full" variant="outline">
+                Responsive Button 3
+              </Button>
+              <Button className="w-full" variant="ghost">
+                Responsive Button 4
+              </Button>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -314,15 +360,19 @@ export default function DesignSystemTestPage() {
         <section className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">Accessibility Testing</h2>
           <p className="text-gray-600 mb-4">
-            Test keyboard navigation: Tab through elements, Enter/Space to activate buttons,
-            Escape on dismissible alerts.
+            Test keyboard navigation: Tab through elements, Enter/Space to activate buttons, Escape
+            on dismissible alerts.
           </p>
 
           <div className="space-y-4">
             <div className="flex flex-wrap gap-4">
               <Button aria-label="Save document">Save</Button>
-              <Button variant="destructive" aria-label="Delete item">Delete</Button>
-              <Badge removable aria-label="Premium badge">Premium</Badge>
+              <Button variant="destructive" aria-label="Delete item">
+                Delete
+              </Button>
+              <Badge removable aria-label="Premium badge">
+                Premium
+              </Badge>
             </div>
 
             <Alert variant="warning" dismissible>

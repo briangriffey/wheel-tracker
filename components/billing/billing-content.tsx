@@ -46,9 +46,7 @@ export function BillingContent({ subscription, usage }: BillingContentProps) {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-neutral-900">
-                {isPro ? 'Pro' : 'Free'}
-              </span>
+              <span className="text-2xl font-bold text-neutral-900">{isPro ? 'Pro' : 'Free'}</span>
               {isPro && (
                 <span className="inline-flex items-center rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-700">
                   Active
@@ -68,10 +66,7 @@ export function BillingContent({ subscription, usage }: BillingContentProps) {
               Manage Billing
             </Button>
           ) : (
-            <Button
-              variant="primary"
-              onClick={() => window.location.assign('/pricing')}
-            >
+            <Button variant="primary" onClick={() => window.location.assign('/pricing')}>
               Upgrade to Pro
             </Button>
           )}
@@ -92,7 +87,8 @@ export function BillingContent({ subscription, usage }: BillingContentProps) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-neutral-600">
-                <span className="font-medium text-neutral-900">{tradesUsed}</span> of {FREE_TRADE_LIMIT} free trades used
+                <span className="font-medium text-neutral-900">{tradesUsed}</span> of{' '}
+                {FREE_TRADE_LIMIT} free trades used
               </p>
               <span className="text-sm text-neutral-500">{remaining} remaining</span>
             </div>

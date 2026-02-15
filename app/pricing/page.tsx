@@ -5,7 +5,8 @@ import { FREE_TRADE_LIMIT } from '@/lib/constants'
 
 export const metadata = {
   title: 'Pricing | GreekWheel',
-  description: 'Simple, honest pricing for options wheel traders. Free to start, Pro for unlimited.',
+  description:
+    'Simple, honest pricing for options wheel traders. Free to start, Pro for unlimited.',
 }
 
 const freeFeatures = [
@@ -18,11 +19,7 @@ const freeFeatures = [
   'Trade history & export',
 ]
 
-const proFeatures = [
-  'Unlimited trades',
-  'Everything in Free',
-  'Priority support',
-]
+const proFeatures = ['Unlimited trades', 'Everything in Free', 'Priority support']
 
 const faqs = [
   {
@@ -33,27 +30,26 @@ const faqs = [
   {
     question: 'What happens to my data if I cancel?',
     answer:
-      'Everything stays. All your trades, positions, wheels, and analytics remain fully accessible. You just can\'t add new trades until you re-subscribe. Your data is never deleted.',
+      "Everything stays. All your trades, positions, wheels, and analytics remain fully accessible. You just can't add new trades until you re-subscribe. Your data is never deleted.",
   },
   {
     question: 'Can I try Pro before paying?',
-    answer:
-      `The free tier IS the trial. Use all ${FREE_TRADE_LIMIT} trades to experience the full product — dashboard, Greeks, benchmarks, everything. When you're ready for more, upgrade.`,
+    answer: `The free tier IS the trial. Use all ${FREE_TRADE_LIMIT} trades to experience the full product — dashboard, Greeks, benchmarks, everything. When you're ready for more, upgrade.`,
   },
   {
-    question: 'What if I need more trades but can\'t afford Pro?',
+    question: "What if I need more trades but can't afford Pro?",
     answer:
-      'Reach out to us. We want GreekWheel to work for everyone learning the wheel strategy. We\'ll figure something out.',
+      "Reach out to us. We want GreekWheel to work for everyone learning the wheel strategy. We'll figure something out.",
   },
   {
     question: 'Can I switch between monthly and annual?',
     answer:
-      'Yes. You can switch plans anytime through the billing portal. If you switch from monthly to annual, you\'ll be prorated for the remaining time.',
+      "Yes. You can switch plans anytime through the billing portal. If you switch from monthly to annual, you'll be prorated for the remaining time.",
   },
   {
     question: 'What happens if my payment fails?',
     answer:
-      'You keep Pro access during a grace period while we retry the payment. If the payment can\'t be collected, your account reverts to the free tier — but all your existing data stays intact.',
+      "You keep Pro access during a grace period while we retry the payment. If the payment can't be collected, your account reverts to the free tier — but all your existing data stays intact.",
   },
 ]
 
@@ -101,8 +97,7 @@ export default async function PricingPage() {
             Simple, honest pricing.
           </h1>
           <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
-            Start free. Upgrade when you need unlimited trades.
-            No hidden fees, no feature gates.
+            Start free. Upgrade when you need unlimited trades. No hidden fees, no feature gates.
           </p>
         </div>
       </section>
@@ -118,16 +113,9 @@ export default async function PricingPage() {
           </h2>
           <dl className="space-y-6">
             {faqs.map((faq) => (
-              <div
-                key={faq.question}
-                className="rounded-lg border border-neutral-200 bg-white p-6"
-              >
-                <dt className="text-lg font-semibold text-neutral-900">
-                  {faq.question}
-                </dt>
-                <dd className="mt-2 text-neutral-600 leading-relaxed">
-                  {faq.answer}
-                </dd>
+              <div key={faq.question} className="rounded-lg border border-neutral-200 bg-white p-6">
+                <dt className="text-lg font-semibold text-neutral-900">{faq.question}</dt>
+                <dd className="mt-2 text-neutral-600 leading-relaxed">{faq.answer}</dd>
               </div>
             ))}
           </dl>
@@ -137,11 +125,10 @@ export default async function PricingPage() {
       {/* Bottom CTA */}
       <section className="py-16 bg-gradient-to-br from-primary-500 to-primary-700 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Ready to master the wheel?
-          </h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to master the wheel?</h2>
           <p className="text-lg text-primary-100 mb-8 max-w-2xl mx-auto">
-            Start tracking your options trades for free. Upgrade to Pro when you need unlimited tracking.
+            Start tracking your options trades for free. Upgrade to Pro when you need unlimited
+            tracking.
           </p>
           {!session ? (
             <Link
@@ -158,9 +145,7 @@ export default async function PricingPage() {
               Go to Dashboard
             </Link>
           )}
-          <p className="mt-6 text-sm text-primary-200">
-            No credit card required to start.
-          </p>
+          <p className="mt-6 text-sm text-primary-200">No credit card required to start.</p>
         </div>
       </section>
 
@@ -171,8 +156,12 @@ export default async function PricingPage() {
             <div className="flex flex-col sm:flex-row justify-between items-center text-sm">
               <p>&copy; 2026 GreekWheel. Built for traders who speak Greek.</p>
               <div className="flex space-x-6 mt-4 sm:mt-0">
-                <a href="#" className="hover:text-white transition-colors">Privacy</a>
-                <a href="#" className="hover:text-white transition-colors">Terms</a>
+                <a href="#" className="hover:text-white transition-colors">
+                  Privacy
+                </a>
+                <a href="#" className="hover:text-white transition-colors">
+                  Terms
+                </a>
               </div>
             </div>
           </div>

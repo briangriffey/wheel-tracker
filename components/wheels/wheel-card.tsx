@@ -93,7 +93,7 @@ function calculateWinRate(wheel: Wheel): number {
   if (wheel.cycleCount === 0) return 0
   // Simplified: if total P&L is positive, assume high win rate
   if (wheel.totalRealizedPL > 0) {
-    return Math.min(100, 75 + (wheel.cycleCount * 5))
+    return Math.min(100, 75 + wheel.cycleCount * 5)
   }
   return 50
 }
@@ -133,10 +133,10 @@ export function WheelCard({ wheel }: WheelCardProps) {
                 currentStep.color === 'green'
                   ? 'bg-green-100 text-green-800'
                   : currentStep.color === 'blue'
-                  ? 'bg-blue-100 text-blue-800'
-                  : currentStep.color === 'yellow'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-gray-100 text-gray-800'
+                    ? 'bg-blue-100 text-blue-800'
+                    : currentStep.color === 'yellow'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-gray-100 text-gray-800'
               }`}
             >
               {currentStep.step}
@@ -173,7 +173,8 @@ export function WheelCard({ wheel }: WheelCardProps) {
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-600">Total Premiums</span>
             <span className="text-sm font-semibold text-gray-900">
-              ${wheel.totalPremiums.toLocaleString(undefined, {
+              $
+              {wheel.totalPremiums.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}

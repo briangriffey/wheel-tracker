@@ -45,9 +45,7 @@ async function getCurrentUserId(): Promise<string> {
  * const result = await batchMarkExpired(['trade1', 'trade2', 'trade3'])
  * // Returns: { successCount: 3, failedCount: 0, errors: [] }
  */
-export async function batchMarkExpired(
-  tradeIds: string[]
-): Promise<ActionResult<BatchResult>> {
+export async function batchMarkExpired(tradeIds: string[]): Promise<ActionResult<BatchResult>> {
   try {
     const userId = await getCurrentUserId()
     const closeDate = new Date()
@@ -141,9 +139,7 @@ export async function batchMarkExpired(
  * const result = await batchMarkAssigned(['trade1', 'trade2'])
  * // Returns: { successCount: 2, failedCount: 0, errors: [] }
  */
-export async function batchMarkAssigned(
-  tradeIds: string[]
-): Promise<ActionResult<BatchResult>> {
+export async function batchMarkAssigned(tradeIds: string[]): Promise<ActionResult<BatchResult>> {
   try {
     const userId = await getCurrentUserId()
     const closeDate = new Date()

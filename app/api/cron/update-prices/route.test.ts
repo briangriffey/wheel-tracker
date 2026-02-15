@@ -176,7 +176,9 @@ describe('Cron Job: Update Prices', () => {
 
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
-      expect(console.log).toHaveBeenCalledWith('[CRON] Market is open, proceeding with price updates')
+      expect(console.log).toHaveBeenCalledWith(
+        '[CRON] Market is open, proceeding with price updates'
+      )
       expect(marketUtils.getActiveTickers).toHaveBeenCalled()
     })
   })
@@ -253,10 +255,7 @@ describe('Cron Job: Update Prices', () => {
       expect(data.duration).toMatch(/\d+ms/)
 
       // Verify correct logging
-      expect(console.log).toHaveBeenCalledWith(
-        '[CRON] Found 3 active tickers:',
-        'AAPL, MSFT, TSLA'
-      )
+      expect(console.log).toHaveBeenCalledWith('[CRON] Found 3 active tickers:', 'AAPL, MSFT, TSLA')
       expect(console.log).toHaveBeenCalledWith(
         '[CRON] Successfully updated:',
         'AAPL=$180.5, MSFT=$420.25, TSLA=$250'

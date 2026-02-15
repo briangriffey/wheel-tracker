@@ -120,7 +120,11 @@ describe('InputLabel', () => {
   })
 
   it('renders required indicator', () => {
-    render(<InputLabel htmlFor="password" required>Password</InputLabel>)
+    render(
+      <InputLabel htmlFor="password" required>
+        Password
+      </InputLabel>
+    )
     const label = screen.getByText('Password')
     const asterisk = screen.getByLabelText('required')
     expect(label).toBeInTheDocument()
@@ -282,12 +286,7 @@ describe('InputGroup', () => {
 describe('Input Integration with InputGroup', () => {
   it('works together for complete form field', () => {
     render(
-      <InputGroup
-        label="Email Address"
-        required
-        error="Invalid email format"
-        htmlFor="email"
-      >
+      <InputGroup label="Email Address" required error="Invalid email format" htmlFor="email">
         <Input id="email" type="email" placeholder="you@example.com" />
       </InputGroup>
     )

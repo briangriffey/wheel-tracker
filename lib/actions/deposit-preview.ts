@@ -15,7 +15,9 @@ export interface DepositPreview {
  * Fetch SPY price for a given date (for preview purposes)
  * Uses cached price if available, otherwise fetches fresh
  */
-async function getSPYPriceForDate(date: Date): Promise<{ price: number; success: boolean; error?: string }> {
+async function getSPYPriceForDate(
+  date: Date
+): Promise<{ price: number; success: boolean; error?: string }> {
   try {
     // First check if we have a cached price for this date
     const cachedPrice = await getLatestPrice('SPY')

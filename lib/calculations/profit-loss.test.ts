@@ -87,13 +87,9 @@ describe('calculateRealizedPnL', () => {
   })
 
   it('should filter by ticker', async () => {
-    const mockPositions = [
-      { ticker: 'AAPL', realizedGainLoss: 500 },
-    ]
+    const mockPositions = [{ ticker: 'AAPL', realizedGainLoss: 500 }]
 
-    const mockTrades = [
-      { ticker: 'AAPL', realizedGainLoss: 100 },
-    ]
+    const mockTrades = [{ ticker: 'AAPL', realizedGainLoss: 100 }]
 
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
     vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
@@ -114,13 +110,9 @@ describe('calculateRealizedPnL', () => {
   })
 
   it('should filter by date range', async () => {
-    const mockPositions = [
-      { ticker: 'AAPL', realizedGainLoss: 500 },
-    ]
+    const mockPositions = [{ ticker: 'AAPL', realizedGainLoss: 500 }]
 
-    const mockTrades = [
-      { ticker: 'AAPL', realizedGainLoss: 100 },
-    ]
+    const mockTrades = [{ ticker: 'AAPL', realizedGainLoss: 100 }]
 
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
     vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
@@ -153,9 +145,7 @@ describe('calculateRealizedPnL', () => {
       { ticker: 'MSFT', realizedGainLoss: 300 },
     ]
 
-    const mockTrades = [
-      { ticker: 'TSLA', realizedGainLoss: 50 },
-    ]
+    const mockTrades = [{ ticker: 'TSLA', realizedGainLoss: 50 }]
 
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
     vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
@@ -234,9 +224,7 @@ describe('calculateUnrealizedPnL', () => {
   })
 
   it('should handle negative unrealized P&L (losses)', async () => {
-    const mockPositions = [
-      { ticker: 'AAPL', shares: 100, totalCost: 16000, costBasis: 160 },
-    ]
+    const mockPositions = [{ ticker: 'AAPL', shares: 100, totalCost: 16000, costBasis: 160 }]
 
     const mockPrices = new Map([
       ['AAPL', { ticker: 'AAPL', price: 150, date: new Date(), success: true }],
@@ -299,9 +287,7 @@ describe('calculateUnrealizedPnL', () => {
   })
 
   it('should filter by ticker', async () => {
-    const mockPositions = [
-      { ticker: 'AAPL', shares: 100, totalCost: 15000, costBasis: 150 },
-    ]
+    const mockPositions = [{ ticker: 'AAPL', shares: 100, totalCost: 15000, costBasis: 150 }]
 
     const mockPrices = new Map([
       ['AAPL', { ticker: 'AAPL', price: 160, date: new Date(), success: true }],
@@ -333,9 +319,7 @@ describe('calculatePnLByTicker', () => {
     ]
 
     // Mock closed trades (realized)
-    const mockClosedTrades = [
-      { ticker: 'AAPL', realizedGainLoss: 50 },
-    ]
+    const mockClosedTrades = [{ ticker: 'AAPL', realizedGainLoss: 50 }]
 
     // Mock open positions (unrealized)
     const mockOpenPositions = [
@@ -358,21 +342,21 @@ describe('calculatePnLByTicker', () => {
     const result = await calculatePnLByTicker(TEST_USER_ID)
 
     // AAPL: realized (500 + 50) + unrealized 1000 = 1550
-    const aapl = result.find(t => t.ticker === 'AAPL')
+    const aapl = result.find((t) => t.ticker === 'AAPL')
     expect(aapl).toBeDefined()
     expect(aapl!.realizedPnL).toBe(550)
     expect(aapl!.unrealizedPnL).toBe(1000)
     expect(aapl!.totalPnL).toBe(1550)
 
     // MSFT: realized 300 only
-    const msft = result.find(t => t.ticker === 'MSFT')
+    const msft = result.find((t) => t.ticker === 'MSFT')
     expect(msft).toBeDefined()
     expect(msft!.realizedPnL).toBe(300)
     expect(msft!.unrealizedPnL).toBe(0)
     expect(msft!.totalPnL).toBe(300)
 
     // GOOGL: unrealized 1000 only
-    const googl = result.find(t => t.ticker === 'GOOGL')
+    const googl = result.find((t) => t.ticker === 'GOOGL')
     expect(googl).toBeDefined()
     expect(googl!.realizedPnL).toBe(0)
     expect(googl!.unrealizedPnL).toBe(1000)
@@ -419,13 +403,9 @@ describe('calculatePnLByTimeframe', () => {
   })
 
   it('should calculate daily P&L (realized only)', async () => {
-    const mockPositions = [
-      { ticker: 'AAPL', realizedGainLoss: 500 },
-    ]
+    const mockPositions = [{ ticker: 'AAPL', realizedGainLoss: 500 }]
 
-    const mockTrades = [
-      { ticker: 'AAPL', realizedGainLoss: 100 },
-    ]
+    const mockTrades = [{ ticker: 'AAPL', realizedGainLoss: 100 }]
 
     vi.mocked(prisma.position.findMany).mockResolvedValue(mockPositions as never)
     vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as never)
@@ -443,17 +423,11 @@ describe('calculatePnLByTimeframe', () => {
   })
 
   it('should calculate all-time P&L (realized + unrealized)', async () => {
-    const mockClosedPositions = [
-      { ticker: 'AAPL', realizedGainLoss: 500 },
-    ]
+    const mockClosedPositions = [{ ticker: 'AAPL', realizedGainLoss: 500 }]
 
-    const mockClosedTrades = [
-      { ticker: 'AAPL', realizedGainLoss: 100 },
-    ]
+    const mockClosedTrades = [{ ticker: 'AAPL', realizedGainLoss: 100 }]
 
-    const mockOpenPositions = [
-      { ticker: 'MSFT', shares: 100, totalCost: 15000, costBasis: 150 },
-    ]
+    const mockOpenPositions = [{ ticker: 'MSFT', shares: 100, totalCost: 15000, costBasis: 150 }]
 
     const mockPrices = new Map([
       ['MSFT', { ticker: 'MSFT', price: 160, date: new Date(), success: true }],

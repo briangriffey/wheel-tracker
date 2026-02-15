@@ -35,25 +35,46 @@ export default async function RootLayout({
                       Wheel Tracker
                     </Link>
                     <nav className="hidden md:flex gap-6" aria-label="Main navigation">
-                      <Link href="/dashboard" className="text-sm text-neutral-700 hover:text-neutral-900">
+                      <Link
+                        href="/dashboard"
+                        className="text-sm text-neutral-700 hover:text-neutral-900"
+                      >
                         Dashboard
                       </Link>
-                      <Link href="/trades" className="text-sm text-neutral-700 hover:text-neutral-900">
+                      <Link
+                        href="/trades"
+                        className="text-sm text-neutral-700 hover:text-neutral-900"
+                      >
                         Trades
                       </Link>
-                      <Link href="/positions" className="text-sm text-neutral-700 hover:text-neutral-900">
+                      <Link
+                        href="/positions"
+                        className="text-sm text-neutral-700 hover:text-neutral-900"
+                      >
                         Positions
                       </Link>
-                      <Link href="/wheels" className="text-sm text-neutral-700 hover:text-neutral-900">
+                      <Link
+                        href="/wheels"
+                        className="text-sm text-neutral-700 hover:text-neutral-900"
+                      >
                         Wheels
                       </Link>
-                      <Link href="/deposits" className="text-sm text-neutral-700 hover:text-neutral-900">
+                      <Link
+                        href="/deposits"
+                        className="text-sm text-neutral-700 hover:text-neutral-900"
+                      >
                         Deposits
                       </Link>
-                      <Link href="/help" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                      <Link
+                        href="/help"
+                        className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                      >
                         Help
                       </Link>
-                      <Link href="/billing" className="text-sm text-neutral-700 hover:text-neutral-900">
+                      <Link
+                        href="/billing"
+                        className="text-sm text-neutral-700 hover:text-neutral-900"
+                      >
                         Billing
                       </Link>
                       <UpgradeNavCta />
@@ -64,9 +85,7 @@ export default async function RootLayout({
               </div>
             </header>
           )}
-          <main id="main-content">
-            {children}
-          </main>
+          <main id="main-content">{children}</main>
         </SessionProvider>
         <ToastProvider />
       </body>

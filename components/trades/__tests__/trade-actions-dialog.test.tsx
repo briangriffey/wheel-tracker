@@ -1,3 +1,4 @@
+import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -33,6 +34,12 @@ vi.mock('@/lib/design/colors', () => ({
   getStatusColor: () => ({
     bg: 'bg-green-100',
     text: 'text-green-800',
+    border: 'border-green-200',
+  }),
+  getPnlColor: () => ({
+    text: 'text-green-600',
+    bg: 'bg-green-50',
+    border: 'border-green-200',
   }),
 }))
 
@@ -89,61 +96,31 @@ describe('TradeActionsDialog - Rendering', () => {
   })
 
   it('should not render when isOpen is false', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={false}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={false} onClose={vi.fn()} />)
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   it('should render when isOpen is true', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
   it('should display trade ticker in header', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('AAPL')).toBeInTheDocument()
   })
 
   it('should display trade type badge', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('PUT')).toBeInTheDocument()
   })
 
   it('should display trade status badge', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('OPEN')).toBeInTheDocument()
   })
@@ -163,13 +140,7 @@ describe('TradeActionsDialog - Rendering', () => {
   })
 
   it('should not display price section when price not provided', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.queryByText('Current Price:')).not.toBeInTheDocument()
   })
@@ -195,65 +166,35 @@ describe('TradeActionsDialog - Trade Details', () => {
   })
 
   it('should display strike price', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('Strike Price:')).toBeInTheDocument()
     expect(screen.getByText('$150.00')).toBeInTheDocument()
   })
 
   it('should display premium', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('Premium:')).toBeInTheDocument()
     expect(screen.getByText('$500.00')).toBeInTheDocument()
   })
 
   it('should display contracts', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('Contracts:')).toBeInTheDocument()
     expect(screen.getByText('5')).toBeInTheDocument()
   })
 
   it('should display shares', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('Shares:')).toBeInTheDocument()
     expect(screen.getByText('500')).toBeInTheDocument()
   })
 
   it('should display formatted dates', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('Expiration:')).toBeInTheDocument()
     expect(screen.getByText('Open Date:')).toBeInTheDocument()
@@ -266,13 +207,7 @@ describe('TradeActionsDialog - Actions for OPEN Trades', () => {
   })
 
   it('should show all action buttons for OPEN trades', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('View Full Details')).toBeInTheDocument()
     expect(screen.getByText('Close Early')).toBeInTheDocument()
@@ -282,13 +217,7 @@ describe('TradeActionsDialog - Actions for OPEN Trades', () => {
   })
 
   it('should only show View Details for non-OPEN trades', () => {
-    render(
-      <TradeActionsDialog
-        trade={mockExpiredTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockExpiredTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('View Full Details')).toBeInTheDocument()
     expect(screen.queryByText('Close Early')).not.toBeInTheDocument()
@@ -308,13 +237,7 @@ describe('TradeActionsDialog - User Interactions', () => {
     const user = userEvent.setup()
     const onClose = vi.fn()
 
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={onClose}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={onClose} />)
 
     const closeButton = screen.getByLabelText('Close dialog')
     await user.click(closeButton)
@@ -326,16 +249,12 @@ describe('TradeActionsDialog - User Interactions', () => {
     const user = userEvent.setup()
     const onClose = vi.fn()
 
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={onClose}
-      />
+    const { container } = render(
+      <TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={onClose} />
     )
 
-    // Click the backdrop (find by role and check it's not the dialog itself)
-    const backdrop = screen.getByRole('dialog').parentElement
+    // Click the backdrop (the div with aria-hidden="true")
+    const backdrop = container.querySelector('[aria-hidden="true"]')
     if (backdrop) {
       await user.click(backdrop)
       expect(onClose).toHaveBeenCalled()
@@ -346,13 +265,7 @@ describe('TradeActionsDialog - User Interactions', () => {
     const user = userEvent.setup()
     mockUpdateTradeStatus.mockResolvedValue({ success: true, data: { id: '1' } })
 
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     const expiredButton = screen.getByText('Mark as Expired')
     await user.click(expiredButton)
@@ -369,13 +282,7 @@ describe('TradeActionsDialog - User Interactions', () => {
     const user = userEvent.setup()
     mockUpdateTradeStatus.mockResolvedValue({ success: true, data: { id: '1' } })
 
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     const assignedButton = screen.getByText('Mark as Assigned')
     await user.click(assignedButton)
@@ -393,13 +300,7 @@ describe('TradeActionsDialog - User Interactions', () => {
     mockDeleteTrade.mockResolvedValue({ success: true, data: { id: '1' } })
     vi.mocked(global.confirm).mockReturnValue(true)
 
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     const deleteButton = screen.getByText('Delete Trade')
     await user.click(deleteButton)
@@ -414,13 +315,7 @@ describe('TradeActionsDialog - User Interactions', () => {
     const user = userEvent.setup()
     vi.mocked(global.confirm).mockReturnValue(false)
 
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     const deleteButton = screen.getByText('Delete Trade')
     await user.click(deleteButton)
@@ -436,13 +331,7 @@ describe('TradeActionsDialog - User Interactions', () => {
     mockUpdateTradeStatus.mockResolvedValue({ success: true, data: { id: '1' } })
     const toast = await import('react-hot-toast')
 
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     const expiredButton = screen.getByText('Mark as Expired')
     await user.click(expiredButton)
@@ -460,13 +349,7 @@ describe('TradeActionsDialog - User Interactions', () => {
     })
     const toast = await import('react-hot-toast')
 
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     const expiredButton = screen.getByText('Mark as Expired')
     await user.click(expiredButton)
@@ -479,20 +362,12 @@ describe('TradeActionsDialog - User Interactions', () => {
   it('should disable buttons while action is in progress', async () => {
     const user = userEvent.setup()
     let resolveUpdate: (value: { success: boolean; data: { id: string } }) => void
-    const updatePromise = new Promise<{ success: boolean; data: { id: string } }>(
-      (resolve) => {
-        resolveUpdate = resolve
-      }
-    )
+    const updatePromise = new Promise<{ success: boolean; data: { id: string } }>((resolve) => {
+      resolveUpdate = resolve
+    })
     mockUpdateTradeStatus.mockReturnValue(updatePromise)
 
-    render(
-      <TradeActionsDialog
-        trade={mockOpenTrade}
-        isOpen={true}
-        onClose={vi.fn()}
-      />
-    )
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     const expiredButton = screen.getByText('Mark as Expired')
     await user.click(expiredButton)

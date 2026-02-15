@@ -87,10 +87,7 @@ export function Dialog({ isOpen, onClose, title, children, maxWidth = '3xl' }: D
           {/* Header */}
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="flex items-start justify-between mb-4">
-              <h3
-                id="dialog-title"
-                className="text-lg font-semibold leading-6 text-gray-900"
-              >
+              <h3 id="dialog-title" className="text-lg font-semibold leading-6 text-gray-900">
                 {title}
               </h3>
               <button
@@ -108,11 +105,7 @@ export function Dialog({ isOpen, onClose, title, children, maxWidth = '3xl' }: D
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>

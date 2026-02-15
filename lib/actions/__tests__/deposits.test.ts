@@ -579,7 +579,7 @@ describe('Deposit Actions', () => {
       })
     })
 
-    it('should prevent deleting another user\'s deposit', async () => {
+    it("should prevent deleting another user's deposit", async () => {
       const depositId = 'clx1234567891'
       const otherUserDeposit: CashDeposit = {
         id: depositId,

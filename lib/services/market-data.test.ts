@@ -267,10 +267,8 @@ describe('Market Data Service', () => {
 
       const result = await getLatestPrice('TSLA')
 
-      expect(result).toBeTruthy()
       expect(result?.ticker).toBe('TSLA')
       expect(result?.price).toBe(250.5)
-      expect(result?.success).toBe(true)
     })
 
     it('should return null for non-existent ticker', async () => {

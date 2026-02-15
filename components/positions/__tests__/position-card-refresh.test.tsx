@@ -39,7 +39,7 @@ describe('PositionCard - Price Refresh Features', () => {
     ticker: 'AAPL',
     price: 155.0,
     date: new Date('2026-02-07T14:30:00Z'),
-    source: 'alpha_vantage',
+    source: 'financial_data',
     isStale: false,
     ageInHours: 0.5,
   }
@@ -48,7 +48,7 @@ describe('PositionCard - Price Refresh Features', () => {
     ticker: 'AAPL',
     price: 155.0,
     date: new Date('2026-02-07T10:00:00Z'),
-    source: 'alpha_vantage',
+    source: 'financial_data',
     isStale: true,
     ageInHours: 4.5,
   }

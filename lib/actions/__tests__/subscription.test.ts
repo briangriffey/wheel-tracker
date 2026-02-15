@@ -52,7 +52,7 @@ describe('Subscription Actions', () => {
 
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.tradesThisMonth).toBe(0)
+        expect(result.data.tradesUsed).toBe(0)
         expect(result.data.tradeLimit).toBe(FREE_TRADE_LIMIT)
         expect(result.data.tier).toBe('FREE')
         expect(result.data.remaining).toBe(FREE_TRADE_LIMIT)
@@ -60,7 +60,7 @@ describe('Subscription Actions', () => {
       }
     })
 
-    it('should count trades in current calendar month', async () => {
+    it('should count lifetime trades (no date filter)', async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
         subscriptionTier: 'FREE',
       } as never)
@@ -70,20 +70,14 @@ describe('Subscription Actions', () => {
 
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.tradesThisMonth).toBe(5)
+        expect(result.data.tradesUsed).toBe(5)
         expect(result.data.remaining).toBe(FREE_TRADE_LIMIT - 5)
         expect(result.data.limitReached).toBe(false)
       }
 
-      // Verify the query uses current month boundaries
+      // Verify the query counts all trades (no createdAt filter)
       expect(prisma.trade.count).toHaveBeenCalledWith({
-        where: {
-          userId: mockUserId,
-          createdAt: {
-            gte: expect.any(Date),
-            lt: expect.any(Date),
-          },
-        },
+        where: { userId: mockUserId },
       })
     })
 
@@ -97,7 +91,7 @@ describe('Subscription Actions', () => {
 
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.tradesThisMonth).toBe(FREE_TRADE_LIMIT)
+        expect(result.data.tradesUsed).toBe(FREE_TRADE_LIMIT)
         expect(result.data.remaining).toBe(0)
         expect(result.data.limitReached).toBe(true)
       }
@@ -113,7 +107,7 @@ describe('Subscription Actions', () => {
 
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.tradesThisMonth).toBe(FREE_TRADE_LIMIT + 3)
+        expect(result.data.tradesUsed).toBe(FREE_TRADE_LIMIT + 3)
         expect(result.data.remaining).toBe(0)
         expect(result.data.limitReached).toBe(true)
       }
@@ -129,34 +123,12 @@ describe('Subscription Actions', () => {
 
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.tradesThisMonth).toBe(50)
+        expect(result.data.tradesUsed).toBe(50)
         expect(result.data.tradeLimit).toBe(Infinity)
         expect(result.data.tier).toBe('PRO')
         expect(result.data.remaining).toBe(Infinity)
         expect(result.data.limitReached).toBe(false)
       }
-    })
-
-    it('should use correct month boundaries', async () => {
-      vi.mocked(prisma.user.findUnique).mockResolvedValue({
-        subscriptionTier: 'FREE',
-      } as never)
-      vi.mocked(prisma.trade.count).mockResolvedValue(0)
-
-      await getTradeUsage()
-
-      const callArgs = vi.mocked(prisma.trade.count).mock.calls[0][0]!
-      const where = callArgs.where!
-      const createdAt = where.createdAt as { gte: Date; lt: Date }
-
-      // Month start should be day 1 at midnight
-      expect(createdAt.gte.getDate()).toBe(1)
-      expect(createdAt.gte.getHours()).toBe(0)
-      expect(createdAt.gte.getMinutes()).toBe(0)
-
-      // Month end should be day 1 of next month
-      expect(createdAt.lt.getDate()).toBe(1)
-      expect(createdAt.lt.getMonth()).toBe((createdAt.gte.getMonth() + 1) % 12)
     })
 
     it('should return error when user not found', async () => {

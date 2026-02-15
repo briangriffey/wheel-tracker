@@ -14,6 +14,7 @@ import {
 } from '@/lib/validations/trade'
 import { Prisma } from '@/lib/generated/prisma'
 import { auth } from '@/lib/auth'
+import { FREE_TRADE_LIMIT } from '@/lib/constants'
 
 /**
  * Server action result type
@@ -63,6 +64,25 @@ export async function createTrade(
     const userId = await getCurrentUserId()
     if (!userId) {
       return { success: false, error: 'Unauthorized. Please log in.' }
+    }
+
+    // Check trade limit for free users
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { subscriptionTier: true },
+    })
+
+    if (user?.subscriptionTier !== 'PRO') {
+      const tradeCount = await prisma.trade.count({
+        where: { userId },
+      })
+
+      if (tradeCount >= FREE_TRADE_LIMIT) {
+        return {
+          success: false,
+          error: 'FREE_TIER_LIMIT_REACHED',
+        }
+      }
     }
 
     // Calculate shares (contracts * 100)

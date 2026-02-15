@@ -8,7 +8,7 @@ type ActionResult<T = unknown> =
   | { success: false; error: string }
 
 export interface TradeUsage {
-  tradesThisMonth: number
+  tradesUsed: number
   tradeLimit: number
   tier: 'FREE' | 'PRO'
   remaining: number
@@ -28,10 +28,10 @@ async function getCurrentUserId(): Promise<string> {
 }
 
 /**
- * Get trade usage for the current calendar month.
+ * Get lifetime trade usage for the current user.
  *
- * Counts all trades opened by the user in the current month and compares
- * against their subscription tier limit.
+ * Counts all trades ever created by the user (regardless of status)
+ * and compares against their subscription tier limit.
  */
 export async function getTradeUsage(): Promise<ActionResult<TradeUsage>> {
   try {
@@ -46,29 +46,19 @@ export async function getTradeUsage(): Promise<ActionResult<TradeUsage>> {
       return { success: false, error: 'User not found' }
     }
 
-    const now = new Date()
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-
-    const tradesThisMonth = await prisma.trade.count({
-      where: {
-        userId,
-        createdAt: {
-          gte: monthStart,
-          lt: monthEnd,
-        },
-      },
+    const tradesUsed = await prisma.trade.count({
+      where: { userId },
     })
 
     const tier = user.subscriptionTier
     const tradeLimit = tier === 'FREE' ? FREE_TRADE_LIMIT : Infinity
-    const remaining = tier === 'PRO' ? Infinity : Math.max(0, FREE_TRADE_LIMIT - tradesThisMonth)
-    const limitReached = tier === 'FREE' && tradesThisMonth >= FREE_TRADE_LIMIT
+    const remaining = tier === 'PRO' ? Infinity : Math.max(0, FREE_TRADE_LIMIT - tradesUsed)
+    const limitReached = tier === 'FREE' && tradesUsed >= FREE_TRADE_LIMIT
 
     return {
       success: true,
       data: {
-        tradesThisMonth,
+        tradesUsed,
         tradeLimit,
         tier,
         remaining,

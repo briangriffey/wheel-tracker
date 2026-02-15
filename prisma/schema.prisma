@@ -42,6 +42,11 @@ enum DepositType {
   WITHDRAWAL // Cash removed from account
 }
 
+enum SubscriptionTier {
+  FREE
+  PRO
+}
+
 // Models
 model User {
   id            String    @id @default(cuid())
@@ -52,6 +57,11 @@ model User {
   password      String? // For email/password auth
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  // Subscription fields
+  subscriptionTier      SubscriptionTier @default(FREE)
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
 
   trades           Trade[]
   positions        Position[]

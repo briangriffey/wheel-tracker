@@ -39,6 +39,9 @@ describe('Price Actions', () => {
     emailVerified: null,
     image: null,
     password: null,
+    subscriptionTier: 'FREE',
+    subscriptionStartDate: null,
+    subscriptionEndDate: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   }

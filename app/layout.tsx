@@ -52,6 +52,9 @@ export default async function RootLayout({
                       <Link href="/help" className="text-sm text-blue-600 hover:text-blue-800 font-medium">
                         Help
                       </Link>
+                      <Link href="/billing" className="text-sm text-neutral-700 hover:text-neutral-900">
+                        Billing
+                      </Link>
                     </nav>
                   </div>
                   <UserMenu user={session.user} />

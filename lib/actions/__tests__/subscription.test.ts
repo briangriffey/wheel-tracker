@@ -49,6 +49,8 @@ describe('Subscription Actions', () => {
     it('should return usage for FREE tier user with no trades', async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
         subscriptionTier: 'FREE',
+        subscriptionStatus: null,
+        subscriptionEndsAt: null,
       } as never)
       vi.mocked(prisma.trade.count).mockResolvedValue(0)
 
@@ -67,6 +69,8 @@ describe('Subscription Actions', () => {
     it('should count lifetime trades (no date filter)', async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
         subscriptionTier: 'FREE',
+        subscriptionStatus: null,
+        subscriptionEndsAt: null,
       } as never)
       vi.mocked(prisma.trade.count).mockResolvedValue(5)
 
@@ -88,6 +92,8 @@ describe('Subscription Actions', () => {
     it('should report limit reached when trades equal FREE_TRADE_LIMIT', async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
         subscriptionTier: 'FREE',
+        subscriptionStatus: null,
+        subscriptionEndsAt: null,
       } as never)
       vi.mocked(prisma.trade.count).mockResolvedValue(FREE_TRADE_LIMIT)
 
@@ -104,6 +110,8 @@ describe('Subscription Actions', () => {
     it('should report limit reached when trades exceed FREE_TRADE_LIMIT', async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
         subscriptionTier: 'FREE',
+        subscriptionStatus: null,
+        subscriptionEndsAt: null,
       } as never)
       vi.mocked(prisma.trade.count).mockResolvedValue(FREE_TRADE_LIMIT + 3)
 
@@ -120,6 +128,8 @@ describe('Subscription Actions', () => {
     it('should return unlimited for PRO tier users', async () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValue({
         subscriptionTier: 'PRO',
+        subscriptionStatus: 'active',
+        subscriptionEndsAt: null,
       } as never)
       vi.mocked(prisma.trade.count).mockResolvedValue(50)
 
@@ -154,6 +164,48 @@ describe('Subscription Actions', () => {
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error).toBe('User not found')
+      }
+    })
+
+    it('should treat canceled user in grace period as PRO', async () => {
+      const futureDate = new Date()
+      futureDate.setDate(futureDate.getDate() + 15)
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        subscriptionTier: 'FREE',
+        subscriptionStatus: 'canceled',
+        subscriptionEndsAt: futureDate,
+      } as never)
+      vi.mocked(prisma.trade.count).mockResolvedValue(25)
+
+      const result = await getTradeUsage()
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.tier).toBe('PRO')
+        expect(result.data.tradeLimit).toBe(Infinity)
+        expect(result.data.remaining).toBe(Infinity)
+        expect(result.data.limitReached).toBe(false)
+      }
+    })
+
+    it('should treat canceled user past grace period as FREE', async () => {
+      const pastDate = new Date()
+      pastDate.setDate(pastDate.getDate() - 1)
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        subscriptionTier: 'FREE',
+        subscriptionStatus: 'canceled',
+        subscriptionEndsAt: pastDate,
+      } as never)
+      vi.mocked(prisma.trade.count).mockResolvedValue(25)
+
+      const result = await getTradeUsage()
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.tier).toBe('FREE')
+        expect(result.data.limitReached).toBe(true)
       }
     })
   })

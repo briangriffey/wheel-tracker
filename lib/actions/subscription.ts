@@ -39,7 +39,11 @@ export async function getTradeUsage(): Promise<ActionResult<TradeUsage>> {
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { subscriptionTier: true },
+      select: {
+        subscriptionTier: true,
+        subscriptionStatus: true,
+        subscriptionEndsAt: true,
+      },
     })
 
     if (!user) {
@@ -50,7 +54,13 @@ export async function getTradeUsage(): Promise<ActionResult<TradeUsage>> {
       where: { userId },
     })
 
-    const tier = user.subscriptionTier
+    // Grace period: canceled users retain Pro access until subscriptionEndsAt
+    const hasProAccess = user.subscriptionTier === 'PRO' ||
+      (user.subscriptionStatus === 'canceled' &&
+       user.subscriptionEndsAt != null &&
+       new Date(user.subscriptionEndsAt) > new Date())
+
+    const tier = hasProAccess ? 'PRO' as const : user.subscriptionTier
     const tradeLimit = tier === 'FREE' ? FREE_TRADE_LIMIT : Infinity
     const remaining = tier === 'PRO' ? Infinity : Math.max(0, FREE_TRADE_LIMIT - tradesUsed)
     const limitReached = tier === 'FREE' && tradesUsed >= FREE_TRADE_LIMIT

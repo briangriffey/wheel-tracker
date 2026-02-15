@@ -66,13 +66,22 @@ export async function createTrade(
       return { success: false, error: 'Unauthorized. Please log in.' }
     }
 
-    // Check trade limit for free users
+    // Check trade limit for free users (with grace period support)
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { subscriptionTier: true },
+      select: {
+        subscriptionTier: true,
+        subscriptionStatus: true,
+        subscriptionEndsAt: true,
+      },
     })
 
-    if (user?.subscriptionTier !== 'PRO') {
+    const hasProAccess = user?.subscriptionTier === 'PRO' ||
+      (user?.subscriptionStatus === 'canceled' &&
+       user?.subscriptionEndsAt != null &&
+       new Date(user.subscriptionEndsAt) > new Date())
+
+    if (!hasProAccess) {
       const tradeCount = await prisma.trade.count({
         where: { userId },
       })

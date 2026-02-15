@@ -59,9 +59,13 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Subscription fields
-  subscriptionTier      SubscriptionTier @default(FREE)
-  subscriptionStartDate DateTime?
-  subscriptionEndDate   DateTime?
+  subscriptionTier         SubscriptionTier @default(FREE)
+  subscriptionStartDate    DateTime?
+  subscriptionEndDate      DateTime?
+  stripeCustomerId         String?          @unique
+  stripeSubscriptionId     String?
+  subscriptionStatus       String?          // "active" | "past_due" | "canceled" | "trialing"
+  subscriptionEndsAt       DateTime?        // End of current billing period (for grace period)
 
   trades           Trade[]
   positions        Position[]
@@ -73,6 +77,7 @@ model User {
   sessions         Session[]
 
   @@index([email])
+  @@index([subscriptionTier])
 }
 
 model Account {

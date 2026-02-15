@@ -55,6 +55,10 @@ describe('Deposit Actions', () => {
     subscriptionTier: 'FREE',
     subscriptionStartDate: null,
     subscriptionEndDate: null,
+    stripeCustomerId: null,
+    stripeSubscriptionId: null,
+    subscriptionStatus: null,
+    subscriptionEndsAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   }

@@ -65,7 +65,8 @@ export async function createCheckoutSession(
       sessionParams.customer_email = user.email
     }
 
-    const session = await stripe.checkout.sessions.create(sessionParams)
+    const session: Stripe.Checkout.Session =
+      await stripe.checkout.sessions.create(sessionParams)
 
     if (!session.url) {
       return { success: false, error: 'Failed to create checkout session' }
@@ -107,10 +108,11 @@ export async function createPortalSession(): Promise<ActionResult<{ url: string 
       return { success: false, error: 'No billing account found. Please subscribe first.' }
     }
 
-    const session = await stripe.billingPortal.sessions.create({
-      customer: user.stripeCustomerId,
-      return_url: `${process.env.NEXTAUTH_URL}/billing`,
-    })
+    const session: Stripe.BillingPortal.Session =
+      await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${process.env.NEXTAUTH_URL}/billing`,
+      })
 
     return { success: true, data: { url: session.url } }
   } catch (error) {

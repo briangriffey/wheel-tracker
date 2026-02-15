@@ -55,7 +55,7 @@ async function logWebhookEvent(
  * - customer.subscription.updated: Subscription status changed
  * - customer.subscription.deleted: Subscription canceled
  */
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = await request.text()
   const signature = request.headers.get('stripe-signature')
 
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ received: true })
 }
 
-async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const userId = session.metadata?.userId
   if (!userId) {
     console.error('[WEBHOOK] checkout.session.completed: missing userId in metadata')
@@ -151,8 +151,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   }
 
   // Fetch the full subscription to get current_period_end from items
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-  const periodEnd = getSubscriptionPeriodEnd(subscription)
+  const subscription: Stripe.Subscription =
+    await stripe.subscriptions.retrieve(subscriptionId)
+  const periodEnd: Date | null = getSubscriptionPeriodEnd(subscription)
 
   await prisma.user.update({
     where: { id: userId },
@@ -174,7 +175,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   console.log(`[WEBHOOK] checkout.session.completed: activated PRO for user ${userId}`)
 }
 
-async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
+async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
   const subscriptionId = getInvoiceSubscriptionId(invoice)
 
   if (!subscriptionId) {
@@ -182,8 +183,9 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   }
 
   // Fetch the subscription for the updated period end from items
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
-  const periodEnd = getSubscriptionPeriodEnd(subscription)
+  const subscription: Stripe.Subscription =
+    await stripe.subscriptions.retrieve(subscriptionId)
+  const periodEnd: Date | null = getSubscriptionPeriodEnd(subscription)
 
   const customerId =
     typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
@@ -216,7 +218,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   console.log(`[WEBHOOK] invoice.payment_succeeded: extended billing for user ${user.id}`)
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
   const customerId =
     typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id
 
@@ -247,7 +249,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   console.log(`[WEBHOOK] invoice.payment_failed: set past_due for user ${user.id}`)
 }
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
   const customerId =
     typeof subscription.customer === 'string'
       ? subscription.customer
@@ -285,7 +287,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   )
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
   const customerId =
     typeof subscription.customer === 'string'
       ? subscription.customer

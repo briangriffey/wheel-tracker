@@ -5,6 +5,7 @@ import { CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/design-system/button/button'
 import { createCheckoutSession } from '@/lib/actions/billing'
 import { trackEvent } from '@/lib/analytics'
+import { PLANS } from '@/lib/stripe'
 
 interface PricingToggleProps {
   isLoggedIn: boolean
@@ -16,8 +17,8 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
   const [interval, setInterval] = useState<'monthly' | 'annual'>('monthly')
   const [loading, setLoading] = useState(false)
 
-  const monthlyPrice = 8
-  const annualPrice = 72
+  const monthlyPrice = PLANS.monthly.amount
+  const annualPrice = PLANS.annual.amount
   const annualMonthly = annualPrice / 12
 
   async function handleStartPro() {
@@ -29,7 +30,8 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
     setLoading(true)
     try {
       trackEvent('checkout_started', { plan: interval, source: 'pricing_page' })
-      const result = await createCheckoutSession(interval)
+      const result: Awaited<ReturnType<typeof createCheckoutSession>> =
+        await createCheckoutSession(interval)
       if (result.success) {
         window.location.assign(result.data.url)
       }
@@ -54,14 +56,12 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
             aria-checked={interval === 'annual'}
             aria-label="Toggle annual billing"
             onClick={() => setInterval(interval === 'monthly' ? 'annual' : 'monthly')}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${
-              interval === 'annual' ? 'bg-primary-500' : 'bg-neutral-300'
-            }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${interval === 'annual' ? 'bg-primary-500' : 'bg-neutral-300'
+              }`}
           >
             <span
-              className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
-                interval === 'annual' ? 'translate-x-6' : 'translate-x-1'
-              }`}
+              className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${interval === 'annual' ? 'translate-x-6' : 'translate-x-1'
+                }`}
             />
           </button>
           <span

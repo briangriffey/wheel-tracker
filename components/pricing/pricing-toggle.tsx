@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/design-system/button/button'
 import { createCheckoutSession } from '@/lib/actions/billing'
+import { trackEvent } from '@/lib/analytics'
 
 interface PricingToggleProps {
   isLoggedIn: boolean
@@ -27,6 +28,7 @@ export function PricingToggle({ isLoggedIn, freeFeatures, proFeatures }: Pricing
 
     setLoading(true)
     try {
+      trackEvent('checkout_started', { plan: interval, source: 'pricing_page' })
       const result = await createCheckoutSession(interval)
       if (result.success) {
         window.location.assign(result.data.url)

@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/design-system/button/button'
 import { FREE_TRADE_LIMIT } from '@/lib/constants'
 import { createCheckoutSession } from '@/lib/actions/billing'
+import { trackEvent } from '@/lib/analytics'
 
 interface UpgradePromptProps {
   tradesUsed?: number
@@ -13,6 +14,17 @@ interface UpgradePromptProps {
 export function UpgradePrompt({ tradesUsed, onCancel }: UpgradePromptProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const tracked = useRef(false)
+
+  useEffect(() => {
+    if (!tracked.current) {
+      tracked.current = true
+      trackEvent('upgrade_prompt_shown', {
+        tradesUsed: tradesUsed ?? FREE_TRADE_LIMIT,
+        source: 'trade_limit',
+      })
+    }
+  }, [tradesUsed])
 
   async function handleUpgrade() {
     setLoading(true)

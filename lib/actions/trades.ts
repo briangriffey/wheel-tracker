@@ -15,13 +15,14 @@ import {
 import { Prisma } from '@/lib/generated/prisma'
 import { auth } from '@/lib/auth'
 import { FREE_TRADE_LIMIT } from '@/lib/constants'
+import { recordAnalyticsEvent } from '@/lib/analytics-server'
 
 /**
  * Sentinel error thrown inside the trade-creation transaction when the free
  * tier limit is reached.  Caught in createTrade to return a typed result.
  */
 class TradeLimitError extends Error {
-  constructor() {
+  constructor(public readonly tradeCount: number) {
     super('FREE_TIER_LIMIT_REACHED')
     this.name = 'TradeLimitError'
   }
@@ -67,12 +68,13 @@ async function getCurrentUserId(): Promise<string | null> {
 export async function createTrade(
   input: CreateTradeInput
 ): Promise<ActionResult<{ id: string }>> {
+  let userId: string | null = null
   try {
     // Validate input
     const validated = CreateTradeSchema.parse(input)
 
     // Get current user
-    const userId = await getCurrentUserId()
+    userId = await getCurrentUserId()
     if (!userId) {
       return { success: false, error: 'Unauthorized. Please log in.' }
     }
@@ -104,17 +106,17 @@ export async function createTrade(
     const trade = await prisma.$transaction(async (tx) => {
       if (!hasProAccess) {
         const tradeCount = await tx.trade.count({
-          where: { userId },
+          where: { userId: userId! },
         })
 
         if (tradeCount >= FREE_TRADE_LIMIT) {
-          throw new TradeLimitError()
+          throw new TradeLimitError(tradeCount)
         }
       }
 
       return tx.trade.create({
         data: {
-          userId,
+          userId: userId!,
           ticker: validated.ticker,
           type: validated.type,
           action: validated.action,
@@ -140,6 +142,12 @@ export async function createTrade(
     return { success: true, data: { id: trade.id } }
   } catch (error) {
     if (error instanceof TradeLimitError) {
+      if (userId) {
+        recordAnalyticsEvent('trade_limit_reached', userId, {
+          tradesUsed: error.tradeCount,
+          limit: FREE_TRADE_LIMIT,
+        })
+      }
       return { success: false, error: 'FREE_TIER_LIMIT_REACHED' }
     }
 

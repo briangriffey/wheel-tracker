@@ -27,7 +27,13 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
+// Mock analytics
+vi.mock('@/lib/analytics-server', () => ({
+  recordAnalyticsEvent: vi.fn(),
+}))
+
 import { auth } from '@/lib/auth'
+import { recordAnalyticsEvent } from '@/lib/analytics-server'
 
 const validTradeInput = {
   ticker: 'AAPL',
@@ -141,6 +147,35 @@ describe('Trade Limit Enforcement', () => {
     if (!result.success) {
       expect(result.error).toContain('Unauthorized')
     }
+  })
+
+  it('should record trade_limit_reached analytics event when limit hit', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      subscriptionTier: 'FREE',
+    } as never)
+    vi.mocked(prisma.trade.count).mockResolvedValue(FREE_TRADE_LIMIT)
+
+    await createTrade(validTradeInput)
+
+    expect(recordAnalyticsEvent).toHaveBeenCalledWith(
+      'trade_limit_reached',
+      mockUserId,
+      { tradesUsed: FREE_TRADE_LIMIT, limit: FREE_TRADE_LIMIT }
+    )
+  })
+
+  it('should not record analytics event when under limit', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      subscriptionTier: 'FREE',
+    } as never)
+    vi.mocked(prisma.trade.count).mockResolvedValue(5)
+    vi.mocked(prisma.trade.create).mockResolvedValue({
+      id: 'trade1',
+    } as never)
+
+    await createTrade(validTradeInput)
+
+    expect(recordAnalyticsEvent).not.toHaveBeenCalled()
   })
 
   it('should count all trades for the user (lifetime, not monthly)', async () => {

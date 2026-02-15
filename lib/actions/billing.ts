@@ -4,6 +4,7 @@ import Stripe from 'stripe'
 import { prisma } from '@/lib/db'
 import { stripe, PLANS } from '@/lib/stripe'
 import { auth } from '@/lib/auth'
+import { recordAnalyticsEvent } from '@/lib/analytics-server'
 
 type ActionResult<T = unknown> =
   | { success: true; data: T }
@@ -69,6 +70,8 @@ export async function createCheckoutSession(
     if (!session.url) {
       return { success: false, error: 'Failed to create checkout session' }
     }
+
+    recordAnalyticsEvent('checkout_started', userId, { plan, interval: planConfig.interval })
 
     return { success: true, data: { url: session.url } }
   } catch (error) {

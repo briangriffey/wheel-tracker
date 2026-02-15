@@ -9,9 +9,17 @@ vi.mock('@/lib/db', () => ({
   prisma: {
     user: {
       update: vi.fn(),
+      findUnique: vi.fn(),
       updateMany: vi.fn(),
     },
+    webhookLog: {
+      create: vi.fn(),
+    },
   },
+}))
+
+vi.mock('@/lib/analytics-server', () => ({
+  recordAnalyticsEvent: vi.fn(),
 }))
 
 vi.mock('@/lib/stripe', () => ({

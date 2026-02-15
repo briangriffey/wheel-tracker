@@ -8,9 +8,15 @@ vi.mock('@/lib/actions/billing', () => ({
   createCheckoutSession: vi.fn(),
 }))
 
+vi.mock('@/lib/analytics', () => ({
+  trackEvent: vi.fn(),
+}))
+
 import { createCheckoutSession } from '@/lib/actions/billing'
+import { trackEvent } from '@/lib/analytics'
 
 const mockCreateCheckoutSession = vi.mocked(createCheckoutSession)
+const mockTrackEvent = vi.mocked(trackEvent)
 
 describe('UpgradePrompt', () => {
   beforeEach(() => {
@@ -104,5 +110,19 @@ describe('UpgradePrompt', () => {
   it('has role="alert" for accessibility', () => {
     render(<UpgradePrompt />)
     expect(screen.getByRole('alert')).toBeInTheDocument()
+  })
+
+  it('tracks upgrade_prompt_shown on mount', () => {
+    render(<UpgradePrompt tradesUsed={20} />)
+    expect(mockTrackEvent).toHaveBeenCalledWith('upgrade_prompt_shown', {
+      tradesUsed: 20,
+      source: 'trade_limit',
+    })
+  })
+
+  it('tracks upgrade_prompt_shown only once on re-render', () => {
+    const { rerender } = render(<UpgradePrompt tradesUsed={20} />)
+    rerender(<UpgradePrompt tradesUsed={20} />)
+    expect(mockTrackEvent).toHaveBeenCalledTimes(1)
   })
 })

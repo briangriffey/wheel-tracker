@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type Stripe from 'stripe'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/db'
+import { recordAnalyticsEvent } from '@/lib/analytics-server'
 
 /**
  * Extract current_period_end from a subscription.
@@ -23,6 +24,24 @@ function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
   const sub = invoice.parent?.subscription_details?.subscription
   if (!sub) return null
   return typeof sub === 'string' ? sub : sub.id
+}
+
+/**
+ * Log webhook event for monitoring and debugging
+ */
+async function logWebhookEvent(
+  eventId: string,
+  eventType: string,
+  success: boolean,
+  error?: string
+): Promise<void> {
+  try {
+    await prisma.webhookLog.create({
+      data: { eventId, eventType, success, error },
+    })
+  } catch (logError) {
+    console.error('[WEBHOOK] Failed to log webhook event:', logError)
+  }
 }
 
 /**
@@ -91,11 +110,15 @@ export async function POST(request: NextRequest) {
         console.log(`[WEBHOOK] Unhandled event type: ${event.type}`)
     }
 
-    // Record event as processed
+    // Record event as processed (for idempotency)
     await prisma.webhookEvent.create({ data: { id: event.id, type: event.type } })
+
+    // Log event details for monitoring
+    await logWebhookEvent(event.id, event.type, true)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error(`[WEBHOOK] Error handling ${event.type}:`, message)
+    await logWebhookEvent(event.id, event.type, false, message)
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 })
   }
 
@@ -141,6 +164,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       subscriptionStartDate: new Date(),
       ...(periodEnd && { subscriptionEndsAt: periodEnd }),
     },
+  })
+
+  recordAnalyticsEvent('subscription_activated', userId, {
+    plan: 'pro',
+    stripeCustomerId: customerId,
   })
 
   console.log(`[WEBHOOK] checkout.session.completed: activated PRO for user ${userId}`)
@@ -292,3 +320,4 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
   console.log(`[WEBHOOK] customer.subscription.deleted: reverted to FREE for user ${user.id}`)
 }
+

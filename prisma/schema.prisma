@@ -75,6 +75,7 @@ model User {
   cashDeposits     CashDeposit[]
   accounts         Account[]
   sessions         Session[]
+  analyticsEvents  AnalyticsEvent[]
 
   @@index([email])
   @@index([subscriptionTier])
@@ -318,4 +319,33 @@ model MarketBenchmark {
   @@index([userId])
   @@index([ticker])
   @@index([migrated])
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(cuid())
+  event      String // trade_limit_reached, upgrade_prompt_shown, checkout_started, subscription_activated
+  userId     String
+  properties String?  @db.Text // JSON-encoded event properties
+  timestamp  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([event])
+  @@index([userId])
+  @@index([timestamp])
+  @@index([event, timestamp])
+}
+
+model WebhookLog {
+  id        String   @id @default(cuid())
+  eventId   String // Stripe event ID
+  eventType String // e.g. checkout.session.completed
+  success   Boolean
+  error     String?  @db.Text
+  timestamp DateTime @default(now())
+
+  @@index([eventType])
+  @@index([success])
+  @@index([timestamp])
+  @@index([eventId])
 }

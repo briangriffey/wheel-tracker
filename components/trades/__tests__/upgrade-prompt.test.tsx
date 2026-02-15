@@ -37,9 +37,10 @@ describe('UpgradePrompt', () => {
     expect(screen.getByText(/all 20 of your free trades/)).toBeInTheDocument()
   })
 
-  it('shows the actual trade count when tradesUsed is provided', () => {
+  it('shows grandfathered messaging when tradesUsed exceeds limit', () => {
     render(<UpgradePrompt tradesUsed={23} />)
-    expect(screen.getByText(/all 23 of your free trades/)).toBeInTheDocument()
+    expect(screen.getByText('Thanks for being an early user!')).toBeInTheDocument()
+    expect(screen.getByText(/tracked 23 trades/)).toBeInTheDocument()
   })
 
   it('renders the upgrade CTA button', () => {

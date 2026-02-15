@@ -7,7 +7,6 @@ import { getTradeUsage } from '../subscription'
 vi.mock('@/lib/db', () => ({
   prisma: {
     user: {
-      findFirst: vi.fn(),
       findUnique: vi.fn(),
     },
     trade: {
@@ -16,33 +15,27 @@ vi.mock('@/lib/db', () => ({
   },
 }))
 
+// Mock auth
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn(),
+}))
+
 // Mock Next.js cache revalidation
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
+
+import { auth } from '@/lib/auth'
+const mockAuth = vi.mocked(auth)
 
 describe('Subscription Actions', () => {
   const mockUserId = 'user1'
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
-      id: mockUserId,
-      email: 'test@example.com',
-      name: 'Test User',
-      emailVerified: null,
-      image: null,
-      password: null,
-      subscriptionTier: 'FREE',
-      subscriptionStartDate: null,
-      subscriptionEndDate: null,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      subscriptionStatus: null,
-      subscriptionEndsAt: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })
+    mockAuth.mockResolvedValue({
+      user: { id: mockUserId },
+    } as never)
   })
 
   describe('getTradeUsage', () => {
@@ -145,14 +138,14 @@ describe('Subscription Actions', () => {
       }
     })
 
-    it('should return error when user not found', async () => {
-      vi.mocked(prisma.user.findFirst).mockResolvedValue(null)
+    it('should return error when not authenticated', async () => {
+      mockAuth.mockResolvedValue(null as never)
 
       const result = await getTradeUsage()
 
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error).toContain('No user found')
+        expect(result.error).toContain('Unauthorized')
       }
     })
 

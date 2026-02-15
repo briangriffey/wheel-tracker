@@ -1,10 +1,26 @@
 import React from 'react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { UpgradePrompt } from '../upgrade-prompt'
 
+vi.mock('@/lib/actions/billing', () => ({
+  createCheckoutSession: vi.fn(),
+}))
+
+import { createCheckoutSession } from '@/lib/actions/billing'
+
+const mockCreateCheckoutSession = vi.mocked(createCheckoutSession)
+
 describe('UpgradePrompt', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    Object.defineProperty(window, 'location', {
+      value: { assign: vi.fn() },
+      writable: true,
+    })
+  })
+
   it('renders the limit reached heading', () => {
     render(<UpgradePrompt />)
     expect(screen.getByText('Free trade limit reached')).toBeInTheDocument()
@@ -26,18 +42,43 @@ describe('UpgradePrompt', () => {
     expect(button).toBeInTheDocument()
   })
 
-  it('navigates to /pricing when upgrade button is clicked', async () => {
-    const assignMock = vi.fn()
-    Object.defineProperty(window, 'location', {
-      value: { assign: assignMock },
-      writable: true,
+  it('calls createCheckoutSession and redirects on success', async () => {
+    mockCreateCheckoutSession.mockResolvedValueOnce({
+      success: true,
+      data: { url: 'https://checkout.stripe.com/test' },
     })
 
     const user = userEvent.setup()
     render(<UpgradePrompt />)
 
     await user.click(screen.getByRole('button', { name: /upgrade to pro/i }))
-    expect(assignMock).toHaveBeenCalledWith('/pricing')
+    expect(mockCreateCheckoutSession).toHaveBeenCalledWith('monthly')
+    expect(window.location.assign).toHaveBeenCalledWith('https://checkout.stripe.com/test')
+  })
+
+  it('shows error when checkout fails', async () => {
+    mockCreateCheckoutSession.mockResolvedValueOnce({
+      success: false,
+      error: 'Payment failed',
+    })
+
+    const user = userEvent.setup()
+    render(<UpgradePrompt />)
+
+    await user.click(screen.getByRole('button', { name: /upgrade to pro/i }))
+    expect(await screen.findByText('Payment failed')).toBeInTheDocument()
+  })
+
+  it('renders "See all plans" link', () => {
+    render(<UpgradePrompt />)
+    expect(screen.getByRole('button', { name: /see all plans/i })).toBeInTheDocument()
+  })
+
+  it('shows Pro feature list', () => {
+    render(<UpgradePrompt />)
+    expect(screen.getByText('Unlimited trade tracking')).toBeInTheDocument()
+    expect(screen.getByText(/Full analytics/)).toBeInTheDocument()
+    expect(screen.getByText('Cancel anytime')).toBeInTheDocument()
   })
 
   it('renders cancel button when onCancel is provided', () => {
@@ -48,7 +89,7 @@ describe('UpgradePrompt', () => {
 
   it('does not render cancel button when onCancel is not provided', () => {
     render(<UpgradePrompt />)
-    expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^cancel$/i })).not.toBeInTheDocument()
   })
 
   it('calls onCancel when cancel button is clicked', async () => {
@@ -56,7 +97,7 @@ describe('UpgradePrompt', () => {
     const user = userEvent.setup()
     render(<UpgradePrompt onCancel={onCancel} />)
 
-    await user.click(screen.getByRole('button', { name: /cancel/i }))
+    await user.click(screen.getByRole('button', { name: /^cancel$/i }))
     expect(onCancel).toHaveBeenCalledOnce()
   })
 

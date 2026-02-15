@@ -47,9 +47,15 @@ export function UpgradePrompt({ tradesUsed, onCancel }: UpgradePromptProps) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-amber-900">Free trade limit reached</h3>
+      <h3 className="text-lg font-semibold text-amber-900">
+        {(tradesUsed ?? FREE_TRADE_LIMIT) > FREE_TRADE_LIMIT
+          ? 'Thanks for being an early user!'
+          : 'Free trade limit reached'}
+      </h3>
       <p className="mt-1 text-sm text-amber-700">
-        You&apos;ve used all {tradesUsed ?? FREE_TRADE_LIMIT} of your free trades.
+        {(tradesUsed ?? FREE_TRADE_LIMIT) > FREE_TRADE_LIMIT
+          ? `You\u2019ve tracked ${tradesUsed} trades with GreekWheel. As we introduce our pricing model, your existing data is safe and always accessible. To continue tracking new trades, upgrade to Pro.`
+          : `You\u2019ve used all ${tradesUsed ?? FREE_TRADE_LIMIT} of your free trades.`}
       </p>
 
       <div className="mt-4 mx-auto max-w-xs text-left">

@@ -12,6 +12,10 @@ vi.mock('@/lib/stripe', () => ({
       retrieve: vi.fn(),
     },
   },
+  PLANS: {
+    monthly: { priceId: 'price_monthly', amount: 300, interval: 'month' },
+    annual: { priceId: 'price_annual', amount: 3000, interval: 'year' },
+  },
 }))
 
 // Mock Prisma
@@ -52,8 +56,8 @@ function mockInvoiceObject(opts: {
   return {
     parent: opts.subscriptionId
       ? {
-          subscription_details: { subscription: opts.subscriptionId },
-        }
+        subscription_details: { subscription: opts.subscriptionId },
+      }
       : null,
     customer: opts.customerId,
   }
@@ -66,9 +70,9 @@ describe('Stripe Webhook Handler', () => {
   beforeEach(() => {
     process.env.STRIPE_WEBHOOK_SECRET = mockWebhookSecret
     vi.clearAllMocks()
-    vi.spyOn(console, 'log').mockImplementation(() => {})
-    vi.spyOn(console, 'warn').mockImplementation(() => {})
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(console, 'log').mockImplementation(() => { })
+    vi.spyOn(console, 'warn').mockImplementation(() => { })
+    vi.spyOn(console, 'error').mockImplementation(() => { })
     // Default: no duplicate events (idempotency check passes)
     vi.mocked(prisma.webhookEvent.findUnique).mockResolvedValue(null)
     vi.mocked(prisma.webhookEvent.create).mockResolvedValue({} as never)

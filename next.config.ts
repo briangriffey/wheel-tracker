@@ -8,9 +8,9 @@ const nextConfig: NextConfig = {
   output: 'standalone',
 
   // Performance optimizations
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
+  // compiler: {
+  //   removeConsole: process.env.NODE_ENV === 'production',
+  // },
 
   // Optimize images
   images: {

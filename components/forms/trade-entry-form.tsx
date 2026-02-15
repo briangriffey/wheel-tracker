@@ -11,6 +11,8 @@ import { Input } from '@/components/design-system/input/input'
 import { Select } from '@/components/design-system/select/select'
 import { Button } from '@/components/design-system/button/button'
 import { InfoTooltip } from '@/components/ui/tooltip'
+import { UpgradePrompt } from '@/components/trades/upgrade-prompt'
+import { TradeUsageBanner } from '@/components/trades/trade-usage-banner'
 
 interface TradeEntryFormProps {
   onSuccess?: () => void
@@ -80,50 +82,16 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
 
   if (showUpgradePrompt) {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center" role="alert">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-          <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-          </svg>
-        </div>
-        <h3 className="text-lg font-semibold text-amber-900">Free trade limit reached</h3>
-        <p className="mt-1 text-sm text-amber-700">
-          You&apos;ve used all {tradeUsage?.tradeLimit ?? 20} of your free trades. Upgrade to Pro for unlimited trade tracking.
-        </p>
-        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
-          <Button
-            type="button"
-            variant="primary"
-            onClick={() => window.location.assign('/pricing')}
-          >
-            Upgrade to Pro — $8/mo
-          </Button>
-          {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
-            </Button>
-          )}
-        </div>
-      </div>
+      <UpgradePrompt
+        tradesUsed={tradeUsage?.tradesUsed}
+        onCancel={onCancel}
+      />
     )
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" aria-label="Trade entry form">
-      {tradeUsage && tradeUsage.tier === 'FREE' && tradeUsage.remaining <= 5 && (
-        <div
-          className={`rounded-md px-4 py-3 text-sm ${
-            tradeUsage.remaining <= 2
-              ? 'border border-amber-300 bg-amber-50 text-amber-800'
-              : 'border border-neutral-200 bg-neutral-50 text-neutral-600'
-          }`}
-          role="status"
-        >
-          {tradeUsage.remaining === 1
-            ? '1 trade remaining. After this, you\u2019ll need to upgrade.'
-            : `${tradeUsage.tradesUsed}/${tradeUsage.tradeLimit} free trades used. ${tradeUsage.remaining} remaining.`}
-        </div>
-      )}
+      {tradeUsage && <TradeUsageBanner usage={tradeUsage} />}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {/* Ticker */}
         <div>

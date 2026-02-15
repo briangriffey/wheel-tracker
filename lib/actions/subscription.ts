@@ -54,9 +54,12 @@ export async function getTradeUsage(): Promise<ActionResult<TradeUsage>> {
       where: { userId },
     })
 
-    // Grace period: canceled users retain Pro access until subscriptionEndsAt
+    // Grace period: canceled and past_due users retain Pro access until subscriptionEndsAt
     const hasProAccess = user.subscriptionTier === 'PRO' ||
       (user.subscriptionStatus === 'canceled' &&
+       user.subscriptionEndsAt != null &&
+       new Date(user.subscriptionEndsAt) > new Date()) ||
+      (user.subscriptionStatus === 'past_due' &&
        user.subscriptionEndsAt != null &&
        new Date(user.subscriptionEndsAt) > new Date())
 

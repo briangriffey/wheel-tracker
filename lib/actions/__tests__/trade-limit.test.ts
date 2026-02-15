@@ -13,6 +13,7 @@ vi.mock('@/lib/db', () => ({
       count: vi.fn(),
       create: vi.fn(),
     },
+    $transaction: vi.fn(),
   },
 }))
 
@@ -48,6 +49,10 @@ describe('Trade Limit Enforcement', () => {
       user: { id: mockUserId },
       expires: '2026-12-31',
     } as never)
+    // Simulate $transaction by executing the callback with the prisma mock
+    vi.mocked(prisma.$transaction as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+      async (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma)
+    )
   })
 
   it('should allow trade creation for FREE user under limit', async () => {

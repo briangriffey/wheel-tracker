@@ -21,6 +21,10 @@ vi.mock('@/lib/db', () => ({
       update: vi.fn(),
       findUnique: vi.fn(),
     },
+    webhookEvent: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+    },
   },
 }))
 
@@ -65,6 +69,9 @@ describe('Stripe Webhook Handler', () => {
     vi.spyOn(console, 'log').mockImplementation(() => {})
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})
+    // Default: no duplicate events (idempotency check passes)
+    vi.mocked(prisma.webhookEvent.findUnique).mockResolvedValue(null)
+    vi.mocked(prisma.webhookEvent.create).mockResolvedValue({} as never)
   })
 
   afterEach(() => {
@@ -552,6 +559,160 @@ describe('Stripe Webhook Handler', () => {
       expect(console.log).toHaveBeenCalledWith(
         '[WEBHOOK] Unhandled event type: payment_intent.created'
       )
+    })
+  })
+
+  describe('Webhook Idempotency', () => {
+    it('should skip duplicate events and return 200', async () => {
+      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue({
+        id: 'evt_already_processed',
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            metadata: { userId: 'user_123' },
+            subscription: 'sub_123',
+            customer: 'cus_123',
+          },
+        },
+      } as unknown as ReturnType<typeof stripe.webhooks.constructEvent>)
+
+      // Event already exists in the database
+      vi.mocked(prisma.webhookEvent.findUnique).mockResolvedValue({
+        id: 'evt_already_processed',
+        type: 'checkout.session.completed',
+        processedAt: new Date(),
+      } as never)
+
+      const request = makeRequest()
+      const response = await POST(request)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.received).toBe(true)
+      expect(data.duplicate).toBe(true)
+      // Should NOT process the event
+      expect(prisma.user.update).not.toHaveBeenCalled()
+      expect(stripe.subscriptions.retrieve).not.toHaveBeenCalled()
+    })
+
+    it('should record event ID after successful processing', async () => {
+      const mockPeriodEnd = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+
+      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue({
+        id: 'evt_new_event',
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            metadata: { userId: 'user_123' },
+            subscription: 'sub_123',
+            customer: 'cus_123',
+          },
+        },
+      } as unknown as ReturnType<typeof stripe.webhooks.constructEvent>)
+
+      vi.mocked(stripe.subscriptions.retrieve).mockResolvedValue(
+        mockSubscriptionWithPeriodEnd(mockPeriodEnd)
+      )
+      vi.mocked(prisma.user.update).mockResolvedValue({} as never)
+
+      const request = makeRequest()
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+      expect(prisma.webhookEvent.create).toHaveBeenCalledWith({
+        data: { id: 'evt_new_event', type: 'checkout.session.completed' },
+      })
+    })
+
+    it('should not record event ID when handler fails', async () => {
+      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue({
+        id: 'evt_failing',
+        type: 'checkout.session.completed',
+        data: {
+          object: {
+            metadata: { userId: 'user_123' },
+            subscription: 'sub_123',
+            customer: 'cus_123',
+          },
+        },
+      } as unknown as ReturnType<typeof stripe.webhooks.constructEvent>)
+
+      vi.mocked(stripe.subscriptions.retrieve).mockRejectedValue(
+        new Error('Stripe API error')
+      )
+
+      const request = makeRequest()
+      const response = await POST(request)
+
+      expect(response.status).toBe(500)
+      // Should NOT record the event since processing failed
+      expect(prisma.webhookEvent.create).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('Account Deletion - Subscription Canceled', () => {
+    it('should preserve subscriptionEndsAt for grace period on deletion', async () => {
+      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue({
+        id: 'evt_delete',
+        type: 'customer.subscription.deleted',
+        data: {
+          object: {
+            customer: 'cus_123',
+          },
+        },
+      } as unknown as ReturnType<typeof stripe.webhooks.constructEvent>)
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: 'user_123',
+      } as never)
+
+      vi.mocked(prisma.user.update).mockResolvedValue({} as never)
+
+      const request = makeRequest()
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+
+      // Verify subscriptionEndsAt is NOT cleared (grace period preserved)
+      const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0]
+      expect(updateCall.data).not.toHaveProperty('subscriptionEndsAt')
+      expect(updateCall.data).toEqual({
+        subscriptionTier: 'FREE',
+        subscriptionStatus: 'canceled',
+        stripeSubscriptionId: null,
+      })
+    })
+  })
+
+  describe('Payment Failure Grace Period', () => {
+    it('should set past_due without clearing subscription tier', async () => {
+      vi.mocked(stripe.webhooks.constructEvent).mockReturnValue({
+        id: 'evt_payment_fail',
+        type: 'invoice.payment_failed',
+        data: {
+          object: {
+            customer: 'cus_123',
+          },
+        },
+      } as unknown as ReturnType<typeof stripe.webhooks.constructEvent>)
+
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({
+        id: 'user_123',
+      } as never)
+
+      vi.mocked(prisma.user.update).mockResolvedValue({} as never)
+
+      const request = makeRequest()
+      const response = await POST(request)
+
+      expect(response.status).toBe(200)
+
+      // Should only set past_due, NOT change the tier
+      const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0]
+      expect(updateCall.data).toEqual({
+        subscriptionStatus: 'past_due',
+      })
+      expect(updateCall.data).not.toHaveProperty('subscriptionTier')
     })
   })
 

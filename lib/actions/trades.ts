@@ -17,6 +17,17 @@ import { auth } from '@/lib/auth'
 import { FREE_TRADE_LIMIT } from '@/lib/constants'
 
 /**
+ * Sentinel error thrown inside the trade-creation transaction when the free
+ * tier limit is reached.  Caught in createTrade to return a typed result.
+ */
+class TradeLimitError extends Error {
+  constructor() {
+    super('FREE_TIER_LIMIT_REACHED')
+    this.name = 'TradeLimitError'
+  }
+}
+
+/**
  * Server action result type
  */
 type ActionResult<T = unknown> =
@@ -79,40 +90,46 @@ export async function createTrade(
     const hasProAccess = user?.subscriptionTier === 'PRO' ||
       (user?.subscriptionStatus === 'canceled' &&
        user?.subscriptionEndsAt != null &&
+       new Date(user.subscriptionEndsAt) > new Date()) ||
+      (user?.subscriptionStatus === 'past_due' &&
+       user?.subscriptionEndsAt != null &&
        new Date(user.subscriptionEndsAt) > new Date())
-
-    if (!hasProAccess) {
-      const tradeCount = await prisma.trade.count({
-        where: { userId },
-      })
-
-      if (tradeCount >= FREE_TRADE_LIMIT) {
-        return {
-          success: false,
-          error: 'FREE_TIER_LIMIT_REACHED',
-        }
-      }
-    }
 
     // Calculate shares (contracts * 100)
     const shares = validated.contracts * 100
 
-    // Create trade
-    const trade = await prisma.trade.create({
-      data: {
-        userId,
-        ticker: validated.ticker,
-        type: validated.type,
-        action: validated.action,
-        strikePrice: new Prisma.Decimal(validated.strikePrice),
-        premium: new Prisma.Decimal(validated.premium),
-        contracts: validated.contracts,
-        shares,
-        expirationDate: validated.expirationDate,
-        openDate: validated.openDate ?? new Date(),
-        notes: validated.notes,
-        positionId: validated.positionId,
-      },
+    // Use a serializable transaction to atomically check the limit and create
+    // the trade. This prevents race conditions where concurrent requests both
+    // read the same count and both proceed past the limit.
+    const trade = await prisma.$transaction(async (tx) => {
+      if (!hasProAccess) {
+        const tradeCount = await tx.trade.count({
+          where: { userId },
+        })
+
+        if (tradeCount >= FREE_TRADE_LIMIT) {
+          throw new TradeLimitError()
+        }
+      }
+
+      return tx.trade.create({
+        data: {
+          userId,
+          ticker: validated.ticker,
+          type: validated.type,
+          action: validated.action,
+          strikePrice: new Prisma.Decimal(validated.strikePrice),
+          premium: new Prisma.Decimal(validated.premium),
+          contracts: validated.contracts,
+          shares,
+          expirationDate: validated.expirationDate,
+          openDate: validated.openDate ?? new Date(),
+          notes: validated.notes,
+          positionId: validated.positionId,
+        },
+      })
+    }, {
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
     })
 
     // Revalidate relevant paths
@@ -122,6 +139,10 @@ export async function createTrade(
 
     return { success: true, data: { id: trade.id } }
   } catch (error) {
+    if (error instanceof TradeLimitError) {
+      return { success: false, error: 'FREE_TIER_LIMIT_REACHED' }
+    }
+
     console.error('Error creating trade:', error)
 
     if (error instanceof Error) {

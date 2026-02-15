@@ -262,6 +262,14 @@ model Wheel {
   @@index([userId])
 }
 
+model WebhookEvent {
+  id          String   @id // Stripe event ID (evt_xxx)
+  type        String
+  processedAt DateTime @default(now())
+
+  @@index([processedAt])
+}
+
 model StockPrice {
   id        String   @id @default(cuid())
   ticker    String   @unique // Only one price per ticker

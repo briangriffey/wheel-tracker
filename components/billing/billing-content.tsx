@@ -110,7 +110,9 @@ export function BillingContent({ subscription, usage }: BillingContentProps) {
             </div>
             {usage?.limitReached && (
               <p className="mt-2 text-sm text-amber-700">
-                You&apos;ve reached the free trade limit.{' '}
+                {tradesUsed > FREE_TRADE_LIMIT
+                  ? `Thanks for being an early GreekWheel user! Your ${tradesUsed} trades are safe and always accessible. `
+                  : 'You\u2019ve reached the free trade limit. '}
                 <a href="/pricing" className="font-medium underline hover:text-amber-900">
                   Upgrade to Pro
                 </a>{' '}

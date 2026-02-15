@@ -537,7 +537,7 @@ export default async function Home() {
                 </li>
               </ul>
               <Link
-                href="/register"
+                href="/pricing"
                 className="w-full inline-flex items-center justify-center px-6 py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-all shadow-md"
               >
                 Start Pro — $8/mo

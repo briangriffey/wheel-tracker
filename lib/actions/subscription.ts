@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import { FREE_TRADE_LIMIT } from '@/lib/constants'
 
 type ActionResult<T = unknown> =
@@ -15,16 +16,9 @@ export interface TradeUsage {
   limitReached: boolean
 }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -36,6 +30,9 @@ async function getCurrentUserId(): Promise<string> {
 export async function getTradeUsage(): Promise<ActionResult<TradeUsage>> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized. Please log in.' }
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },

@@ -1,6 +1,6 @@
 # Deprecation Guide: Legacy Utilities
 
-This guide documents deprecated patterns in the Wheel Tracker codebase and provides migration paths to the new Design System.
+This guide documents deprecated patterns in the GreekWheel codebase and provides migration paths to the new Design System.
 
 ## Overview
 

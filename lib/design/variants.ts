@@ -493,7 +493,7 @@ export type InputVariantProps = VariantProps<typeof inputVariants>
  *
  * // Main heading
  * <h1 className={textVariants({ variant: 'h1', weight: 'bold' })}>
- *   Welcome to Wheel Tracker
+ *   Welcome to GreekWheel
  * </h1>
  *
  * // Body text with muted color

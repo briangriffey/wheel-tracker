@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Wheel Tracker will be documented in this file.
+All notable changes to GreekWheel will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 Initial Release
 
-The first production release of Wheel Tracker! A comprehensive web application for tracking options trading using the wheel strategy.
+The first production release of GreekWheel! A comprehensive web application for tracking options trading using the wheel strategy.
 
 ### Added
 

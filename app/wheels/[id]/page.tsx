@@ -8,7 +8,7 @@ import { WheelPositionsList } from '@/components/wheels/wheel-positions-list'
 import { WheelCycleHistory } from '@/components/wheels/wheel-cycle-history'
 
 export const metadata = {
-  title: 'Wheel Details | Wheel Tracker',
+  title: 'Wheel Details | GreekWheel',
   description: 'Detailed view of your wheel strategy cycle',
 }
 

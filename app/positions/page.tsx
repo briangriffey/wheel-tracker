@@ -3,7 +3,7 @@ import { getOpenPositions } from '@/lib/queries/positions'
 import { PositionsList } from '@/components/positions'
 
 export const metadata = {
-  title: 'Active Positions | Wheel Tracker',
+  title: 'Active Positions | GreekWheel',
   description: 'View and manage your active stock positions',
 }
 

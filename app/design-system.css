@@ -2,7 +2,7 @@
  * Design System CSS Custom Properties
  *
  * These custom properties enable runtime theming and provide a foundation
- * for the Wheel Tracker design system. Values are in HSL format without
+ * for the GreekWheel design system. Values are in HSL format without
  * the hsl() wrapper to enable Tailwind's opacity utilities.
  *
  * @see prds/design-system.md for complete design system documentation

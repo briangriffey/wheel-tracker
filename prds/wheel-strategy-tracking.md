@@ -4,7 +4,7 @@
 
 ## Executive Summary
 
-This PRD defines the requirements for transforming the Wheel Tracker application into a complete, automated wheel strategy tracking system. The wheel strategy is a systematic options trading approach that involves selling cash-secured PUTs, acquiring stock if assigned, then selling covered CALLs until the stock is called away - repeating the cycle indefinitely.
+This PRD defines the requirements for transforming the GreekWheel application into a complete, automated wheel strategy tracking system. The wheel strategy is a systematic options trading approach that involves selling cash-secured PUTs, acquiring stock if assigned, then selling covered CALLs until the stock is called away - repeating the cycle indefinitely.
 
 **Document Version:** 1.0
 **Last Updated:** 2026-02-08
@@ -108,7 +108,7 @@ REPEAT INDEFINITELY
 
 ### What Exists Today
 
-The current Wheel Tracker application provides:
+The current GreekWheel application provides:
 
 ✅ **Trade Entry**
 - Manual entry of PUT and CALL trades
@@ -205,7 +205,7 @@ Position {
 
 ## Target State Vision
 
-### The Ideal Wheel Tracker
+### The Ideal GreekWheel
 
 **Vision Statement:**
 > A wheel tracker that guides traders through every step of the wheel cycle, automates routine tasks, enforces best practices, and provides clear visibility into portfolio health and wheel efficiency.

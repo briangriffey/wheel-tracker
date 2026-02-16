@@ -10,7 +10,7 @@ import './globals.css'
 import './design-system.css'
 
 export const metadata: Metadata = {
-  title: 'Wheel Tracker',
+  title: 'GreekWheel',
   description: 'Track your options trading using the wheel strategy',
 }
 
@@ -32,7 +32,7 @@ export default async function RootLayout({
                 <div className="flex justify-between items-center h-16">
                   <div className="flex items-center gap-8">
                     <Link href="/dashboard" className="text-xl font-bold text-neutral-900">
-                      Wheel Tracker
+                      GreekWheel
                     </Link>
                     <nav className="hidden md:flex gap-6" aria-label="Main navigation">
                       <Link

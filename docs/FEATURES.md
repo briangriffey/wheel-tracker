@@ -1,4 +1,4 @@
-# Wheel Tracker Features Guide
+# GreekWheel Features Guide
 
 **Version:** 1.0.0
 **Last Updated:** February 2026
@@ -20,7 +20,7 @@
 
 ## Introduction
 
-Wheel Tracker provides a comprehensive suite of features to help you manage your options wheel strategy efficiently. This guide covers all major features with step-by-step instructions and examples.
+GreekWheel provides a comprehensive suite of features to help you manage your options wheel strategy efficiently. This guide covers all major features with step-by-step instructions and examples.
 
 ### What You Can Do
 

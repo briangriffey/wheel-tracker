@@ -1,6 +1,6 @@
-# Wheel Tracker User Guide
+# GreekWheel User Guide
 
-Welcome to Wheel Tracker! This guide will help you understand and use the application to track your options trading using the wheel strategy.
+Welcome to GreekWheel! This guide will help you understand and use the application to track your options trading using the wheel strategy.
 
 ## Table of Contents
 
@@ -23,7 +23,7 @@ Welcome to Wheel Tracker! This guide will help you understand and use the applic
 
 ### Creating Your Account
 
-1. Navigate to the Wheel Tracker homepage
+1. Navigate to the GreekWheel homepage
 2. Click "Register" to create a new account
 3. Enter your email, name, and password
 4. Verify your email (if email verification is enabled)

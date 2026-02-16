@@ -1,12 +1,12 @@
-# Wheel Tracker Documentation
+# GreekWheel Documentation
 
-This directory contains documentation for the Wheel Tracker application.
+This directory contains documentation for the GreekWheel application.
 
 ## Contents
 
 ### User Documentation
 
-- **[Features Guide](./FEATURES.md)** - Comprehensive guide to all Wheel Tracker features
+- **[Features Guide](./FEATURES.md)** - Comprehensive guide to all GreekWheel features
   - Wheels Dashboard
   - Wheel Detail View
   - Notification System
@@ -14,7 +14,7 @@ This directory contains documentation for the Wheel Tracker application.
   - Dashboard & Analytics
   - Tips & Best Practices
 
-- **[User Guide](./USER_GUIDE.md)** - Complete user guide for using Wheel Tracker
+- **[User Guide](./USER_GUIDE.md)** - Complete user guide for using GreekWheel
   - Getting started
   - Understanding the wheel strategy
   - Entering trades and managing positions

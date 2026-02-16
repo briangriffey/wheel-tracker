@@ -4,7 +4,7 @@ import { WheelsList } from '@/components/wheels/wheels-list'
 import { EmptyState } from '@/components/ui/empty-state'
 
 export const metadata = {
-  title: 'Wheels | Wheel Tracker',
+  title: 'Wheels | GreekWheel',
   description: 'View and manage your wheel strategy cycles with comprehensive metrics',
 }
 

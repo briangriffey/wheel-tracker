@@ -1,4 +1,4 @@
-# Branding and Naming Strategy for Wheel Tracker → GreekWheel
+# Branding and Naming Strategy for GreekWheel → GreekWheel
 
 **dispatched_by: branding_team**
 **Status**: ✅ **DECISION MADE - GreekWheel Selected**
@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-This PRD outlines the branding and naming strategy for the Wheel Tracker application - a comprehensive Next.js web application for tracking options trading using the wheel strategy. The goal is to establish a strong brand identity with a memorable name, consistent visual identity, and clear market positioning that resonates with options traders while conveying professionalism and trustworthiness.
+This PRD outlines the branding and naming strategy for the GreekWheel application - a comprehensive Next.js web application for tracking options trading using the wheel strategy. The goal is to establish a strong brand identity with a memorable name, consistent visual identity, and clear market positioning that resonates with options traders while conveying professionalism and trustworthiness.
 
 **🎉 FINAL DECISION: GreekWheel**
 - **Domain Secured**: greekwheel.com ✅
@@ -19,7 +19,7 @@ This PRD outlines the branding and naming strategy for the Wheel Tracker applica
 - Full-featured options trading tracker built with Next.js 15 + React 19 + TypeScript
 - Specialized in the "wheel strategy" (cash-secured PUTs → stock assignment → covered CALLs)
 - Target users: Individual options traders, retail investors using systematic options strategies
-- Current name: "Wheel Tracker" (functional but generic)
+- Current name: "GreekWheel" (functional but generic)
 - Current color scheme: Green-based palette (#43D984)
 - 409+ tests, comprehensive features including P&L tracking, benchmarking, trade management
 
@@ -41,7 +41,7 @@ This PRD outlines the branding and naming strategy for the Wheel Tracker applica
 
 ## Problem Statement
 
-Options traders need a tool that not only tracks their trades but also instills confidence in their systematic approach. The current "Wheel Tracker" name is functional but doesn't capture the emotional journey of building wealth through disciplined trading. We need a brand that resonates with traders who view the wheel strategy as a methodical path to consistent income generation.
+Options traders need a tool that not only tracks their trades but also instills confidence in their systematic approach. The current "GreekWheel" name is functional but doesn't capture the emotional journey of building wealth through disciplined trading. We need a brand that resonates with traders who view the wheel strategy as a methodical path to consistent income generation.
 
 ## Proposed Brand Names
 
@@ -717,7 +717,7 @@ GreekWheel was selected as the final brand name for the following strategic reas
     - Email header template
 
 12. **Application Rebranding**
-    - Update all "Wheel Tracker" → "GreekWheel" in code
+    - Update all "GreekWheel" → "GreekWheel" in code
     - Update logo/branding in app header
     - Update landing page with new messaging
     - Update authentication pages

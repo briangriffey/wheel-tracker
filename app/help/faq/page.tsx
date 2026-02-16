@@ -2,8 +2,8 @@ import React from 'react'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'FAQ - Wheel Tracker',
-  description: 'Frequently asked questions about using Wheel Tracker',
+  title: 'FAQ - GreekWheel',
+  description: 'Frequently asked questions about using GreekWheel',
 }
 
 interface FAQItemProps {
@@ -38,7 +38,7 @@ export default function FAQPage() {
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Frequently Asked Questions</h1>
           <p className="text-gray-600">
-            Find answers to common questions about Wheel Tracker and the wheel strategy.
+            Find answers to common questions about GreekWheel and the wheel strategy.
           </p>
         </div>
 
@@ -109,7 +109,7 @@ export default function FAQPage() {
 
           <FAQItem
             question="How much time does wheel trading take?"
-            answer="Typically 1-2 hours per week once you're comfortable with the process. This includes: researching new trades (30 min), entering trades in your broker (15 min), updating Wheel Tracker (15 min), and reviewing performance (30 min). The strategy is designed to be passive income."
+            answer="Typically 1-2 hours per week once you're comfortable with the process. This includes: researching new trades (30 min), entering trades in your broker (15 min), updating GreekWheel (15 min), and reviewing performance (30 min). The strategy is designed to be passive income."
           />
 
           <FAQItem
@@ -148,7 +148,7 @@ export default function FAQPage() {
 
           <FAQItem
             question="What happens when I get assigned?"
-            answer="When a PUT is assigned, Wheel Tracker automatically creates a new position for the shares you received. Your cost basis is set to the strike price. You can then start selling covered CALLs against this position to collect additional premium."
+            answer="When a PUT is assigned, GreekWheel automatically creates a new position for the shares you received. Your cost basis is set to the strike price. You can then start selling covered CALLs against this position to collect additional premium."
           />
 
           <FAQItem

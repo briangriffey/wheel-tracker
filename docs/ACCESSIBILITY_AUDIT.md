@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-This document outlines the accessibility improvements implemented for the Wheel Tracker application and provides a testing checklist for WCAG 2.1 AA compliance.
+This document outlines the accessibility improvements implemented for the GreekWheel application and provides a testing checklist for WCAG 2.1 AA compliance.
 
 ### Implementation Status
 

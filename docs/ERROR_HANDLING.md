@@ -1,7 +1,7 @@
 # Error Handling and Loading UX Implementation
 
 ## Overview
-This document describes the comprehensive error handling and loading state improvements implemented across the Wheel Tracker application.
+This document describes the comprehensive error handling and loading state improvements implemented across the GreekWheel application.
 
 ## Components Implemented
 

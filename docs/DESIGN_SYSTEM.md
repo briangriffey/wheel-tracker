@@ -1,4 +1,4 @@
-# Wheel Tracker Design System
+# GreekWheel Design System
 
 **Version:** 1.0.0
 **Last Updated:** February 2026
@@ -23,7 +23,7 @@
 
 ## Introduction
 
-The Wheel Tracker Design System is a comprehensive, production-ready component library and design token system built for consistency, accessibility, and developer experience. It replaces hardcoded styles across 20+ components with a centralized, reusable system.
+The GreekWheel Design System is a comprehensive, production-ready component library and design token system built for consistency, accessibility, and developer experience. It replaces hardcoded styles across 20+ components with a centralized, reusable system.
 
 ### Key Benefits
 
@@ -47,7 +47,7 @@ The Wheel Tracker Design System is a comprehensive, production-ready component l
 
 ### Installation
 
-The design system is already integrated into the Wheel Tracker application. To use components in your code:
+The design system is already integrated into the GreekWheel application. To use components in your code:
 
 ```typescript
 // Import components
@@ -1083,4 +1083,4 @@ For questions, issues, or feature requests:
 
 ---
 
-**Built with ❤️ by the Wheel Tracker team**
+**Built with ❤️ by the GreekWheel team**

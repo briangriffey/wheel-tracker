@@ -1,4 +1,4 @@
-# Wheel Tracker User Guide
+# GreekWheel User Guide
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -15,11 +15,11 @@
 
 ## Introduction
 
-Welcome to Wheel Tracker! This application helps you track and manage your options trading using the wheel strategy. Whether you're new to options trading or an experienced trader, this guide will help you get the most out of Wheel Tracker.
+Welcome to GreekWheel! This application helps you track and manage your options trading using the wheel strategy. Whether you're new to options trading or an experienced trader, this guide will help you get the most out of GreekWheel.
 
-### What is Wheel Tracker?
+### What is GreekWheel?
 
-Wheel Tracker is a web-based application designed specifically for traders who use the wheel strategy to generate income from options. It helps you:
+GreekWheel is a web-based application designed specifically for traders who use the wheel strategy to generate income from options. It helps you:
 
 - **Track all your trades** - Record PUT and CALL options with detailed information
 - **Manage positions** - Handle stock assignments and track unrealized gains/losses
@@ -75,13 +75,13 @@ The wheel strategy is a systematic options trading strategy that aims to generat
 
 ### 1. Set Up Your Account
 
-1. Register for a Wheel Tracker account with your email
+1. Register for a GreekWheel account with your email
 2. Log in to access your dashboard
 3. Review the help center and glossary to familiarize yourself with the interface
 
 ### 2. Plan Your First Trade
 
-Before entering your first trade in Wheel Tracker:
+Before entering your first trade in GreekWheel:
 
 1. **Choose a stock** - Select a high-quality company you'd be happy to own
 2. **Research the stock** - Check fundamentals, technical, and upcoming events (especially earnings)
@@ -304,7 +304,7 @@ The dashboard shows important alerts:
 
 ### Wheel Tracking
 
-Wheel Tracker can automatically group your trades into wheels (cycles):
+GreekWheel can automatically group your trades into wheels (cycles):
 
 1. **Navigate to Wheels**
    - Click "Wheels" in the main navigation
@@ -457,11 +457,11 @@ Add notes to trades and positions:
 
 ### General Questions
 
-**Q: Is Wheel Tracker free?**
+**Q: Is GreekWheel free?**
 A: Pricing information is available on our website. We offer both free and premium plans.
 
-**Q: Do I need a brokerage account to use Wheel Tracker?**
-A: Yes. Wheel Tracker is a tracking and analysis tool. You'll execute actual trades through your brokerage (TD Ameritrade, Robinhood, Interactive Brokers, etc.).
+**Q: Do I need a brokerage account to use GreekWheel?**
+A: Yes. GreekWheel is a tracking and analysis tool. You'll execute actual trades through your brokerage (TD Ameritrade, Robinhood, Interactive Brokers, etc.).
 
 **Q: Can I import trades from my broker?**
 A: Currently, you need to manually enter trades. We're working on import features for future releases.
@@ -497,8 +497,8 @@ A: Currently, you cannot edit trades (for accuracy). If you made a mistake, cont
 **Q: Why doesn't my position show current prices?**
 A: We fetch prices periodically from FinancialData.net API. Refresh the page or wait a few minutes for updates.
 
-**Q: Can I use Wheel Tracker on my phone?**
-A: Yes! Wheel Tracker is fully responsive and works on mobile devices, tablets, and desktops.
+**Q: Can I use GreekWheel on my phone?**
+A: Yes! GreekWheel is fully responsive and works on mobile devices, tablets, and desktops.
 
 **Q: What browsers are supported?**
 A: We support all modern browsers: Chrome, Firefox, Safari, and Edge (latest versions).
@@ -537,7 +537,7 @@ If you need assistance:
 
 ## Conclusion
 
-The wheel strategy is a powerful way to generate consistent income from options trading. Wheel Tracker makes it easy to track your trades, manage positions, and analyze your performance.
+The wheel strategy is a powerful way to generate consistent income from options trading. GreekWheel makes it easy to track your trades, manage positions, and analyze your performance.
 
 **Remember:**
 - Start small and learn as you go

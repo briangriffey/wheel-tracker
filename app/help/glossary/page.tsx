@@ -2,7 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Glossary - Wheel Tracker',
+  title: 'Glossary - GreekWheel',
   description: 'Options trading and wheel strategy terminology',
 }
 

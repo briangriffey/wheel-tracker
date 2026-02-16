@@ -1,10 +1,10 @@
-# Design System Implementation for Wheel Tracker
+# Design System Implementation for GreekWheel
 
 **dispatched_by: mayor**
 
 ## Description
 
-Implement a comprehensive design system for the Wheel Tracker application to replace hardcoded colors and styles across 20+ React components with a centralized, reusable component library and design token system. The design system will introduce a new green-based color palette, establish component variants, and provide a migration path for all existing components.
+Implement a comprehensive design system for the GreekWheel application to replace hardcoded colors and styles across 20+ React components with a centralized, reusable component library and design token system. The design system will introduce a new green-based color palette, establish component variants, and provide a migration path for all existing components.
 
 **Current State:**
 - Next.js 15 + React 19 + TypeScript + Tailwind CSS 3.4
@@ -1204,7 +1204,7 @@ docs/
 ## Notes
 
 - This design system follows the Gastown pattern of centralized, reusable components
-- The new green-based color palette reflects the Wheel Tracker brand identity
+- The new green-based color palette reflects the GreekWheel brand identity
 - All components are built with accessibility as a first-class concern
 - The migration strategy prioritizes low-risk components first to build confidence
 - Visual regression testing ensures no unintended UI changes

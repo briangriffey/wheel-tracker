@@ -246,7 +246,7 @@ pnpm lint
 
 ## Compliance
 
-These improvements bring the Wheel Tracker application closer to **WCAG 2.1 Level AA** compliance. Key success criteria addressed:
+These improvements bring the GreekWheel application closer to **WCAG 2.1 Level AA** compliance. Key success criteria addressed:
 
 - ✅ 1.3.1 Info and Relationships
 - ✅ 2.1.1 Keyboard

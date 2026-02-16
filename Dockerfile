@@ -1,4 +1,4 @@
-# Wheel Tracker Dockerfile
+# GreekWheel Dockerfile
 # Optimized for Next.js 15 with standalone output mode
 
 FROM node:20-alpine AS base

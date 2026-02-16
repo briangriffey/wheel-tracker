@@ -1,6 +1,6 @@
 # Design System Deployment Checklist
 
-**Project:** Wheel Tracker Design System v1.0.0
+**Project:** GreekWheel Design System v1.0.0
 **Date:** February 8, 2026
 **Status:** Ready for Production ✅
 
@@ -71,7 +71,7 @@
 #### 1. Introduction (5 minutes)
 
 **Overview:**
-> "We've successfully implemented a comprehensive design system for Wheel Tracker that provides consistency, accessibility, and improved developer experience across the application."
+> "We've successfully implemented a comprehensive design system for GreekWheel that provides consistency, accessibility, and improved developer experience across the application."
 
 **Key Metrics:**
 - 3 core components (Button, Badge, Alert)

@@ -1,6 +1,6 @@
 # Railway Deployment Guide
 
-This document explains how the Wheel Tracker application is deployed to Railway and how database migrations are handled automatically.
+This document explains how the GreekWheel application is deployed to Railway and how database migrations are handled automatically.
 
 ## Overview
 

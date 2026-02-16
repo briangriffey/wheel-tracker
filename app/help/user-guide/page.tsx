@@ -2,8 +2,8 @@ import React from 'react'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'User Guide - Wheel Tracker',
-  description: 'Step-by-step guide to using Wheel Tracker for the wheel strategy',
+  title: 'User Guide - GreekWheel',
+  description: 'Step-by-step guide to using GreekWheel for the wheel strategy',
 }
 
 export default function UserGuidePage() {
@@ -20,7 +20,7 @@ export default function UserGuidePage() {
           </Link>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">User Guide</h1>
           <p className="text-gray-600">
-            A complete walkthrough of the Wheel Tracker workflow, from funding your account to
+            A complete walkthrough of the GreekWheel workflow, from funding your account to
             reading your dashboard.
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function UserGuidePage() {
           </h2>
           <p className="text-gray-700 mb-4">
             Before you start trading, record the cash you have available in your brokerage account.
-            This lets Wheel Tracker compare your portfolio performance against a SPY buy-and-hold
+            This lets GreekWheel compare your portfolio performance against a SPY buy-and-hold
             benchmark.
           </p>
           <ol className="list-decimal list-inside space-y-2 text-gray-700 mb-4">
@@ -98,7 +98,7 @@ export default function UserGuidePage() {
           </ol>
           <div className="bg-blue-50 rounded-lg p-4">
             <p className="text-sm text-gray-700">
-              <strong>Why track deposits?</strong> Wheel Tracker uses your deposit history to
+              <strong>Why track deposits?</strong> GreekWheel uses your deposit history to
               calculate a &ldquo;what if you had bought SPY instead?&rdquo; benchmark. Each deposit
               is assumed to purchase SPY at the closing price on that date, so keeping deposits
               accurate makes the comparison meaningful.
@@ -189,7 +189,7 @@ export default function UserGuidePage() {
 
           <div className="bg-yellow-50 rounded-lg p-4 mt-4">
             <p className="text-sm text-gray-700">
-              <strong>Tracking only:</strong> Wheel Tracker does not connect to your broker. You
+              <strong>Tracking only:</strong> GreekWheel does not connect to your broker. You
               still need to place the actual trade with your brokerage. Enter the trade here after
               you&apos;ve executed it so your performance tracking stays accurate.
             </p>
@@ -235,7 +235,7 @@ export default function UserGuidePage() {
             <div className="border border-gray-200 rounded-lg p-4">
               <h3 className="font-bold text-gray-900 mb-1">Mark as Assigned</h3>
               <p className="text-sm text-gray-700">
-                Use this when a PUT is exercised and you receive shares. Wheel Tracker automatically
+                Use this when a PUT is exercised and you receive shares. GreekWheel automatically
                 creates a new position for you (see next section). Status changes to{' '}
                 <span className="font-mono text-xs bg-orange-100 text-orange-800 px-1 rounded">
                   ASSIGNED
@@ -260,7 +260,7 @@ export default function UserGuidePage() {
             4. Positions from Assignment
           </h2>
           <p className="text-gray-700 mb-4">
-            When you mark a PUT trade as assigned, Wheel Tracker automatically creates a stock
+            When you mark a PUT trade as assigned, GreekWheel automatically creates a stock
             position:
           </p>
           <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
@@ -286,7 +286,7 @@ export default function UserGuidePage() {
           </div>
 
           <p className="text-gray-700">
-            While a position is open, Wheel Tracker fetches the current stock price and shows your{' '}
+            While a position is open, GreekWheel fetches the current stock price and shows your{' '}
             <strong>unrealized P&amp;L</strong> (current market value minus cost basis). This
             updates each time you visit the Positions page.
           </p>

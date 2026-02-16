@@ -20,7 +20,7 @@ export const revalidate = 60
 
 // Add metadata for SEO
 export const metadata = {
-  title: 'Dashboard | Wheel Tracker',
+  title: 'Dashboard | GreekWheel',
   description: 'Track your options trading performance with the wheel strategy',
 }
 

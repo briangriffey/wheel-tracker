@@ -37,7 +37,7 @@ export default function DesignSystemPage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Wheel Tracker Design System</h1>
+          <h1 className="text-3xl font-bold text-gray-900">GreekWheel Design System</h1>
           <p className="mt-2 text-gray-600">Interactive component gallery and documentation</p>
         </div>
       </header>
@@ -870,7 +870,7 @@ export default function DesignSystemPage() {
       <footer className="bg-white border-t border-gray-200 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <p className="text-center text-gray-600">
-            Wheel Tracker Design System • Built with Next.js, React, TypeScript, and Tailwind CSS
+            GreekWheel Design System • Built with Next.js, React, TypeScript, and Tailwind CSS
           </p>
         </div>
       </footer>

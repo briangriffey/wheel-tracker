@@ -182,7 +182,7 @@ Difference: $345 error in benchmark!
 **Future Process (Automated):**
 
 1. User deposits $5,000 cash into trading account
-2. User logs into Wheel Tracker → "Record Cash Deposit"
+2. User logs into GreekWheel → "Record Cash Deposit"
 3. Enter amount: $5,000, date: today
 4. **System automatically:**
    - Fetches current SPY price ($480)

@@ -2,7 +2,7 @@
 
 ## Summary
 
-Visual regression testing has been successfully configured for the Wheel Tracker design system. This setup enables automated detection of unintended visual changes to UI components.
+Visual regression testing has been successfully configured for the GreekWheel design system. This setup enables automated detection of unintended visual changes to UI components.
 
 ## What Was Implemented
 

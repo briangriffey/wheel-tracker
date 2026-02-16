@@ -4,7 +4,7 @@ import { getCashDeposits, getDepositSummary } from '@/lib/actions/deposits'
 import { DepositsClient } from './deposits-client'
 
 export const metadata = {
-  title: 'Deposits & Withdrawals | Wheel Tracker',
+  title: 'Deposits & Withdrawals | GreekWheel',
   description: 'Track your cash deposits and withdrawals for benchmark comparison',
 }
 

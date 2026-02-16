@@ -4,7 +4,7 @@
 
 **Status**: ✅ **EXCELLENT** - All performance targets met or exceeded
 
-The Wheel Tracker design system demonstrates exceptional performance characteristics with Lighthouse scores of 97-99/100 across all pages. The design system pages specifically achieve perfect 99/100 scores with sub-1-second First Contentful Paint times.
+The GreekWheel design system demonstrates exceptional performance characteristics with Lighthouse scores of 97-99/100 across all pages. The design system pages specifically achieve perfect 99/100 scores with sub-1-second First Contentful Paint times.
 
 ## Performance Test Results
 
@@ -175,7 +175,7 @@ While all targets are met, these minor optimizations could provide marginal impr
 
 ## Conclusion
 
-The Wheel Tracker design system demonstrates **exceptional performance** with:
+The GreekWheel design system demonstrates **exceptional performance** with:
 - 99/100 Lighthouse scores on design system pages
 - 0.8s First Contentful Paint (47% better than target)
 - Zero Cumulative Layout Shift

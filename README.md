@@ -1,10 +1,10 @@
-# Wheel Tracker
+# GreekWheel
 
-A comprehensive Next.js web application for tracking options trading using the wheel strategy. Built with modern web technologies, Wheel Tracker helps traders manage their cash-secured PUTs, covered CALLs, stock positions, and performance metrics.
+A comprehensive Next.js web application for tracking options trading using the wheel strategy. Built with modern web technologies, GreekWheel helps traders manage their cash-secured PUTs, covered CALLs, stock positions, and performance metrics.
 
-## 🎯 What is Wheel Tracker?
+## 🎯 What is GreekWheel?
 
-Wheel Tracker is designed for options traders who use the "wheel strategy" - a systematic approach to generating income through selling cash-secured PUTs and covered CALLs. The application provides:
+GreekWheel is designed for options traders who use the "wheel strategy" - a systematic approach to generating income through selling cash-secured PUTs and covered CALLs. The application provides:
 
 - **Trade Management**: Track all your PUT and CALL trades with detailed information
 - **Position Tracking**: Monitor stock positions created from assigned PUTs
@@ -78,7 +78,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see your application.
 
 ### For Users
 - **[Features Guide](docs/FEATURES.md)**: Complete guide to Wheels Dashboard, Notifications, and all features
-- **[User Guide](docs/USER_GUIDE.md)**: Comprehensive guide for using Wheel Tracker
+- **[User Guide](docs/USER_GUIDE.md)**: Comprehensive guide for using GreekWheel
 - **[Wheel Strategy Guide](docs/wheel-strategy-guide.md)**: Learn the wheel options trading strategy
 - **[FAQ](app/help/faq)**: Frequently asked questions
 - **[Glossary](app/help/glossary)**: Options trading terminology
@@ -300,7 +300,7 @@ pnpm prepare          # Set up Husky git hooks
 
 ### App Router Structure
 
-Wheel Tracker uses Next.js 15's App Router with:
+GreekWheel uses Next.js 15's App Router with:
 - **Server Components**: Default for all pages, reduces client-side JavaScript
 - **Client Components**: Used only for interactivity (forms, menus)
 - **Server Actions**: Type-safe mutations without API routes
@@ -478,7 +478,7 @@ This endpoint is used by Railway to monitor application health and trigger autom
 
 ### Other Platforms
 
-Wheel Tracker can be deployed to any platform that supports Next.js:
+GreekWheel can be deployed to any platform that supports Next.js:
 - **Netlify**: Use Next.js runtime
 - **Self-hosted**: Use Docker or Node.js
 
@@ -646,7 +646,7 @@ Private project - All rights reserved
 
 ## 👥 Authors
 
-- Developed by the Wheel Tracker Team
+- Developed by the GreekWheel Team
 - Built with ❤️ for options traders
 
 ## 🙏 Acknowledgments

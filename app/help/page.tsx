@@ -2,8 +2,8 @@ import React from 'react'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Help Center - Wheel Tracker',
-  description: 'Get help with Wheel Tracker and the wheel strategy',
+  title: 'Help Center - GreekWheel',
+  description: 'Get help with GreekWheel and the wheel strategy',
 }
 
 export default function HelpPage() {
@@ -20,7 +20,7 @@ export default function HelpPage() {
           </Link>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Help Center</h1>
           <p className="text-xl text-gray-600">
-            Everything you need to master Wheel Tracker and the wheel strategy
+            Everything you need to master GreekWheel and the wheel strategy
           </p>
         </div>
 

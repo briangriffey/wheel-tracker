@@ -1,7 +1,7 @@
 /**
  * Profit & Loss (P&L) Calculation Service
  *
- * Provides comprehensive P&L calculations for the Wheel Tracker application including:
+ * Provides comprehensive P&L calculations for the GreekWheel application including:
  * - Realized P&L from closed positions and trades
  * - Unrealized P&L from open positions
  * - Per-ticker aggregations

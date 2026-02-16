@@ -543,9 +543,9 @@ It depends on the stocks you want to wheel:
 
 ---
 
-## Using Wheel Tracker App
+## Using GreekWheel App
 
-The Wheel Tracker app helps you manage your wheel strategies efficiently:
+The GreekWheel app helps you manage your wheel strategies efficiently:
 
 ### Key Features
 
@@ -556,7 +556,7 @@ The Wheel Tracker app helps you manage your wheel strategies efficiently:
 5. **Dashboard**: Visual overview of all active wheels
 6. **Analytics**: Performance metrics per wheel and overall portfolio
 
-### Workflow in Wheel Tracker
+### Workflow in GreekWheel
 
 **Starting a New Wheel**:
 1. Create a new PUT trade

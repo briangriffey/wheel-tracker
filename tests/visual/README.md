@@ -1,6 +1,6 @@
 # Visual Regression Testing
 
-This directory contains visual regression tests for the Wheel Tracker design system components using Playwright.
+This directory contains visual regression tests for the GreekWheel design system components using Playwright.
 
 ## Overview
 

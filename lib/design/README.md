@@ -1,6 +1,6 @@
 # Design System
 
-This directory contains the Wheel Tracker design system foundation, providing consistent styling and component variants across the application.
+This directory contains the GreekWheel design system foundation, providing consistent styling and component variants across the application.
 
 ## Overview
 
@@ -330,7 +330,7 @@ import { textVariants } from '@/lib/design/variants'
 
 // Main heading
 <h1 className={textVariants({ variant: 'h1', weight: 'bold' })}>
-  Welcome to Wheel Tracker
+  Welcome to GreekWheel
 </h1>
 
 // Section heading

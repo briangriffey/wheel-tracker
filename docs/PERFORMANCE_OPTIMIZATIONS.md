@@ -2,7 +2,7 @@
 
 ## Summary
 
-This document outlines the performance optimizations implemented for the Wheel Tracker design system (Phase 6).
+This document outlines the performance optimizations implemented for the GreekWheel design system (Phase 6).
 
 ## Completed Optimizations
 

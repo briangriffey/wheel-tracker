@@ -6,7 +6,7 @@ import { getTradeUsage } from '@/lib/actions/subscription'
 import { BillingContent } from '@/components/billing/billing-content'
 
 export const metadata = {
-  title: 'Billing | Wheel Tracker',
+  title: 'Billing | GreekWheel',
   description: 'Manage your subscription and billing',
 }
 

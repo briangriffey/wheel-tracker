@@ -238,7 +238,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.position.findMany)
         .mockResolvedValueOnce(mockOpenPositions as unknown as Position[])
         .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([])
 
       const result = await getDashboardMetrics('All')
 
@@ -273,7 +272,6 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.position.findMany)
         .mockResolvedValueOnce(mockOpenPositions as unknown as Position[])
         .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([])
 
       const result = await getDashboardMetrics('All')
 
@@ -283,13 +281,13 @@ describe('getDashboardMetrics', () => {
     })
   })
 
-  describe('Win Rate Calculation', () => {
-    it('should correctly calculate win rate', async () => {
-      const mockClosedPositions = [
-        { realizedGainLoss: new Prisma.Decimal(100) }, // winner
-        { realizedGainLoss: new Prisma.Decimal(200) }, // winner
-        { realizedGainLoss: new Prisma.Decimal(-50) }, // loser
-        { realizedGainLoss: new Prisma.Decimal(75) }, // winner
+  describe('Options Win Rate Calculation', () => {
+    it('should correctly calculate options win rate from trades', async () => {
+      const mockTrades = [
+        { premium: new Prisma.Decimal(2.0), contracts: 1, status: 'EXPIRED' }, // winner (kept full premium)
+        { premium: new Prisma.Decimal(1.5), contracts: 1, status: 'CLOSED', closePremium: new Prisma.Decimal(0.5) }, // winner (1.5 - 0.5 > 0)
+        { premium: new Prisma.Decimal(1.0), contracts: 1, status: 'CLOSED', closePremium: new Prisma.Decimal(1.5) }, // loser (1.0 - 1.5 < 0)
+        { premium: new Prisma.Decimal(1.0), contracts: 1, status: 'OPEN' }, // not counted (still open)
       ]
 
       vi.mocked(prisma.position.aggregate).mockResolvedValue({
@@ -304,19 +302,16 @@ describe('getDashboardMetrics', () => {
         _max: {},
       })
 
-      vi.mocked(prisma.trade.findMany).mockResolvedValue([])
-      vi.mocked(prisma.position.findMany)
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce(mockClosedPositions as unknown as Position[])
-        .mockResolvedValueOnce([])
+      vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as unknown as Trade[])
+      vi.mocked(prisma.position.findMany).mockResolvedValue([])
 
       const result = await getDashboardMetrics('All')
 
-      // 3 winners out of 4 total = 75%
-      expect(result.winRate).toBe(75)
+      // 2 winners out of 3 closed/expired = 66.67%
+      expect(result.optionsWinRate).toBeCloseTo(66.67, 1)
     })
 
-    it('should return 0 win rate when no closed positions', async () => {
+    it('should return 0 options win rate when no closed or expired trades', async () => {
       vi.mocked(prisma.position.aggregate).mockResolvedValue({
         _sum: {
           realizedGainLoss: new Prisma.Decimal(0),
@@ -334,7 +329,7 @@ describe('getDashboardMetrics', () => {
 
       const result = await getDashboardMetrics('All')
 
-      expect(result.winRate).toBe(0)
+      expect(result.optionsWinRate).toBe(0)
     })
   })
 
@@ -394,15 +389,15 @@ describe('getDashboardMetrics', () => {
   describe('Complete Metrics Integration', () => {
     it('should return all metrics correctly with realistic data', async () => {
       // Realistic scenario:
-      // - 3 trades with different premiums and contracts
+      // - 4 trades with different premiums, contracts, and statuses
       // - 2 open positions with P&L
-      // - 4 closed positions (3 winners, 1 loser)
-      // - 1 assigned trade out of 3 total
+      // - 1 assigned trade out of 4 total
 
       const mockTrades = [
         { premium: new Prisma.Decimal(2.5), contracts: 5, status: 'ASSIGNED' },
         { premium: new Prisma.Decimal(1.75), contracts: 3, status: 'OPEN' },
-        { premium: new Prisma.Decimal(3.0), contracts: 2, status: 'CLOSED' },
+        { premium: new Prisma.Decimal(3.0), contracts: 2, status: 'CLOSED', closePremium: new Prisma.Decimal(1.0) }, // winner: 3.0 - 1.0 > 0
+        { premium: new Prisma.Decimal(1.0), contracts: 1, status: 'EXPIRED' }, // winner: kept full premium
       ]
 
       const mockOpenPositions = [
@@ -418,16 +413,9 @@ describe('getDashboardMetrics', () => {
         },
       ]
 
-      const mockClosedPositions = [
-        { realizedGainLoss: new Prisma.Decimal(500) },
-        { realizedGainLoss: new Prisma.Decimal(300) },
-        { realizedGainLoss: new Prisma.Decimal(-200) },
-        { realizedGainLoss: new Prisma.Decimal(150) },
-      ]
-
       vi.mocked(prisma.position.aggregate).mockResolvedValue({
         _sum: {
-          realizedGainLoss: new Prisma.Decimal(750), // sum of closed positions
+          realizedGainLoss: new Prisma.Decimal(750),
           currentValue: new Prisma.Decimal(0),
           totalCost: new Prisma.Decimal(0),
         },
@@ -440,14 +428,13 @@ describe('getDashboardMetrics', () => {
       vi.mocked(prisma.trade.findMany).mockResolvedValue(mockTrades as unknown as Trade[])
       vi.mocked(prisma.position.findMany)
         .mockResolvedValueOnce(mockOpenPositions as unknown as Position[])
-        .mockResolvedValueOnce(mockClosedPositions as unknown as Position[])
         .mockResolvedValueOnce([{ ticker: 'AAPL' }, { ticker: 'TSLA' }] as unknown as Position[])
 
       const result = await getDashboardMetrics('All')
 
-      // Premium: (5 × 2.50 × 100) + (3 × 1.75 × 100) + (2 × 3.00 × 100)
-      //        = 1250 + 525 + 600 = 2375
-      expect(result.totalPremiumCollected).toBe(2375)
+      // Premium: (5 × 2.50 × 100) + (3 × 1.75 × 100) + (2 × (3.00 - 1.00) × 100) + (1 × 1.00 × 100)
+      //        = 1250 + 525 + 400 + 100 = 2275
+      expect(result.totalPremiumCollected).toBe(2275)
 
       // Realized P&L: 750
       expect(result.realizedPL).toBe(750)
@@ -459,11 +446,11 @@ describe('getDashboardMetrics', () => {
       // Total P&L: 750 + 600 = 1350
       expect(result.totalPL).toBe(1350)
 
-      // Win rate: 3 winners / 4 total = 75%
-      expect(result.winRate).toBe(75)
+      // Options win rate: 2 winners (1 CLOSED winner + 1 EXPIRED) / 2 closed+expired = 100%
+      expect(result.optionsWinRate).toBe(100)
 
-      // Assignment rate: 1 assigned / 3 total = 33.333...%
-      expect(result.assignmentRate).toBeCloseTo(33.33, 2)
+      // Assignment rate: 1 assigned / 4 total = 25%
+      expect(result.assignmentRate).toBe(25)
 
       // Open contracts: 3 (1 OPEN trade with 3 contracts)
       expect(result.openContracts).toBe(3)

@@ -22,7 +22,7 @@ const mockMetrics: DashboardMetrics = {
   unrealizedPL: 2000,
   distinctStockCount: 5,
   totalPremiumCollected: 10000,
-  winRate: 75,
+  optionsWinRate: 75,
   assignmentRate: 25,
   openContracts: 10,
 }

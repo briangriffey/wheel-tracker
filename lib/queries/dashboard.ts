@@ -66,7 +66,7 @@ export interface DashboardMetrics {
 
   // Options metrics
   totalPremiumCollected: number
-  winRate: number
+  optionsWinRate: number
   assignmentRate: number
   openContracts: number
 }
@@ -170,17 +170,8 @@ export const getDashboardMetrics = async (
           },
         },
       }),
-      // Closed positions for win rate (select only needed field)
-      prisma.position.findMany({
-        where: {
-          userId,
-          status: 'CLOSED',
-          ...(dateFilter && { closedDate: dateFilter }),
-        },
-        select: {
-          realizedGainLoss: true,
-        },
-      }),
+      // (placeholder resolved below — closed positions no longer needed for win rate)
+      Promise.resolve([]),
       // Cash deposits aggregate (net invested + total SPY shares)
       prisma.cashDeposit.aggregate({
         where: { userId },
@@ -223,13 +214,17 @@ export const getDashboardMetrics = async (
       return sum + (trade.premium.toNumber() - closePremium) * trade.contracts * 100
     }, 0)
 
-    // Calculate win rate from already-fetched data
-    const winners = closedPositions.filter(
-      (p: { realizedGainLoss: Prisma.Decimal | null }) =>
-        p.realizedGainLoss && p.realizedGainLoss.toNumber() > 0
-    ).length
-    const totalClosedTrades = closedPositions.length
-    const winRate = totalClosedTrades > 0 ? (winners / totalClosedTrades) * 100 : 0
+    // Calculate options win rate from trades (EXPIRED and CLOSED)
+    const closedOrExpiredTrades = trades.filter(
+      (t) => t.status === 'EXPIRED' || t.status === 'CLOSED'
+    )
+    const optionWinners = closedOrExpiredTrades.filter((t) => {
+      if (t.status === 'EXPIRED') return true // kept full premium
+      const closePremium = t.closePremium?.toNumber() ?? 0
+      return t.premium.toNumber() - closePremium > 0
+    }).length
+    const totalClosedTrades = closedOrExpiredTrades.length
+    const optionsWinRate = totalClosedTrades > 0 ? (optionWinners / totalClosedTrades) * 100 : 0
 
     // Calculate assignment rate from already-fetched data
     const assignedTradesCount = trades.filter((t) => t.status === 'ASSIGNED').length
@@ -258,7 +253,7 @@ export const getDashboardMetrics = async (
       unrealizedPL,
       distinctStockCount: distinctStocks.length,
       totalPremiumCollected,
-      winRate,
+      optionsWinRate,
       assignmentRate,
       openContracts: openContractsCount,
     }

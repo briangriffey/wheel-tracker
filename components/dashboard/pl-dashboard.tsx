@@ -171,7 +171,7 @@ export function PLDashboard({
           />
           <StatCard
             label="Win Rate"
-            value={metrics.winRate}
+            value={metrics.optionsWinRate}
             formatAs="percentage"
             loading={loading}
           />

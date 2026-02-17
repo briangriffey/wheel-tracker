@@ -5,15 +5,15 @@ import { useRouter } from 'next/navigation'
 import { DepositForm } from '@/components/forms/deposit-form'
 import { WithdrawalForm } from '@/components/forms/withdrawal-form'
 import { Button } from '@/components/design-system/button/button'
-import { LumpSumComparison } from '@/components/deposits/lump-sum-comparison'
 import type { CashDepositData, DepositSummary } from '@/lib/actions/deposits'
 
 interface DepositsClientProps {
   initialDeposits: CashDepositData[]
   initialSummary: DepositSummary | null
+  currentSpyPrice: number | null
 }
 
-export function DepositsClient({ initialDeposits, initialSummary }: DepositsClientProps) {
+export function DepositsClient({ initialDeposits, initialSummary, currentSpyPrice }: DepositsClientProps) {
   const router = useRouter()
   const [showDepositModal, setShowDepositModal] = useState(false)
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false)
@@ -44,6 +44,21 @@ export function DepositsClient({ initialDeposits, initialSummary }: DepositsClie
     })
   }
 
+  const spyAccountValue =
+    initialSummary && currentSpyPrice
+      ? initialSummary.totalSpyShares * currentSpyPrice
+      : null
+
+  const spyPnL =
+    spyAccountValue !== null && initialSummary
+      ? spyAccountValue - initialSummary.netInvested
+      : null
+
+  const spyPnLPercent =
+    spyPnL !== null && initialSummary && initialSummary.netInvested !== 0
+      ? (spyPnL / initialSummary.netInvested) * 100
+      : null
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -71,9 +86,20 @@ export function DepositsClient({ initialDeposits, initialSummary }: DepositsClie
           </div>
         </div>
 
+        {/* Current SPY Price Banner */}
+        {currentSpyPrice !== null && (
+          <div className="bg-indigo-600 rounded-lg shadow p-4 mb-6 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-indigo-200">Current SPY Price</h3>
+              <p className="text-3xl font-bold text-white">{formatCurrency(currentSpyPrice)}</p>
+            </div>
+            <div className="text-indigo-200 text-sm">Live market price</div>
+          </div>
+        )}
+
         {/* Summary Cards */}
         {initialSummary && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-sm font-medium text-gray-500 mb-1">Total Deposits</h3>
               <p className="text-2xl font-bold text-green-600">
@@ -109,13 +135,32 @@ export function DepositsClient({ initialDeposits, initialSummary }: DepositsClie
                 Avg cost: {formatCurrency(initialSummary.avgCostBasis)}
               </p>
             </div>
-          </div>
-        )}
 
-        {/* Lump Sum Comparison */}
-        {initialDeposits.length > 0 && (
-          <div className="mb-6">
-            <LumpSumComparison />
+            {spyAccountValue !== null && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">SPY Account Value</h3>
+                <p className="text-2xl font-bold text-indigo-600">
+                  {formatCurrency(spyAccountValue)}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {initialSummary.totalSpyShares.toFixed(4)} shares × {formatCurrency(currentSpyPrice!)}
+                </p>
+              </div>
+            )}
+
+            {spyPnL !== null && (
+              <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-sm font-medium text-gray-500 mb-1">SPY P&L</h3>
+                <p className={`text-2xl font-bold ${spyPnL >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {spyPnL >= 0 ? '+' : '-'}{formatCurrency(spyPnL)}
+                </p>
+                {spyPnLPercent !== null && (
+                  <p className={`text-xs mt-1 ${spyPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {spyPnL >= 0 ? '+' : ''}{spyPnLPercent.toFixed(2)}%
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
 

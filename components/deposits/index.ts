@@ -1,7 +1,3 @@
 export { DepositHistoryTable } from './deposit-history-table'
 export { DepositSummaryCard } from './deposit-summary-card'
 export { ExportDepositsButton } from './export-deposits-button'
-export { LumpSumComparison } from './lump-sum-comparison'
-export { LumpSumComparisonCard } from './lump-sum-comparison-card'
-export { LumpSumComparisonChart } from './lump-sum-comparison-chart'
-export { WhatIfCalculator } from './what-if-calculator'

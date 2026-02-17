@@ -119,15 +119,8 @@ export const getDashboardMetrics = async (
     const dateFilter = dateThreshold ? { gte: dateThreshold } : undefined
 
     // Fetch all data in parallel with optimized queries
-    const [
-      positionStats,
-      trades,
-      openPositions,
-      closedPositions,
-      cashDepositAgg,
-      spyPrice,
-      distinctStocks,
-    ] = await Promise.all([
+    const [positionStats, trades, openPositions, , cashDepositAgg, spyPrice, distinctStocks] =
+      await Promise.all([
       // Position aggregates
       prisma.position.aggregate({
         where: {

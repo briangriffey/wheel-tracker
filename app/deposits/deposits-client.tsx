@@ -127,7 +127,7 @@ export function DepositsClient({ initialDeposits, initialSummary, currentSpyPric
             </div>
 
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">SPY Shares</h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">Equivalent SPY Shares</h3>
               <p className="text-2xl font-bold text-purple-600">
                 {initialSummary.totalSpyShares.toFixed(4)}
               </p>
@@ -210,19 +210,17 @@ export function DepositsClient({ initialDeposits, initialSummary, currentSpyPric
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            item.type === 'DEPOSIT'
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${item.type === 'DEPOSIT'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
-                          }`}
+                            }`}
                         >
                           {item.type === 'DEPOSIT' ? 'Deposit' : 'Withdrawal'}
                         </span>
                       </td>
                       <td
-                        className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${
-                          item.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
-                        }`}
+                        className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${item.type === 'DEPOSIT' ? 'text-green-600' : 'text-red-600'
+                          }`}
                       >
                         {item.type === 'DEPOSIT' ? '+' : '-'}
                         {formatCurrency(item.amount)}

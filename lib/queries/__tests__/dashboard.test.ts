@@ -567,8 +567,9 @@ describe('getPLOverTime', () => {
         openDate,
         closeDate: null,
         status: 'OPEN',
-        premium: new Prisma.Decimal(500),
+        premium: new Prisma.Decimal(5), // per-share
         closePremium: null,
+        contracts: 1,
         positionId: null,
       },
     ] as unknown as Trade[])
@@ -577,6 +578,7 @@ describe('getPLOverTime', () => {
 
     const point = result.find((dp) => dp.date === dateKey)
     expect(point).toBeDefined()
+    // 5 * 1 * 100 = 500
     expect(point!.premiumPL).toBe(500)
     // Standalone trade, so premium is in totalPL
     expect(point!.totalPL).toBe(500)
@@ -592,20 +594,21 @@ describe('getPLOverTime', () => {
         openDate,
         closeDate,
         status: 'CLOSED',
-        premium: new Prisma.Decimal(500),
-        closePremium: new Prisma.Decimal(200),
+        premium: new Prisma.Decimal(5), // per-share
+        closePremium: new Prisma.Decimal(2), // per-share
+        contracts: 1,
         positionId: null,
       },
     ] as unknown as Trade[])
 
     const result = await getPLOverTime('All')
 
-    // On open date: premium = 500
+    // On open date: premium = 5 * 1 * 100 = 500
     const openPoint = result.find((dp) => dp.date === '2024-06-01')
     expect(openPoint).toBeDefined()
     expect(openPoint!.premiumPL).toBe(500)
 
-    // On close date: premium = 500 - 200 = 300 cumulative
+    // On close date: premium = 500 - (2 * 1 * 100) = 500 - 200 = 300 cumulative
     const closePoint = result.find((dp) => dp.date === '2024-06-15')
     expect(closePoint).toBeDefined()
     expect(closePoint!.premiumPL).toBe(300)
@@ -622,15 +625,16 @@ describe('getPLOverTime', () => {
         openDate,
         closeDate,
         status: 'EXPIRED',
-        premium: new Prisma.Decimal(500),
+        premium: new Prisma.Decimal(5), // per-share
         closePremium: null,
+        contracts: 1,
         positionId: null,
       },
     ] as unknown as Trade[])
 
     const result = await getPLOverTime('All')
 
-    // Premium should remain 500 throughout (no deduction for expired)
+    // Premium should remain 5 * 1 * 100 = 500 throughout (no deduction for expired)
     const closePoint = result.find((dp) => dp.date === '2024-06-15')
     expect(closePoint).toBeDefined()
     expect(closePoint!.premiumPL).toBe(500)
@@ -665,13 +669,15 @@ describe('getPLOverTime', () => {
     ] as unknown as Position[])
 
     // The covered call trade itself (has positionId)
+    // premium is per-share: 3.00 * 1 contract * 100 = 300
     vi.mocked(prisma.trade.findMany).mockResolvedValue([
       {
         openDate,
         closeDate: null,
         status: 'OPEN',
-        premium: new Prisma.Decimal(300),
+        premium: new Prisma.Decimal(3),
         closePremium: null,
+        contracts: 1,
         positionId: 'pos1', // linked to position
       },
     ] as unknown as Trade[])
@@ -680,7 +686,7 @@ describe('getPLOverTime', () => {
 
     const point = result.find((dp) => dp.date === '2024-06-01')
     expect(point).toBeDefined()
-    // premiumPL shows all premium including covered calls
+    // premiumPL shows all premium including covered calls: 3 * 1 * 100 = 300
     expect(point!.premiumPL).toBe(300)
     // unrealizedPL includes covered call premium: (5200 - 5000 + 300) = 500
     expect(point!.unrealizedPL).toBe(500)
@@ -710,23 +716,25 @@ describe('getPLOverTime', () => {
         openDate: day1,
         closeDate: null,
         status: 'OPEN',
-        premium: new Prisma.Decimal(200),
+        premium: new Prisma.Decimal(2), // per-share: 2 * 1 * 100 = 200
         closePremium: null,
+        contracts: 1,
         positionId: null,
       },
       {
         openDate: day3,
         closeDate: null,
         status: 'OPEN',
-        premium: new Prisma.Decimal(100),
+        premium: new Prisma.Decimal(1), // per-share: 1 * 1 * 100 = 100
         closePremium: null,
+        contracts: 1,
         positionId: null,
       },
     ] as unknown as Trade[])
 
     const result = await getPLOverTime('All')
 
-    // Day 1: premiumPL = 200
+    // Day 1: premiumPL = 2 * 1 * 100 = 200
     const day1Point = result.find((dp) => dp.date === '2024-06-01')
     expect(day1Point!.premiumPL).toBe(200)
 
@@ -799,14 +807,16 @@ describe('getPLByTicker', () => {
     vi.mocked(prisma.trade.findMany).mockResolvedValue([
       {
         ticker: 'AAPL',
-        premium: new Prisma.Decimal(500),
-        closePremium: new Prisma.Decimal(100),
+        premium: new Prisma.Decimal(5), // per-share
+        closePremium: new Prisma.Decimal(1), // per-share
+        contracts: 1,
         positionId: null,
       },
       {
         ticker: 'TSLA',
-        premium: new Prisma.Decimal(300),
+        premium: new Prisma.Decimal(3), // per-share
         closePremium: null,
+        contracts: 1,
         positionId: null,
       },
     ] as unknown as Trade[])
@@ -815,10 +825,12 @@ describe('getPLByTicker', () => {
 
     expect(result).toHaveLength(2)
     const aapl = result.find((d) => d.ticker === 'AAPL')!
-    expect(aapl.premiumPL).toBe(400) // 500 - 100
+    // (5 - 1) * 1 * 100 = 400
+    expect(aapl.premiumPL).toBe(400)
     expect(aapl.totalPL).toBe(400) // standalone premium in totalPL
 
     const tsla = result.find((d) => d.ticker === 'TSLA')!
+    // 3 * 1 * 100 = 300
     expect(tsla.premiumPL).toBe(300)
     expect(tsla.totalPL).toBe(300)
   })
@@ -836,11 +848,13 @@ describe('getPLByTicker', () => {
     ] as unknown as Position[])
 
     // Covered call trade linked to position
+    // premium per-share: 3.00 * 1 contract * 100 = 300
     vi.mocked(prisma.trade.findMany).mockResolvedValue([
       {
         ticker: 'AAPL',
-        premium: new Prisma.Decimal(300),
+        premium: new Prisma.Decimal(3),
         closePremium: null,
+        contracts: 1,
         positionId: 'pos1',
       },
     ] as unknown as Trade[])
@@ -849,7 +863,7 @@ describe('getPLByTicker', () => {
 
     expect(result).toHaveLength(1)
     const aapl = result[0]
-    expect(aapl.premiumPL).toBe(300) // shows covered call premium
+    expect(aapl.premiumPL).toBe(300) // shows covered call premium: 3 * 1 * 100
     // unrealizedPL = (5200 - 5000 + 300) = 500
     expect(aapl.unrealizedPL).toBe(500)
     // totalPL = realized(0) + unrealized(500) + standalonePremium(0) = 500

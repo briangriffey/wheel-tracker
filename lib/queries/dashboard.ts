@@ -317,6 +317,7 @@ export const getPLOverTime = cache(
             status: true,
             premium: true,
             closePremium: true,
+            contracts: true,
             positionId: true,
           },
         }),
@@ -355,7 +356,10 @@ export const getPLOverTime = cache(
       }
 
       // Process trades for premium
+      // Premium fields are per-share; multiply by contracts * 100 for total dollar amount
       for (const trade of trades) {
+        const multiplier = trade.contracts * 100
+
         // Premium collected on open date
         const openDateKey = trade.openDate.toISOString().split('T')[0]
         const openEntry = plByDate.get(openDateKey) || {
@@ -364,7 +368,7 @@ export const getPLOverTime = cache(
           premium: 0,
           standalonePremium: 0,
         }
-        const premiumAmount = trade.premium.toNumber()
+        const premiumAmount = trade.premium.toNumber() * multiplier
         openEntry.premium += premiumAmount
         if (!trade.positionId) {
           openEntry.standalonePremium += premiumAmount
@@ -380,7 +384,7 @@ export const getPLOverTime = cache(
             premium: 0,
             standalonePremium: 0,
           }
-          const closePremiumAmount = trade.closePremium.toNumber()
+          const closePremiumAmount = trade.closePremium.toNumber() * multiplier
           closeEntry.premium -= closePremiumAmount
           if (!trade.positionId) {
             closeEntry.standalonePremium -= closePremiumAmount
@@ -499,6 +503,7 @@ export const getPLByTicker = cache(
             ticker: true,
             premium: true,
             closePremium: true,
+            contracts: true,
             positionId: true,
           },
         }),
@@ -534,6 +539,7 @@ export const getPLByTicker = cache(
       }
 
       // Process trades for premium by ticker
+      // Premium fields are per-share; multiply by contracts * 100 for total dollar amount
       for (const trade of trades) {
         const entry = plByTicker.get(trade.ticker) || {
           realized: 0,
@@ -542,7 +548,9 @@ export const getPLByTicker = cache(
           standalonePremium: 0,
         }
 
-        const netPremium = trade.premium.toNumber() - (trade.closePremium?.toNumber() || 0)
+        const multiplier = trade.contracts * 100
+        const netPremium =
+          (trade.premium.toNumber() - (trade.closePremium?.toNumber() || 0)) * multiplier
         entry.premium += netPremium
         if (!trade.positionId) {
           entry.standalonePremium += netPremium

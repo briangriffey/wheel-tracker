@@ -78,6 +78,7 @@ export interface PLOverTimeDataPoint {
   date: string // ISO date string
   realizedPL: number
   unrealizedPL: number
+  premiumPL: number
   totalPL: number
 }
 
@@ -88,6 +89,7 @@ export interface PLByTickerDataPoint {
   ticker: string
   realizedPL: number
   unrealizedPL: number
+  premiumPL: number
   totalPL: number
 }
 
@@ -279,39 +281,63 @@ export const getPLOverTime = cache(
       // Build date filter
       const dateFilter = dateThreshold ? { gte: dateThreshold } : undefined
 
-      // Fetch all positions (both open and closed) within time range
-      const positions = await prisma.position.findMany({
-        where: {
-          userId,
-          ...(dateFilter && { acquiredDate: dateFilter }),
-        },
-        select: {
-          acquiredDate: true,
-          closedDate: true,
-          status: true,
-          totalCost: true,
-          currentValue: true,
-          realizedGainLoss: true,
-          coveredCalls: {
-            select: {
-              premium: true,
+      // Fetch positions and non-ASSIGNED trades in parallel
+      const [positions, trades] = await Promise.all([
+        prisma.position.findMany({
+          where: {
+            userId,
+            ...(dateFilter && { acquiredDate: dateFilter }),
+          },
+          select: {
+            acquiredDate: true,
+            closedDate: true,
+            status: true,
+            totalCost: true,
+            currentValue: true,
+            realizedGainLoss: true,
+            coveredCalls: {
+              select: {
+                premium: true,
+              },
             },
           },
-        },
-        orderBy: {
-          acquiredDate: 'asc',
-        },
-      })
+          orderBy: {
+            acquiredDate: 'asc',
+          },
+        }),
+        prisma.trade.findMany({
+          where: {
+            userId,
+            status: { not: 'ASSIGNED' },
+            ...(dateFilter && { openDate: dateFilter }),
+          },
+          select: {
+            openDate: true,
+            closeDate: true,
+            status: true,
+            premium: true,
+            closePremium: true,
+            positionId: true,
+          },
+        }),
+      ])
 
       // Group P&L by date
-      const plByDate = new Map<string, { realized: number; unrealized: number }>()
+      const plByDate = new Map<
+        string,
+        { realized: number; unrealized: number; premium: number; standalonePremium: number }
+      >()
 
       // Process each position
       for (const position of positions) {
         const dateKey = position.acquiredDate.toISOString().split('T')[0]
 
-        // Get or create entry for this date
-        const entry = plByDate.get(dateKey) || { realized: 0, unrealized: 0 }
+        const entry = plByDate.get(dateKey) || {
+          realized: 0,
+          unrealized: 0,
+          premium: 0,
+          standalonePremium: 0,
+        }
 
         if (position.status === 'CLOSED' && position.realizedGainLoss) {
           entry.realized += position.realizedGainLoss.toNumber()
@@ -328,20 +354,60 @@ export const getPLOverTime = cache(
         plByDate.set(dateKey, entry)
       }
 
+      // Process trades for premium
+      for (const trade of trades) {
+        // Premium collected on open date
+        const openDateKey = trade.openDate.toISOString().split('T')[0]
+        const openEntry = plByDate.get(openDateKey) || {
+          realized: 0,
+          unrealized: 0,
+          premium: 0,
+          standalonePremium: 0,
+        }
+        const premiumAmount = trade.premium.toNumber()
+        openEntry.premium += premiumAmount
+        if (!trade.positionId) {
+          openEntry.standalonePremium += premiumAmount
+        }
+        plByDate.set(openDateKey, openEntry)
+
+        // Cost to close on close date (CLOSED trades only)
+        if (trade.status === 'CLOSED' && trade.closeDate && trade.closePremium) {
+          const closeDateKey = trade.closeDate.toISOString().split('T')[0]
+          const closeEntry = plByDate.get(closeDateKey) || {
+            realized: 0,
+            unrealized: 0,
+            premium: 0,
+            standalonePremium: 0,
+          }
+          const closePremiumAmount = trade.closePremium.toNumber()
+          closeEntry.premium -= closePremiumAmount
+          if (!trade.positionId) {
+            closeEntry.standalonePremium -= closePremiumAmount
+          }
+          plByDate.set(closeDateKey, closeEntry)
+        }
+      }
+
       // Convert to array and calculate cumulative totals
       const dataPoints: PLOverTimeDataPoint[] = []
       let cumulativeRealized = 0
       let cumulativeUnrealized = 0
+      let cumulativePremium = 0
+      let cumulativeStandalonePremium = 0
 
       for (const [date, values] of Array.from(plByDate.entries()).sort()) {
         cumulativeRealized += values.realized
         cumulativeUnrealized = values.unrealized // Unrealized is snapshot, not cumulative
+        cumulativePremium += values.premium
+        cumulativeStandalonePremium += values.standalonePremium
 
         dataPoints.push({
           date,
           realizedPL: cumulativeRealized,
           unrealizedPL: cumulativeUnrealized,
-          totalPL: cumulativeRealized + cumulativeUnrealized,
+          premiumPL: cumulativePremium,
+          totalPL: cumulativeRealized + cumulativeUnrealized + cumulativeStandalonePremium,
         })
       }
 
@@ -357,6 +423,8 @@ export const getPLOverTime = cache(
 
       let lastRealized = 0
       let lastUnrealized = 0
+      let lastPremium = 0
+      let lastStandalonePremium = 0
 
       for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
         const dateKey = d.toISOString().split('T')[0]
@@ -365,13 +433,17 @@ export const getPLOverTime = cache(
         if (dataPoint) {
           lastRealized = dataPoint.realizedPL
           lastUnrealized = dataPoint.unrealizedPL
+          lastPremium = dataPoint.premiumPL
+          // Recalculate lastStandalonePremium from the totalPL formula
+          lastStandalonePremium = dataPoint.totalPL - lastRealized - lastUnrealized
           filledDataPoints.push(dataPoint)
         } else {
           filledDataPoints.push({
             date: dateKey,
             realizedPL: lastRealized,
             unrealizedPL: lastUnrealized,
-            totalPL: lastRealized + lastUnrealized,
+            premiumPL: lastPremium,
+            totalPL: lastRealized + lastUnrealized + lastStandalonePremium,
           })
         }
       }
@@ -397,31 +469,54 @@ export const getPLByTicker = cache(
       // Build date filter
       const dateFilter = dateThreshold ? { gte: dateThreshold } : undefined
 
-      // Fetch all positions within time range
-      const positions = await prisma.position.findMany({
-        where: {
-          userId,
-          ...(dateFilter && { acquiredDate: dateFilter }),
-        },
-        select: {
-          ticker: true,
-          status: true,
-          totalCost: true,
-          currentValue: true,
-          realizedGainLoss: true,
-          coveredCalls: {
-            select: {
-              premium: true,
+      // Fetch positions and non-ASSIGNED trades in parallel
+      const [positions, trades] = await Promise.all([
+        prisma.position.findMany({
+          where: {
+            userId,
+            ...(dateFilter && { acquiredDate: dateFilter }),
+          },
+          select: {
+            ticker: true,
+            status: true,
+            totalCost: true,
+            currentValue: true,
+            realizedGainLoss: true,
+            coveredCalls: {
+              select: {
+                premium: true,
+              },
             },
           },
-        },
-      })
+        }),
+        prisma.trade.findMany({
+          where: {
+            userId,
+            status: { not: 'ASSIGNED' },
+            ...(dateFilter && { openDate: dateFilter }),
+          },
+          select: {
+            ticker: true,
+            premium: true,
+            closePremium: true,
+            positionId: true,
+          },
+        }),
+      ])
 
       // Group P&L by ticker
-      const plByTicker = new Map<string, { realized: number; unrealized: number }>()
+      const plByTicker = new Map<
+        string,
+        { realized: number; unrealized: number; premium: number; standalonePremium: number }
+      >()
 
       for (const position of positions) {
-        const entry = plByTicker.get(position.ticker) || { realized: 0, unrealized: 0 }
+        const entry = plByTicker.get(position.ticker) || {
+          realized: 0,
+          unrealized: 0,
+          premium: 0,
+          standalonePremium: 0,
+        }
 
         if (position.status === 'CLOSED' && position.realizedGainLoss) {
           entry.realized += position.realizedGainLoss.toNumber()
@@ -438,13 +533,32 @@ export const getPLByTicker = cache(
         plByTicker.set(position.ticker, entry)
       }
 
+      // Process trades for premium by ticker
+      for (const trade of trades) {
+        const entry = plByTicker.get(trade.ticker) || {
+          realized: 0,
+          unrealized: 0,
+          premium: 0,
+          standalonePremium: 0,
+        }
+
+        const netPremium = trade.premium.toNumber() - (trade.closePremium?.toNumber() || 0)
+        entry.premium += netPremium
+        if (!trade.positionId) {
+          entry.standalonePremium += netPremium
+        }
+
+        plByTicker.set(trade.ticker, entry)
+      }
+
       // Convert to array
       const dataPoints: PLByTickerDataPoint[] = Array.from(plByTicker.entries())
         .map(([ticker, values]) => ({
           ticker,
           realizedPL: values.realized,
           unrealizedPL: values.unrealized,
-          totalPL: values.realized + values.unrealized,
+          premiumPL: values.premium,
+          totalPL: values.realized + values.unrealized + values.standalonePremium,
         }))
         .sort((a, b) => b.totalPL - a.totalPL) // Sort by total P&L descending
 
@@ -468,33 +582,60 @@ export const getWinRateData = cache(async (timeRange: TimeRange = 'All'): Promis
     // Build date filter
     const dateFilter = dateThreshold ? { gte: dateThreshold } : undefined
 
-    // Fetch closed positions
-    const closedPositions = await prisma.position.findMany({
-      where: {
-        userId,
-        status: 'CLOSED',
-        ...(dateFilter && { closedDate: dateFilter }),
-      },
-      select: {
-        realizedGainLoss: true,
-      },
-    })
+    // Fetch closed positions and closed/expired trades in parallel
+    const [closedPositions, closedTrades] = await Promise.all([
+      prisma.position.findMany({
+        where: {
+          userId,
+          status: 'CLOSED',
+          ...(dateFilter && { closedDate: dateFilter }),
+        },
+        select: {
+          realizedGainLoss: true,
+        },
+      }),
+      prisma.trade.findMany({
+        where: {
+          userId,
+          status: { in: ['EXPIRED', 'CLOSED'] },
+          ...(dateFilter && { closeDate: dateFilter }),
+        },
+        select: {
+          status: true,
+          realizedGainLoss: true,
+        },
+      }),
+    ])
 
     // Categorize positions
-    const winners = closedPositions.filter(
+    let winners = closedPositions.filter(
       (p: { realizedGainLoss: Prisma.Decimal | null }) =>
         p.realizedGainLoss && p.realizedGainLoss.toNumber() > 0
     ).length
-    const losers = closedPositions.filter(
+    let losers = closedPositions.filter(
       (p: { realizedGainLoss: Prisma.Decimal | null }) =>
         p.realizedGainLoss && p.realizedGainLoss.toNumber() < 0
     ).length
-    const breakeven = closedPositions.filter(
+    let breakeven = closedPositions.filter(
       (p: { realizedGainLoss: Prisma.Decimal | null }) =>
         p.realizedGainLoss && p.realizedGainLoss.toNumber() === 0
     ).length
 
-    const totalTrades = closedPositions.length
+    // Categorize trades
+    for (const trade of closedTrades) {
+      if (trade.status === 'EXPIRED') {
+        // Expired trades kept full premium - always winners
+        winners++
+      } else {
+        // CLOSED trades - check realizedGainLoss
+        const gl = trade.realizedGainLoss?.toNumber() ?? 0
+        if (gl > 0) winners++
+        else if (gl < 0) losers++
+        else breakeven++
+      }
+    }
+
+    const totalTrades = closedPositions.length + closedTrades.length
     const winRate = totalTrades > 0 ? (winners / totalTrades) * 100 : 0
 
     return {

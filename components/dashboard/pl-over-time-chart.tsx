@@ -100,6 +100,14 @@ export function PLOverTimeChart({ data, loading = false }: PLOverTimeChartProps)
             />
             <Line
               type="monotone"
+              dataKey="premiumPL"
+              stroke="#8b5cf6"
+              name="Premium P&L"
+              strokeWidth={2}
+              dot={false}
+            />
+            <Line
+              type="monotone"
               dataKey="totalPL"
               stroke="#3b82f6"
               name="Total P&L"

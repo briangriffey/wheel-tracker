@@ -28,13 +28,13 @@ const mockMetrics: DashboardMetrics = {
 }
 
 const mockPLOverTime: PLOverTimeDataPoint[] = [
-  { date: '2024-01-01', realizedPL: 1000, unrealizedPL: 500, totalPL: 1500 },
-  { date: '2024-02-01', realizedPL: 2000, unrealizedPL: 1000, totalPL: 3000 },
+  { date: '2024-01-01', realizedPL: 1000, unrealizedPL: 500, premiumPL: 0, totalPL: 1500 },
+  { date: '2024-02-01', realizedPL: 2000, unrealizedPL: 1000, premiumPL: 0, totalPL: 3000 },
 ]
 
 const mockPLByTicker: PLByTickerDataPoint[] = [
-  { ticker: 'AAPL', realizedPL: 1000, unrealizedPL: 500, totalPL: 1500 },
-  { ticker: 'TSLA', realizedPL: 500, unrealizedPL: 250, totalPL: 750 },
+  { ticker: 'AAPL', realizedPL: 1000, unrealizedPL: 500, premiumPL: 0, totalPL: 1500 },
+  { ticker: 'TSLA', realizedPL: 500, unrealizedPL: 250, premiumPL: 0, totalPL: 750 },
 ]
 
 const mockWinRateData: WinRateData = {

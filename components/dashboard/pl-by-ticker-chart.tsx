@@ -69,6 +69,7 @@ export function PLByTickerChart({ data, loading = false }: PLByTickerChartProps)
             <Legend />
             <Bar dataKey="realizedPL" fill="#10b981" name="Realized P&L" />
             <Bar dataKey="unrealizedPL" fill="#f59e0b" name="Unrealized P&L" />
+            <Bar dataKey="premiumPL" fill="#8b5cf6" name="Premium P&L" />
             <Bar dataKey="totalPL" fill="#3b82f6" name="Total P&L" />
           </BarChart>
         </ResponsiveContainer>

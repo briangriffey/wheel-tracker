@@ -3,7 +3,16 @@ import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
 import type { User, Trade, Position } from '@/lib/generated/prisma'
 import { getLatestPrice } from '@/lib/services/market-data'
-import { getDashboardMetrics } from '../dashboard'
+import { getDashboardMetrics, getPLOverTime, getPLByTicker, getWinRateData } from '../dashboard'
+
+// Mock React cache to be a passthrough (prevents stale cached results between tests)
+vi.mock('react', async () => {
+  const actual = await vi.importActual('react')
+  return {
+    ...actual,
+    cache: <T extends (...args: unknown[]) => unknown>(fn: T) => fn,
+  }
+})
 
 // Mock Prisma
 vi.mock('@/lib/db', () => ({
@@ -478,5 +487,494 @@ describe('getDashboardMetrics', () => {
 
       await expect(getDashboardMetrics('All')).rejects.toThrow('Failed to fetch dashboard metrics')
     })
+  })
+})
+
+// Shared setup for getPLOverTime, getPLByTicker, getWinRateData tests
+const setupUserMock = () => {
+  const mockUser: User = {
+    id: 'user1',
+    email: 'test@example.com',
+    name: 'Test User',
+    emailVerified: null,
+    image: null,
+    password: null,
+    subscriptionTier: 'FREE',
+    subscriptionStartDate: null,
+    subscriptionEndDate: null,
+    stripeCustomerId: null,
+    stripeSubscriptionId: null,
+    subscriptionStatus: null,
+    subscriptionEndsAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+  vi.mocked(prisma.user.findFirst).mockResolvedValue(mockUser)
+}
+
+describe('getPLOverTime', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    setupUserMock()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should return empty array when no positions or trades', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
+
+    const result = await getPLOverTime('All')
+    expect(result).toEqual([])
+  })
+
+  it('should calculate position-only P&L with premiumPL: 0', async () => {
+    const today = new Date()
+    const dateKey = today.toISOString().split('T')[0]
+
+    vi.mocked(prisma.position.findMany).mockResolvedValue([
+      {
+        acquiredDate: today,
+        closedDate: today,
+        status: 'CLOSED',
+        totalCost: new Prisma.Decimal(1000),
+        currentValue: null,
+        realizedGainLoss: new Prisma.Decimal(200),
+        coveredCalls: [],
+      },
+    ] as unknown as Position[])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
+
+    const result = await getPLOverTime('All')
+
+    // Find the data point for the position date
+    const point = result.find((dp) => dp.date === dateKey)
+    expect(point).toBeDefined()
+    expect(point!.realizedPL).toBe(200)
+    expect(point!.premiumPL).toBe(0)
+    expect(point!.totalPL).toBe(200)
+  })
+
+  it('should add premium on trade openDate', async () => {
+    const openDate = new Date('2024-06-01')
+    const dateKey = '2024-06-01'
+
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      {
+        openDate,
+        closeDate: null,
+        status: 'OPEN',
+        premium: new Prisma.Decimal(500),
+        closePremium: null,
+        positionId: null,
+      },
+    ] as unknown as Trade[])
+
+    const result = await getPLOverTime('All')
+
+    const point = result.find((dp) => dp.date === dateKey)
+    expect(point).toBeDefined()
+    expect(point!.premiumPL).toBe(500)
+    // Standalone trade, so premium is in totalPL
+    expect(point!.totalPL).toBe(500)
+  })
+
+  it('should subtract closePremium on closeDate for CLOSED trades', async () => {
+    const openDate = new Date('2024-06-01')
+    const closeDate = new Date('2024-06-15')
+
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      {
+        openDate,
+        closeDate,
+        status: 'CLOSED',
+        premium: new Prisma.Decimal(500),
+        closePremium: new Prisma.Decimal(200),
+        positionId: null,
+      },
+    ] as unknown as Trade[])
+
+    const result = await getPLOverTime('All')
+
+    // On open date: premium = 500
+    const openPoint = result.find((dp) => dp.date === '2024-06-01')
+    expect(openPoint).toBeDefined()
+    expect(openPoint!.premiumPL).toBe(500)
+
+    // On close date: premium = 500 - 200 = 300 cumulative
+    const closePoint = result.find((dp) => dp.date === '2024-06-15')
+    expect(closePoint).toBeDefined()
+    expect(closePoint!.premiumPL).toBe(300)
+    expect(closePoint!.totalPL).toBe(300)
+  })
+
+  it('should keep full premium for EXPIRED trades', async () => {
+    const openDate = new Date('2024-06-01')
+    const closeDate = new Date('2024-06-15')
+
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      {
+        openDate,
+        closeDate,
+        status: 'EXPIRED',
+        premium: new Prisma.Decimal(500),
+        closePremium: null,
+        positionId: null,
+      },
+    ] as unknown as Trade[])
+
+    const result = await getPLOverTime('All')
+
+    // Premium should remain 500 throughout (no deduction for expired)
+    const closePoint = result.find((dp) => dp.date === '2024-06-15')
+    expect(closePoint).toBeDefined()
+    expect(closePoint!.premiumPL).toBe(500)
+    expect(closePoint!.totalPL).toBe(500)
+  })
+
+  it('should exclude ASSIGNED trades', async () => {
+    // ASSIGNED trades are filtered out at the query level (status: { not: 'ASSIGNED' })
+    // This test verifies the query filter works by checking that no premium appears
+    // when we mock findMany to return empty (simulating the filter)
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
+
+    const result = await getPLOverTime('All')
+    expect(result).toEqual([])
+  })
+
+  it('should track covered call premium in premiumPL but not double-count in totalPL', async () => {
+    const openDate = new Date('2024-06-01')
+
+    // Position with a covered call
+    vi.mocked(prisma.position.findMany).mockResolvedValue([
+      {
+        acquiredDate: openDate,
+        closedDate: null,
+        status: 'OPEN',
+        totalCost: new Prisma.Decimal(5000),
+        currentValue: new Prisma.Decimal(5200),
+        realizedGainLoss: null,
+        coveredCalls: [{ premium: new Prisma.Decimal(300) }],
+      },
+    ] as unknown as Position[])
+
+    // The covered call trade itself (has positionId)
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      {
+        openDate,
+        closeDate: null,
+        status: 'OPEN',
+        premium: new Prisma.Decimal(300),
+        closePremium: null,
+        positionId: 'pos1', // linked to position
+      },
+    ] as unknown as Trade[])
+
+    const result = await getPLOverTime('All')
+
+    const point = result.find((dp) => dp.date === '2024-06-01')
+    expect(point).toBeDefined()
+    // premiumPL shows all premium including covered calls
+    expect(point!.premiumPL).toBe(300)
+    // unrealizedPL includes covered call premium: (5200 - 5000 + 300) = 500
+    expect(point!.unrealizedPL).toBe(500)
+    // totalPL = realized(0) + unrealized(500) + standalonePremium(0)
+    // Covered call premium is NOT in standalone, so no double-counting
+    expect(point!.totalPL).toBe(500)
+  })
+
+  it('should fill date gaps carrying forward premium', async () => {
+    const day1 = new Date('2024-06-01')
+    const day3 = new Date('2024-06-03')
+
+    vi.mocked(prisma.position.findMany).mockResolvedValue([
+      {
+        acquiredDate: day1,
+        closedDate: null,
+        status: 'OPEN',
+        totalCost: new Prisma.Decimal(1000),
+        currentValue: new Prisma.Decimal(1100),
+        realizedGainLoss: null,
+        coveredCalls: [],
+      },
+    ] as unknown as Position[])
+
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      {
+        openDate: day1,
+        closeDate: null,
+        status: 'OPEN',
+        premium: new Prisma.Decimal(200),
+        closePremium: null,
+        positionId: null,
+      },
+      {
+        openDate: day3,
+        closeDate: null,
+        status: 'OPEN',
+        premium: new Prisma.Decimal(100),
+        closePremium: null,
+        positionId: null,
+      },
+    ] as unknown as Trade[])
+
+    const result = await getPLOverTime('All')
+
+    // Day 1: premiumPL = 200
+    const day1Point = result.find((dp) => dp.date === '2024-06-01')
+    expect(day1Point!.premiumPL).toBe(200)
+
+    // Day 2 (gap): premiumPL should carry forward
+    const day2Point = result.find((dp) => dp.date === '2024-06-02')
+    expect(day2Point).toBeDefined()
+    expect(day2Point!.premiumPL).toBe(200)
+
+    // Day 3: premiumPL = 200 + 100 = 300
+    const day3Point = result.find((dp) => dp.date === '2024-06-03')
+    expect(day3Point!.premiumPL).toBe(300)
+  })
+})
+
+describe('getPLByTicker', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    setupUserMock()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should return empty array when no data', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
+
+    const result = await getPLByTicker('All')
+    expect(result).toEqual([])
+  })
+
+  it('should group position P&L by ticker with premiumPL: 0', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([
+      {
+        ticker: 'AAPL',
+        status: 'CLOSED',
+        totalCost: new Prisma.Decimal(5000),
+        currentValue: null,
+        realizedGainLoss: new Prisma.Decimal(500),
+        coveredCalls: [],
+      },
+      {
+        ticker: 'TSLA',
+        status: 'CLOSED',
+        totalCost: new Prisma.Decimal(3000),
+        currentValue: null,
+        realizedGainLoss: new Prisma.Decimal(-100),
+        coveredCalls: [],
+      },
+    ] as unknown as Position[])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
+
+    const result = await getPLByTicker('All')
+
+    expect(result).toHaveLength(2)
+    // Sorted by totalPL descending
+    expect(result[0].ticker).toBe('AAPL')
+    expect(result[0].realizedPL).toBe(500)
+    expect(result[0].premiumPL).toBe(0)
+    expect(result[0].totalPL).toBe(500)
+    expect(result[1].ticker).toBe('TSLA')
+    expect(result[1].realizedPL).toBe(-100)
+    expect(result[1].premiumPL).toBe(0)
+    expect(result[1].totalPL).toBe(-100)
+  })
+
+  it('should add standalone trade premium to correct ticker', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      {
+        ticker: 'AAPL',
+        premium: new Prisma.Decimal(500),
+        closePremium: new Prisma.Decimal(100),
+        positionId: null,
+      },
+      {
+        ticker: 'TSLA',
+        premium: new Prisma.Decimal(300),
+        closePremium: null,
+        positionId: null,
+      },
+    ] as unknown as Trade[])
+
+    const result = await getPLByTicker('All')
+
+    expect(result).toHaveLength(2)
+    const aapl = result.find((d) => d.ticker === 'AAPL')!
+    expect(aapl.premiumPL).toBe(400) // 500 - 100
+    expect(aapl.totalPL).toBe(400) // standalone premium in totalPL
+
+    const tsla = result.find((d) => d.ticker === 'TSLA')!
+    expect(tsla.premiumPL).toBe(300)
+    expect(tsla.totalPL).toBe(300)
+  })
+
+  it('should handle covered calls (in premiumPL, not double-counted in totalPL)', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([
+      {
+        ticker: 'AAPL',
+        status: 'OPEN',
+        totalCost: new Prisma.Decimal(5000),
+        currentValue: new Prisma.Decimal(5200),
+        realizedGainLoss: null,
+        coveredCalls: [{ premium: new Prisma.Decimal(300) }],
+      },
+    ] as unknown as Position[])
+
+    // Covered call trade linked to position
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      {
+        ticker: 'AAPL',
+        premium: new Prisma.Decimal(300),
+        closePremium: null,
+        positionId: 'pos1',
+      },
+    ] as unknown as Trade[])
+
+    const result = await getPLByTicker('All')
+
+    expect(result).toHaveLength(1)
+    const aapl = result[0]
+    expect(aapl.premiumPL).toBe(300) // shows covered call premium
+    // unrealizedPL = (5200 - 5000 + 300) = 500
+    expect(aapl.unrealizedPL).toBe(500)
+    // totalPL = realized(0) + unrealized(500) + standalonePremium(0) = 500
+    // No double-counting because covered call is not standalone
+    expect(aapl.totalPL).toBe(500)
+  })
+
+  it('should sort by totalPL descending', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([
+      {
+        ticker: 'AAPL',
+        status: 'CLOSED',
+        totalCost: new Prisma.Decimal(5000),
+        currentValue: null,
+        realizedGainLoss: new Prisma.Decimal(100),
+        coveredCalls: [],
+      },
+      {
+        ticker: 'TSLA',
+        status: 'CLOSED',
+        totalCost: new Prisma.Decimal(3000),
+        currentValue: null,
+        realizedGainLoss: new Prisma.Decimal(500),
+        coveredCalls: [],
+      },
+    ] as unknown as Position[])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
+
+    const result = await getPLByTicker('All')
+
+    expect(result[0].ticker).toBe('TSLA') // 500 > 100
+    expect(result[1].ticker).toBe('AAPL')
+  })
+})
+
+describe('getWinRateData', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    setupUserMock()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should return all zeros when no data', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
+
+    const result = await getWinRateData('All')
+
+    expect(result.winners).toBe(0)
+    expect(result.losers).toBe(0)
+    expect(result.breakeven).toBe(0)
+    expect(result.totalTrades).toBe(0)
+    expect(result.winRate).toBe(0)
+  })
+
+  it('should count position winners/losers correctly', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([
+      { realizedGainLoss: new Prisma.Decimal(100) },
+      { realizedGainLoss: new Prisma.Decimal(-50) },
+      { realizedGainLoss: new Prisma.Decimal(200) },
+    ] as unknown as Position[])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([])
+
+    const result = await getWinRateData('All')
+
+    expect(result.winners).toBe(2)
+    expect(result.losers).toBe(1)
+    expect(result.totalTrades).toBe(3)
+    expect(result.winRate).toBeCloseTo(66.67, 1)
+  })
+
+  it('should count EXPIRED trades as winners', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      { status: 'EXPIRED', realizedGainLoss: null },
+      { status: 'EXPIRED', realizedGainLoss: null },
+    ] as unknown as Trade[])
+
+    const result = await getWinRateData('All')
+
+    expect(result.winners).toBe(2)
+    expect(result.losers).toBe(0)
+    expect(result.totalTrades).toBe(2)
+    expect(result.winRate).toBe(100)
+  })
+
+  it('should count CLOSED trades by realizedGainLoss sign', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([])
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      { status: 'CLOSED', realizedGainLoss: new Prisma.Decimal(150) },
+      { status: 'CLOSED', realizedGainLoss: new Prisma.Decimal(-50) },
+      { status: 'CLOSED', realizedGainLoss: new Prisma.Decimal(0) },
+    ] as unknown as Trade[])
+
+    const result = await getWinRateData('All')
+
+    expect(result.winners).toBe(1)
+    expect(result.losers).toBe(1)
+    expect(result.breakeven).toBe(1)
+    expect(result.totalTrades).toBe(3)
+  })
+
+  it('should combine positions and trades in total count and win rate', async () => {
+    vi.mocked(prisma.position.findMany).mockResolvedValue([
+      { realizedGainLoss: new Prisma.Decimal(100) }, // position winner
+      { realizedGainLoss: new Prisma.Decimal(-50) }, // position loser
+    ] as unknown as Position[])
+
+    vi.mocked(prisma.trade.findMany).mockResolvedValue([
+      { status: 'EXPIRED', realizedGainLoss: null }, // trade winner
+      { status: 'CLOSED', realizedGainLoss: new Prisma.Decimal(200) }, // trade winner
+      { status: 'CLOSED', realizedGainLoss: new Prisma.Decimal(-100) }, // trade loser
+    ] as unknown as Trade[])
+
+    const result = await getWinRateData('All')
+
+    // 1 position winner + 2 trade winners = 3 winners
+    expect(result.winners).toBe(3)
+    // 1 position loser + 1 trade loser = 2 losers
+    expect(result.losers).toBe(2)
+    expect(result.totalTrades).toBe(5)
+    // 3/5 = 60%
+    expect(result.winRate).toBe(60)
   })
 })

@@ -55,7 +55,7 @@ export function MetricCard({
 
   return (
     <Card variant="elevated">
-      <CardContent className="p-6">
+      <CardContent className="px-6 pb-6 pt-7">
         <h3 className="text-sm font-medium text-gray-500 mb-2">{title}</h3>
         <p className={`text-3xl font-bold ${getColorClass(value)}`}>{formatValue(value)}</p>
         {subtitle && <p className="text-sm text-gray-500 mt-2">{subtitle}</p>}

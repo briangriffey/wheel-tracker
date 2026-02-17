@@ -73,6 +73,7 @@ export function PLOverTimeChart({ data, loading = false }: PLOverTimeChartProps)
               angle={-45}
               textAnchor="end"
               height={80}
+              tickMargin={10}
             />
             <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `$${value.toFixed(0)}`} />
             <Tooltip

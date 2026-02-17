@@ -40,7 +40,7 @@ export function StatCard({ label, value, formatAs = 'number', loading = false }:
 
   return (
     <Card variant="elevated">
-      <CardContent className="p-4">
+      <CardContent className="px-4 pb-4 pt-5">
         <p className="text-xs font-medium text-gray-500 mb-1">{label}</p>
         <p className="text-xl font-bold text-gray-900">{formatValue(value)}</p>
       </CardContent>

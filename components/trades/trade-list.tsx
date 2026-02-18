@@ -703,13 +703,13 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    P&L
+                    Close Premium
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    Actions
+                    P&L
                   </th>
                 </tr>
               </thead>
@@ -750,6 +750,13 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                         {trade.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {trade.closePremium != null
+                        ? formatCurrency(
+                            trade.closePremium as unknown as Prisma.Decimal | string | number
+                          )
+                        : <span className="text-gray-400">-</span>}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {(() => {
                         const pnl = getClosedTradePnL(trade)
@@ -762,22 +769,6 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                           </span>
                         )
                       })()}
-                    </td>
-                    <td
-                      className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSelectedTrade(trade)
-                        }}
-                        variant="outline"
-                        size="sm"
-                        aria-label={`Open actions for ${trade.ticker} trade`}
-                      >
-                        Action
-                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -828,6 +819,16 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                     </span>
                   </div>
                   <div className="flex justify-between">
+                    <span className="text-gray-500">Close Premium:</span>
+                    <span className="font-medium text-gray-900">
+                      {trade.closePremium != null
+                        ? formatCurrency(
+                            trade.closePremium as unknown as Prisma.Decimal | string | number
+                          )
+                        : '-'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-gray-500">Expiration:</span>
                     <span className="font-medium text-gray-900">
                       {formatDate(trade.expirationDate)}
@@ -852,7 +853,6 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                     )
                   })()}
                 </div>
-                <div className="mt-4 text-center text-xs text-gray-500">Tap to view actions</div>
               </div>
             ))}
           </div>

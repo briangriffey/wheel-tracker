@@ -235,10 +235,10 @@ describe('TradeList - Action Button', () => {
     const user = userEvent.setup()
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    const actionButtons = screen.getAllByText('Action')
-    // Open trades section renders first: AAPL (OPEN) at index 0
-    // Closed trades section renders second: TSLA (EXPIRED) at index 1
-    await user.click(actionButtons[1])
+    // TSLA is EXPIRED (in closed section which has no Action buttons)
+    // Click the row directly to open the dialog
+    const tslaCells = screen.getAllByText('TSLA')
+    await user.click(tslaCells[0])
 
     await waitFor(() => {
       expect(screen.getByText('View Full Details')).toBeInTheDocument()

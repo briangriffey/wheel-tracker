@@ -195,7 +195,7 @@ export function PLDashboard({
       </div>
 
       {/* Benchmark Comparison */}
-      <BenchmarkComparisonSection timeRange={timeRange} />
+      {/* <BenchmarkComparisonSection timeRange={timeRange} /> */}
     </div>
   )
 }

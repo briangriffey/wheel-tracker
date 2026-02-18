@@ -255,6 +255,10 @@ async function saveStockPrice(result: StockPriceResult): Promise<void> {
 export async function fetchStockPrice(ticker: string): Promise<StockPriceResult> {
   const result = await rateLimiter.enqueue(() => fetchFromFinancialData(ticker))
 
+  if (!result.success) {
+    console.error(`Could not fetch ticker result: ${JSON.stringify(result)}`)
+  }
+
   if (result.success) {
     await saveStockPrice(result)
   }

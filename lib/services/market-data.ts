@@ -348,6 +348,10 @@ export async function smartBatchRefresh(tickers: string[]): Promise<{
   skipped: { ticker: string; eligibility: RefreshEligibility }[]
 }> {
   const uniqueTickers = [...new Set(tickers.map((t) => t.toUpperCase()))]
+
+  //Make sure we're always adding SPY
+  uniqueTickers.push('SPY')
+
   const cachedPrices = await getLatestPrices(uniqueTickers)
   const now = new Date()
 

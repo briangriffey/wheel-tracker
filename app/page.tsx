@@ -129,7 +129,7 @@ export default async function Home() {
               </div>
               <div className="flex items-center">
                 <CheckCircle2 className="w-5 h-5 text-primary-500 mr-2" />
-                <span>Unlimited trades for $8/month</span>
+                <span>Unlimited trades for $3/month</span>
               </div>
               <div className="flex items-center">
                 <CheckCircle2 className="w-5 h-5 text-primary-500 mr-2" />
@@ -520,7 +520,7 @@ export default async function Home() {
                 <div className="text-4xl font-bold text-neutral-900">
                   $8<span className="text-lg font-normal text-neutral-500">/month</span>
                 </div>
-                <div className="text-sm text-neutral-500 mt-1">or $72/year (save 25%)</div>
+                <div className="text-sm text-neutral-500 mt-1">or $30/year (save 20%)</div>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">
@@ -540,7 +540,7 @@ export default async function Home() {
                 href="/pricing"
                 className="w-full inline-flex items-center justify-center px-6 py-3 bg-primary-500 text-white font-semibold rounded-lg hover:bg-primary-600 transition-all shadow-md"
               >
-                Start Pro — $8/mo
+                Start Pro — $3/mo
               </Link>
             </div>
           </div>

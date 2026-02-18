@@ -120,41 +120,49 @@ describe('TradeList - Price Display', () => {
   it('should display current prices in the table', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    // Check for price column header
+    // Check for price column header (only in open trades section)
     expect(screen.getByText('Current Price')).toBeInTheDocument()
 
-    // Check AAPL price is displayed
+    // Check AAPL price is displayed (open trade)
     expect(screen.getAllByText('$152.45').length).toBeGreaterThan(0)
 
-    // Check TSLA price is displayed
-    expect(screen.getAllByText('$198.75').length).toBeGreaterThan(0)
+    // TSLA is EXPIRED (closed section) - no current price shown
   })
 
   it('should show time ago indicator when refreshInfo provided', () => {
     const refreshInfo = {
-      TSLA: {
+      AAPL: {
         canRefresh: true,
         nextRefreshAt: null,
         reason: 'Price is older than 4 hours',
-        lastUpdated: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        lastUpdated: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
       },
     }
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} refreshInfo={refreshInfo} />)
 
-    // TSLA price should show time ago indicator
+    // AAPL (open trade) price should show time ago indicator
     const agoIndicators = screen.getAllByText(/ago/)
     expect(agoIndicators.length).toBeGreaterThan(0)
   })
 
   it('should show dash when price not available', () => {
+    // Use two OPEN trades so both appear in the open section with price column
+    const twoOpenTrades: Trade[] = [
+      mockTrades[0], // AAPL - OPEN
+      {
+        ...mockTrades[1],
+        status: 'OPEN',
+        closeDate: null,
+      },
+    ]
     const pricesWithoutTSLA = new Map([['AAPL', mockPrices.get('AAPL')!]])
 
-    render(<TradeList initialTrades={mockTrades} prices={pricesWithoutTSLA} />)
+    render(<TradeList initialTrades={twoOpenTrades} prices={pricesWithoutTSLA} />)
 
     // Should still show AAPL price (may appear in both table and mobile card)
     expect(screen.getAllByText('$152.45').length).toBeGreaterThan(0)
 
-    // TSLA should show a dash (check for it in the appropriate context)
+    // TSLA should show a dash in the open trades table
     const rows = screen.getAllByRole('row')
     const tslaRow = rows.find((row) => row.textContent?.includes('TSLA'))
     expect(tslaRow?.textContent).toContain('-')
@@ -210,9 +218,9 @@ describe('TradeList - Action Button', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
     const actionButtons = screen.getAllByText('Action')
-    // Trades sorted by expiration ascending: TSLA (Feb 20) first, AAPL (Mar 15) second
-    // Click the second one (AAPL - OPEN trade)
-    await user.click(actionButtons[1])
+    // Open trades section renders first: AAPL (OPEN) at index 0
+    // Closed trades section renders second: TSLA (EXPIRED) at index 1
+    await user.click(actionButtons[0])
 
     await waitFor(() => {
       expect(screen.getByText('View Full Details')).toBeInTheDocument()
@@ -228,9 +236,9 @@ describe('TradeList - Action Button', () => {
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
     const actionButtons = screen.getAllByText('Action')
-    // Trades sorted by expiration ascending: TSLA (Feb 20, EXPIRED) first
-    // Click the first one (TSLA - EXPIRED trade)
-    await user.click(actionButtons[0])
+    // Open trades section renders first: AAPL (OPEN) at index 0
+    // Closed trades section renders second: TSLA (EXPIRED) at index 1
+    await user.click(actionButtons[1])
 
     await waitFor(() => {
       expect(screen.getByText('View Full Details')).toBeInTheDocument()
@@ -366,9 +374,10 @@ describe('TradeList - Mobile Card View', () => {
 
     render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
 
-    // Should show both prices in the document
+    // Should show AAPL price (open trade) in the document
     expect(screen.getAllByText('$152.45').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('$198.75').length).toBeGreaterThan(0)
+
+    // TSLA is EXPIRED (closed section) - no current price shown in cards
   })
 
   it('should show tap hint on mobile cards', () => {

@@ -108,6 +108,17 @@ export function TradeList({ initialTrades, prices, refreshInfo = {} }: TradeList
     sortDirection,
   ])
 
+  // Split into open vs closed trades
+  const openTrades = useMemo(
+    () => filteredTrades.filter((trade) => trade.status === 'OPEN'),
+    [filteredTrades]
+  )
+
+  const closedTrades = useMemo(
+    () => filteredTrades.filter((trade) => trade.status !== 'OPEN'),
+    [filteredTrades]
+  )
+
   // Handle sort
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -344,149 +355,379 @@ export function TradeList({ initialTrades, prices, refreshInfo = {} }: TradeList
         </div>
       )}
 
-      {/* Desktop Table View */}
-      {filteredTrades.length > 0 && (
-        <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200" aria-label="Trades list">
-            <caption className="sr-only">List of trades with filtering and sorting options</caption>
-            <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  onClick={() => handleSort('ticker')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  aria-sort={
-                    sortField === 'ticker'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : 'none'
-                  }
-                >
-                  <div className="flex items-center gap-1">
-                    Ticker
-                    {sortField === 'ticker' && (
-                      <span className="text-blue-600" aria-hidden="true">
-                        {sortDirection === 'asc' ? '↑' : '↓'}
-                      </span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Current Price
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Type
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Strike
-                </th>
-                <th
-                  scope="col"
-                  onClick={() => handleSort('premium')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  aria-sort={
-                    sortField === 'premium'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : 'none'
-                  }
-                >
-                  <div className="flex items-center gap-1">
-                    Premium
-                    {sortField === 'premium' && (
-                      <span className="text-blue-600" aria-hidden="true">
-                        {sortDirection === 'asc' ? '↑' : '↓'}
-                      </span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  onClick={() => handleSort('expirationDate')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  aria-sort={
-                    sortField === 'expirationDate'
-                      ? sortDirection === 'asc'
-                        ? 'ascending'
-                        : 'descending'
-                      : 'none'
-                  }
-                >
-                  <div className="flex items-center gap-1">
-                    Expiration
-                    {sortField === 'expirationDate' && (
-                      <span className="text-blue-600" aria-hidden="true">
-                        {sortDirection === 'asc' ? '↑' : '↓'}
-                      </span>
-                    )}
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Status
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  P&L
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTrades.map((trade) => {
-                const currentPrice = prices.get(trade.ticker)
-                const rowBgColor = getRowBgColor(trade, currentPrice?.price)
-                return (
-                  <tr
-                    key={trade.id}
-                    className={`hover:bg-gray-100 cursor-pointer transition-colors ${rowBgColor}`}
-                    onClick={() => setSelectedTrade(trade)}
+      {/* ===== Open Trades Section ===== */}
+      {openTrades.length > 0 && (
+        <>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">
+            Open Trades ({openTrades.length})
+          </h2>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden mb-8">
+            <table className="min-w-full divide-y divide-gray-200" aria-label="Open trades list">
+              <caption className="sr-only">Open trades with current prices and moneyness</caption>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    onClick={() => handleSort('ticker')}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    aria-sort={
+                      sortField === 'ticker'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {trade.ticker}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {currentPrice ? (
-                        <div>
-                          <div>${currentPrice.price.toFixed(2)}</div>
+                    <div className="flex items-center gap-1">
+                      Ticker
+                      {sortField === 'ticker' && (
+                        <span className="text-blue-600" aria-hidden="true">
+                          {sortDirection === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Current Price
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Type
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Strike
+                  </th>
+                  <th
+                    scope="col"
+                    onClick={() => handleSort('premium')}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    aria-sort={
+                      sortField === 'premium'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                  >
+                    <div className="flex items-center gap-1">
+                      Premium
+                      {sortField === 'premium' && (
+                        <span className="text-blue-600" aria-hidden="true">
+                          {sortDirection === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    onClick={() => handleSort('expirationDate')}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    aria-sort={
+                      sortField === 'expirationDate'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                  >
+                    <div className="flex items-center gap-1">
+                      Expiration
+                      {sortField === 'expirationDate' && (
+                        <span className="text-blue-600" aria-hidden="true">
+                          {sortDirection === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {openTrades.map((trade) => {
+                  const currentPrice = prices.get(trade.ticker)
+                  const rowBgColor = getRowBgColor(trade, currentPrice?.price)
+                  return (
+                    <tr
+                      key={trade.id}
+                      className={`hover:bg-gray-100 cursor-pointer transition-colors ${rowBgColor}`}
+                      onClick={() => setSelectedTrade(trade)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {trade.ticker}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {currentPrice ? (
+                          <div>
+                            <div>${currentPrice.price.toFixed(2)}</div>
+                            {(() => {
+                              const info = refreshInfo[trade.ticker]
+                              if (!info) return null
+                              return (
+                                <div className="text-xs text-gray-400">
+                                  {formatTimeAgo(new Date(info.lastUpdated))}
+                                  {info.nextRefreshAt && (
+                                    <span className="ml-1">
+                                      · Next: {formatNextRefreshTime(new Date(info.nextRefreshAt))}
+                                    </span>
+                                  )}
+                                </div>
+                              )
+                            })()}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}
+                        >
+                          {trade.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatCurrency(
+                          trade.strikePrice as unknown as Prisma.Decimal | string | number
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatCurrency(
+                          trade.premium as unknown as Prisma.Decimal | string | number
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatDate(trade.expirationDate)}
+                      </td>
+                      <td
+                        className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedTrade(trade)
+                          }}
+                          variant="outline"
+                          size="sm"
+                          aria-label={`Open actions for ${trade.ticker} trade`}
+                        >
+                          Action
+                        </Button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4 mb-8">
+            {openTrades.map((trade) => {
+              const currentPrice = prices.get(trade.ticker)
+              const rowBgColor = getRowBgColor(trade, currentPrice?.price)
+              return (
+                <div
+                  key={trade.id}
+                  className={`bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow ${rowBgColor}`}
+                  onClick={() => setSelectedTrade(trade)}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
+                      {currentPrice && (
+                        <div className="text-sm mt-1 text-gray-700">
+                          ${currentPrice.price.toFixed(2)}
                           {(() => {
                             const info = refreshInfo[trade.ticker]
                             if (!info) return null
                             return (
-                              <div className="text-xs text-gray-400">
-                                {formatTimeAgo(new Date(info.lastUpdated))}
-                                {info.nextRefreshAt && (
-                                  <span className="ml-1">
-                                    · Next: {formatNextRefreshTime(new Date(info.nextRefreshAt))}
-                                  </span>
-                                )}
-                              </div>
+                              <span className="text-xs text-gray-400 ml-1">
+                                ({formatTimeAgo(new Date(info.lastUpdated))})
+                              </span>
                             )
                           })()}
                         </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
                       )}
+                      <div className="flex gap-2 mt-1">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}
+                        >
+                          {trade.type}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Strike Price:</span>
+                      <span className="font-medium text-gray-900">
+                        {formatCurrency(
+                          trade.strikePrice as unknown as Prisma.Decimal | string | number
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Premium:</span>
+                      <span className="font-medium text-gray-900">
+                        {formatCurrency(
+                          trade.premium as unknown as Prisma.Decimal | string | number
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Expiration:</span>
+                      <span className="font-medium text-gray-900">
+                        {formatDate(trade.expirationDate)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Contracts:</span>
+                      <span className="font-medium text-gray-900">{trade.contracts}</span>
+                    </div>
+                  </div>
+                  <div className="mt-4 text-center text-xs text-gray-500">Tap to view actions</div>
+                </div>
+              )
+            })}
+          </div>
+        </>
+      )}
+
+      {/* ===== Closed Trades Section ===== */}
+      {closedTrades.length > 0 && (
+        <>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">
+            Closed Trades ({closedTrades.length})
+          </h2>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden mb-8">
+            <table className="min-w-full divide-y divide-gray-200" aria-label="Closed trades list">
+              <caption className="sr-only">
+                Closed, expired, and assigned trades with realized P&L
+              </caption>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    onClick={() => handleSort('ticker')}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    aria-sort={
+                      sortField === 'ticker'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                  >
+                    <div className="flex items-center gap-1">
+                      Ticker
+                      {sortField === 'ticker' && (
+                        <span className="text-blue-600" aria-hidden="true">
+                          {sortDirection === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Type
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Strike
+                  </th>
+                  <th
+                    scope="col"
+                    onClick={() => handleSort('premium')}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    aria-sort={
+                      sortField === 'premium'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                  >
+                    <div className="flex items-center gap-1">
+                      Premium
+                      {sortField === 'premium' && (
+                        <span className="text-blue-600" aria-hidden="true">
+                          {sortDirection === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    onClick={() => handleSort('expirationDate')}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    aria-sort={
+                      sortField === 'expirationDate'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                  >
+                    <div className="flex items-center gap-1">
+                      Expiration
+                      {sortField === 'expirationDate' && (
+                        <span className="text-blue-600" aria-hidden="true">
+                          {sortDirection === 'asc' ? '↑' : '↓'}
+                        </span>
+                      )}
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    P&L
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {closedTrades.map((trade) => (
+                  <tr
+                    key={trade.id}
+                    className="hover:bg-gray-100 cursor-pointer transition-colors"
+                    onClick={() => setSelectedTrade(trade)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {trade.ticker}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
@@ -501,7 +742,9 @@ export function TradeList({ initialTrades, prices, refreshInfo = {} }: TradeList
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
+                      {formatCurrency(
+                        trade.premium as unknown as Prisma.Decimal | string | number
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(trade.expirationDate)}
@@ -543,43 +786,22 @@ export function TradeList({ initialTrades, prices, refreshInfo = {} }: TradeList
                       </Button>
                     </td>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      {/* Mobile Card View */}
-      {filteredTrades.length > 0 && (
-        <div className="md:hidden space-y-4">
-          {filteredTrades.map((trade) => {
-            const currentPrice = prices.get(trade.ticker)
-            const rowBgColor = getRowBgColor(trade, currentPrice?.price)
-            return (
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4 mb-8">
+            {closedTrades.map((trade) => (
               <div
                 key={trade.id}
-                className={`bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow ${rowBgColor}`}
+                className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => setSelectedTrade(trade)}
               >
-                {/* Header */}
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
-                    {currentPrice && (
-                      <div className="text-sm mt-1 text-gray-700">
-                        ${currentPrice.price.toFixed(2)}
-                        {(() => {
-                          const info = refreshInfo[trade.ticker]
-                          if (!info) return null
-                          return (
-                            <span className="text-xs text-gray-400 ml-1">
-                              ({formatTimeAgo(new Date(info.lastUpdated))})
-                            </span>
-                          )
-                        })()}
-                      </div>
-                    )}
                     <div className="flex gap-2 mt-1">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}
@@ -594,8 +816,6 @@ export function TradeList({ initialTrades, prices, refreshInfo = {} }: TradeList
                     </div>
                   </div>
                 </div>
-
-                {/* Details */}
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Strike Price:</span>
@@ -608,7 +828,9 @@ export function TradeList({ initialTrades, prices, refreshInfo = {} }: TradeList
                   <div className="flex justify-between">
                     <span className="text-gray-500">Premium:</span>
                     <span className="font-medium text-gray-900">
-                      {formatCurrency(trade.premium as unknown as Prisma.Decimal | string | number)}
+                      {formatCurrency(
+                        trade.premium as unknown as Prisma.Decimal | string | number
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -636,13 +858,11 @@ export function TradeList({ initialTrades, prices, refreshInfo = {} }: TradeList
                     )
                   })()}
                 </div>
-
-                {/* Tap to view hint */}
                 <div className="mt-4 text-center text-xs text-gray-500">Tap to view actions</div>
               </div>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Trade Actions Dialog */}

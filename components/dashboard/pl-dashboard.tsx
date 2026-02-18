@@ -12,7 +12,6 @@ import type {
 import { MetricCard } from './metric-card'
 import { StatCard } from './stat-card'
 import { TimeRangeSelector } from './time-range-selector'
-import { BenchmarkComparisonSection } from './benchmark-comparison-section'
 
 // Import Card for loading states
 const LoadingCard = ({ height = 'h-96' }: { height?: string }) => (

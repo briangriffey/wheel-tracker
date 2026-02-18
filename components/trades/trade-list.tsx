@@ -25,13 +25,7 @@ interface TradeListProps {
 type SortField = 'expirationDate' | 'ticker' | 'premium'
 type SortDirection = 'asc' | 'desc'
 
-export function TradeList({ initialTrades, prices, refreshInfo = {} }: TradeListProps) {
-  const [trades, setTrades] = useState<Trade[]>(initialTrades)
-
-  // Sync state with props
-  React.useEffect(() => {
-    setTrades(initialTrades)
-  }, [initialTrades])
+export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: TradeListProps) {
   const [tickerFilter, setTickerFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<TradeStatus | 'ALL'>('ALL')
   const [typeFilter, setTypeFilter] = useState<TradeType | 'ALL'>('ALL')

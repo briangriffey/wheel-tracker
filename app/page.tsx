@@ -520,7 +520,7 @@ export default async function Home() {
                 <div className="text-4xl font-bold text-neutral-900">
                   $8<span className="text-lg font-normal text-neutral-500">/month</span>
                 </div>
-                <div className="text-sm text-neutral-500 mt-1">or $30/year (save 20"%)</div>
+                <div className="text-sm text-neutral-500 mt-1">or $30/year (save 20%)</div>
               </div>
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center">

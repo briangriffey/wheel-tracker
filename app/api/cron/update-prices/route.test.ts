@@ -155,7 +155,7 @@ describe('Cron Job: Update Prices', () => {
 
       // Verify no price fetching was attempted
       expect(marketUtils.getActiveTickers).not.toHaveBeenCalled()
-      expect(marketData.batchFetchPrices).not.toHaveBeenCalled()
+      expect(marketData.smartBatchRefresh).not.toHaveBeenCalled()
     })
 
     it('should proceed with updates when market is open', async () => {
@@ -204,35 +204,22 @@ describe('Cron Job: Update Prices', () => {
       expect(console.log).toHaveBeenCalledWith('[CRON] No active tickers found, nothing to update')
 
       // Verify no price fetching was attempted
-      expect(marketData.batchFetchPrices).not.toHaveBeenCalled()
+      expect(marketData.smartBatchRefresh).not.toHaveBeenCalled()
     })
 
     it('should successfully update prices for active tickers', async () => {
       const mockTickers = ['AAPL', 'MSFT', 'TSLA']
-      const mockResults = [
-        {
-          ticker: 'AAPL',
-          price: 180.5,
-          date: new Date('2026-02-07'),
-          success: true,
-        },
-        {
-          ticker: 'MSFT',
-          price: 420.25,
-          date: new Date('2026-02-07'),
-          success: true,
-        },
-        {
-          ticker: 'TSLA',
-          price: 250.0,
-          date: new Date('2026-02-07'),
-          success: true,
-        },
-      ]
 
       vi.mocked(marketUtils.isMarketOpen).mockReturnValue(true)
       vi.mocked(marketUtils.getActiveTickers).mockResolvedValue(mockTickers)
-      vi.mocked(marketData.batchFetchPrices).mockResolvedValue(mockResults)
+      vi.mocked(marketData.smartBatchRefresh).mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 180.5, date: new Date('2026-02-07'), success: true },
+          { ticker: 'MSFT', price: 420.25, date: new Date('2026-02-07'), success: true },
+          { ticker: 'TSLA', price: 250.0, date: new Date('2026-02-07'), success: true },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost:3000/api/cron/update-prices', {
         method: 'POST',
@@ -246,7 +233,7 @@ describe('Cron Job: Update Prices', () => {
 
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
-      expect(data.message).toBe('Updated 3 of 3 tickers')
+      expect(data.message).toContain('Updated 3 of 3 tickers')
       expect(data.summary.total).toBe(3)
       expect(data.summary.successful).toBe(3)
       expect(data.summary.failed).toBe(0)
@@ -261,37 +248,23 @@ describe('Cron Job: Update Prices', () => {
         'AAPL=$180.5, MSFT=$420.25, TSLA=$250'
       )
 
-      // Verify batchFetchPrices was called with correct tickers
-      expect(marketData.batchFetchPrices).toHaveBeenCalledWith(mockTickers)
+      // Verify smartBatchRefresh was called with correct tickers
+      expect(marketData.smartBatchRefresh).toHaveBeenCalledWith(mockTickers)
     })
 
     it('should handle partial failures gracefully', async () => {
       const mockTickers = ['AAPL', 'INVALID', 'MSFT']
-      const mockResults = [
-        {
-          ticker: 'AAPL',
-          price: 180.5,
-          date: new Date('2026-02-07'),
-          success: true,
-        },
-        {
-          ticker: 'INVALID',
-          price: 0,
-          date: new Date('2026-02-07'),
-          success: false,
-          error: 'Invalid ticker symbol',
-        },
-        {
-          ticker: 'MSFT',
-          price: 420.25,
-          date: new Date('2026-02-07'),
-          success: true,
-        },
-      ]
 
       vi.mocked(marketUtils.isMarketOpen).mockReturnValue(true)
       vi.mocked(marketUtils.getActiveTickers).mockResolvedValue(mockTickers)
-      vi.mocked(marketData.batchFetchPrices).mockResolvedValue(mockResults)
+      vi.mocked(marketData.smartBatchRefresh).mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 180.5, date: new Date('2026-02-07'), success: true },
+          { ticker: 'INVALID', price: 0, date: new Date('2026-02-07'), success: false, error: 'Invalid ticker symbol' },
+          { ticker: 'MSFT', price: 420.25, date: new Date('2026-02-07'), success: true },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost:3000/api/cron/update-prices', {
         method: 'POST',
@@ -305,7 +278,7 @@ describe('Cron Job: Update Prices', () => {
 
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
-      expect(data.message).toBe('Updated 2 of 3 tickers')
+      expect(data.message).toContain('Updated 2 of 3 tickers')
       expect(data.summary.successful).toBe(2)
       expect(data.summary.failed).toBe(1)
       expect(data.results.successful).toHaveLength(2)
@@ -322,26 +295,16 @@ describe('Cron Job: Update Prices', () => {
 
     it('should handle complete failure', async () => {
       const mockTickers = ['AAPL', 'MSFT']
-      const mockResults = [
-        {
-          ticker: 'AAPL',
-          price: 0,
-          date: new Date('2026-02-07'),
-          success: false,
-          error: 'API rate limit exceeded',
-        },
-        {
-          ticker: 'MSFT',
-          price: 0,
-          date: new Date('2026-02-07'),
-          success: false,
-          error: 'API rate limit exceeded',
-        },
-      ]
 
       vi.mocked(marketUtils.isMarketOpen).mockReturnValue(true)
       vi.mocked(marketUtils.getActiveTickers).mockResolvedValue(mockTickers)
-      vi.mocked(marketData.batchFetchPrices).mockResolvedValue(mockResults)
+      vi.mocked(marketData.smartBatchRefresh).mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 0, date: new Date('2026-02-07'), success: false, error: 'API rate limit exceeded' },
+          { ticker: 'MSFT', price: 0, date: new Date('2026-02-07'), success: false, error: 'API rate limit exceeded' },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost:3000/api/cron/update-prices', {
         method: 'POST',
@@ -355,7 +318,7 @@ describe('Cron Job: Update Prices', () => {
 
       expect(response.status).toBe(200)
       expect(data.success).toBe(true) // Job succeeded even though all updates failed
-      expect(data.message).toBe('Updated 0 of 2 tickers')
+      expect(data.message).toContain('Updated 0 of 2 tickers')
       expect(data.summary.successful).toBe(0)
       expect(data.summary.failed).toBe(2)
     })

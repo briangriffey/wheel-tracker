@@ -145,7 +145,7 @@ describe('TradeActionsDialog - Rendering', () => {
     expect(screen.queryByText('Current Price:')).not.toBeInTheDocument()
   })
 
-  it('should display stale date indicator for old prices', () => {
+  it('should display updated time indicator for all prices', () => {
     render(
       <TradeActionsDialog
         trade={mockOpenTrade}
@@ -155,8 +155,8 @@ describe('TradeActionsDialog - Rendering', () => {
       />
     )
 
-    // Should show "as of" date text
-    expect(screen.getByText(/as of/i)).toBeInTheDocument()
+    // Should show "Updated" time text
+    expect(screen.getByText(/Updated/i)).toBeInTheDocument()
   })
 })
 

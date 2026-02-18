@@ -40,17 +40,19 @@ describe('PositionCard - Price Refresh Features', () => {
     price: 155.0,
     date: new Date('2026-02-07T14:30:00Z'),
     source: 'financial_data',
-    isStale: false,
-    ageInHours: 0.5,
+    canRefresh: false,
+    nextRefreshAt: new Date('2026-02-07T18:30:00Z'),
+    refreshReason: 'Recently updated during market hours',
   }
 
-  const stalePriceData: PriceData = {
+  const refreshablePriceData: PriceData = {
     ticker: 'AAPL',
     price: 155.0,
     date: new Date('2026-02-07T10:00:00Z'),
     source: 'financial_data',
-    isStale: true,
-    ageInHours: 4.5,
+    canRefresh: true,
+    nextRefreshAt: null,
+    refreshReason: 'Price is older than 4 hours',
   }
 
   beforeEach(() => {
@@ -169,52 +171,51 @@ describe('PositionCard - Price Refresh Features', () => {
     })
   })
 
-  describe('Price Staleness Warning', () => {
-    it('should not show staleness warning for fresh prices', () => {
+  describe('Price Refresh Available Warning', () => {
+    it('should not show refresh warning for non-refreshable prices', () => {
       render(<PositionCard position={mockPosition} priceData={freshPriceData} />)
 
-      const stalenessWarning = screen.queryByText(/Price data is stale/i)
-      expect(stalenessWarning).not.toBeInTheDocument()
+      const refreshWarning = screen.queryByText(/Price update available/i)
+      expect(refreshWarning).not.toBeInTheDocument()
     })
 
-    it('should show staleness warning for stale prices', () => {
-      render(<PositionCard position={mockPosition} priceData={stalePriceData} />)
+    it('should show refresh warning for refreshable prices', () => {
+      render(<PositionCard position={mockPosition} priceData={refreshablePriceData} />)
 
-      const stalenessWarning = screen.getByText(/Price data is stale/i)
-      expect(stalenessWarning).toBeInTheDocument()
-      expect(screen.getByText(/4 hours old/i)).toBeInTheDocument()
+      const refreshWarning = screen.getByText(/Price update available/i)
+      expect(refreshWarning).toBeInTheDocument()
     })
 
-    it('should not show staleness warning for CLOSED positions', () => {
+    it('should not show refresh warning for CLOSED positions', () => {
       const closedPosition = { ...mockPosition, status: 'CLOSED' as const }
-      render(<PositionCard position={closedPosition} priceData={stalePriceData} />)
+      render(<PositionCard position={closedPosition} priceData={refreshablePriceData} />)
 
-      const stalenessWarning = screen.queryByText(/Price data is stale/i)
-      expect(stalenessWarning).not.toBeInTheDocument()
+      const refreshWarning = screen.queryByText(/Price update available/i)
+      expect(refreshWarning).not.toBeInTheDocument()
     })
 
-    it('should include refresh button in staleness warning', () => {
-      render(<PositionCard position={mockPosition} priceData={stalePriceData} />)
+    it('should include refresh button in refresh warning', () => {
+      render(<PositionCard position={mockPosition} priceData={refreshablePriceData} />)
 
-      const stalenessWarning = screen.getByText(/Price data is stale/i)
-      expect(stalenessWarning).toBeInTheDocument()
+      const refreshWarning = screen.getByText(/Price update available/i)
+      expect(refreshWarning).toBeInTheDocument()
 
       // Should have a refresh button within the warning
       const refreshButtons = screen.getAllByText('Refresh')
       expect(refreshButtons.length).toBeGreaterThan(0)
     })
 
-    it('should not show staleness warning when there is a price error', () => {
+    it('should not show refresh warning when there is a price error', () => {
       render(
         <PositionCard
           position={mockPosition}
-          priceData={stalePriceData}
+          priceData={refreshablePriceData}
           priceError="Failed to fetch"
         />
       )
 
-      const stalenessWarning = screen.queryByText(/Price data is stale/i)
-      expect(stalenessWarning).not.toBeInTheDocument()
+      const refreshWarning = screen.queryByText(/Price update available/i)
+      expect(refreshWarning).not.toBeInTheDocument()
 
       // But should show the error instead
       expect(screen.getByText(/Failed to fetch/i)).toBeInTheDocument()
@@ -222,20 +223,20 @@ describe('PositionCard - Price Refresh Features', () => {
   })
 
   describe('Price Last Updated Display', () => {
-    it('should display last updated timestamp when price data is available', () => {
+    it('should display updated time when price data is available', () => {
       render(<PositionCard position={mockPosition} priceData={freshPriceData} />)
 
-      expect(screen.getByText(/Last updated:/i)).toBeInTheDocument()
+      expect(screen.getByText(/Updated/i)).toBeInTheDocument()
     })
 
-    it('should show age in hours for stale prices', () => {
-      render(<PositionCard position={mockPosition} priceData={stalePriceData} />)
+    it('should show next refresh time when available', () => {
+      render(<PositionCard position={mockPosition} priceData={freshPriceData} />)
 
-      expect(screen.getByText(/Last updated:/i)).toBeInTheDocument()
-      expect(screen.getByText(/4h ago/i)).toBeInTheDocument()
+      expect(screen.getByText(/Updated/i)).toBeInTheDocument()
+      expect(screen.getByText(/Next:/i)).toBeInTheDocument()
     })
 
-    it('should not display last updated when there is a price error', () => {
+    it('should not display updated time when there is a price error', () => {
       render(
         <PositionCard
           position={mockPosition}
@@ -244,13 +245,14 @@ describe('PositionCard - Price Refresh Features', () => {
         />
       )
 
-      expect(screen.queryByText(/Last updated:/i)).not.toBeInTheDocument()
+      // The "Updated" text is inside the price info section, which is hidden when there's an error
+      expect(screen.queryByText(/· Next:/i)).not.toBeInTheDocument()
     })
 
-    it('should not display last updated when price data is null', () => {
+    it('should not display updated time when price data is null', () => {
       render(<PositionCard position={mockPosition} priceData={null} />)
 
-      expect(screen.queryByText(/Last updated:/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/· Next:/i)).not.toBeInTheDocument()
     })
   })
 

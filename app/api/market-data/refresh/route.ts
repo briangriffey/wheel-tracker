@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { batchFetchPrices, fetchStockPrice } from '@/lib/services/market-data'
+import { smartBatchRefresh, fetchStockPrice } from '@/lib/services/market-data'
 import { getActiveTickers } from '@/lib/utils/market'
 
 /**
  * POST /api/market-data/refresh
- * Manually refresh stock prices for active tickers or specified tickers
+ * Manually refresh stock prices for active tickers or specified tickers.
+ * Uses smart refresh to respect market-hours gating.
  *
  * Body (optional):
  * {
@@ -39,17 +40,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fetch prices with rate limiting
-    const results = await batchFetchPrices(tickersToRefresh)
+    // Smart refresh: only fetches eligible tickers
+    const { refreshed, skipped } = await smartBatchRefresh(tickersToRefresh)
 
-    // Separate successful and failed results
-    const successful = results.filter((r) => r.success)
-    const failed = results.filter((r) => !r.success)
+    // Separate successful and failed from refreshed results
+    const successful = refreshed.filter((r) => r.success)
+    const failed = refreshed.filter((r) => !r.success)
 
     return NextResponse.json(
       {
         success: true,
-        message: `Refreshed ${successful.length} of ${results.length} tickers`,
+        message: `Refreshed ${successful.length} of ${tickersToRefresh.length} tickers`,
         results: {
           successful: successful.map((r) => ({
             ticker: r.ticker,
@@ -61,10 +62,16 @@ export async function POST(request: NextRequest) {
             error: r.error,
           })),
         },
+        skipped: skipped.map((s) => ({
+          ticker: s.ticker,
+          reason: s.eligibility.reason,
+          nextRefreshAt: s.eligibility.nextRefreshAt,
+        })),
         summary: {
-          total: results.length,
+          total: tickersToRefresh.length,
           successful: successful.length,
           failed: failed.length,
+          skipped: skipped.length,
         },
       },
       { status: 200 }

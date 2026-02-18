@@ -1,12 +1,16 @@
 import { prisma } from '@/lib/db'
 
 /**
- * Market trading hours
+ * Market trading hours in Central Time (America/Chicago)
  */
-const MARKET_OPEN_HOUR = 9 // 9:30 AM ET
+const MARKET_TIMEZONE = 'America/Chicago'
+const MARKET_OPEN_HOUR = 8 // 8:30 AM CT
 const MARKET_OPEN_MINUTE = 30
-const MARKET_CLOSE_HOUR = 16 // 4:00 PM ET
-const MARKET_CLOSE_MINUTE = 0
+const MARKET_CLOSE_HOUR = 15 // 3:30 PM CT (was 3:00 PM CT = 4:00 PM ET, now 3:30 PM CT)
+const MARKET_CLOSE_MINUTE = 30
+
+/** Refresh cooldown during market hours (4 hours) */
+const REFRESH_COOLDOWN_MS = 4 * 60 * 60 * 1000
 
 /**
  * US market holidays for 2026 (will need to be updated annually)
@@ -25,67 +29,184 @@ const MARKET_HOLIDAYS_2026 = [
 ]
 
 /**
- * Check if the US stock market is currently open
- * Market hours: Monday-Friday, 9:30 AM - 4:00 PM ET (excluding holidays)
+ * Refresh eligibility result
  */
-export function isMarketOpen(date: Date = new Date()): boolean {
-  // Convert to ET timezone
-  const etDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+export interface RefreshEligibility {
+  canRefresh: boolean
+  lastUpdated: Date
+  nextRefreshAt: Date | null
+  reason: string
+}
 
-  // Check if it's a weekend
-  const dayOfWeek = etDate.getDay()
-  if (dayOfWeek === 0 || dayOfWeek === 6) {
-    return false // Sunday = 0, Saturday = 6
-  }
+/**
+ * Convert a UTC Date to Central Time components
+ */
+function toCentralTime(date: Date): Date {
+  return new Date(date.toLocaleString('en-US', { timeZone: MARKET_TIMEZONE }))
+}
 
-  // Check if it's a holiday
-  const dateString = etDate.toISOString().split('T')[0]
-  if (MARKET_HOLIDAYS_2026.includes(dateString)) {
-    return false
-  }
+/**
+ * Check if a date (in CT) falls on a trading day (not weekend, not holiday)
+ */
+function isTradingDay(ctDate: Date): boolean {
+  const dayOfWeek = ctDate.getDay()
+  if (dayOfWeek === 0 || dayOfWeek === 6) return false
 
-  // Check market hours (9:30 AM - 4:00 PM ET)
-  const hours = etDate.getHours()
-  const minutes = etDate.getMinutes()
-
-  // Before market open
-  if (hours < MARKET_OPEN_HOUR) {
-    return false
-  }
-  if (hours === MARKET_OPEN_HOUR && minutes < MARKET_OPEN_MINUTE) {
-    return false
-  }
-
-  // After market close
-  if (hours > MARKET_CLOSE_HOUR) {
-    return false
-  }
-  if (hours === MARKET_CLOSE_HOUR && minutes >= MARKET_CLOSE_MINUTE) {
-    return false
-  }
+  const dateString = ctDate.toISOString().split('T')[0]
+  if (MARKET_HOLIDAYS_2026.includes(dateString)) return false
 
   return true
+}
+
+/**
+ * Check if the US stock market is currently open
+ * Market hours: Monday-Friday, 8:30 AM - 3:30 PM CT (excluding holidays)
+ */
+export function isMarketOpen(date: Date = new Date()): boolean {
+  const ctDate = toCentralTime(date)
+
+  if (!isTradingDay(ctDate)) return false
+
+  const hours = ctDate.getHours()
+  const minutes = ctDate.getMinutes()
+
+  // Before market open
+  if (hours < MARKET_OPEN_HOUR) return false
+  if (hours === MARKET_OPEN_HOUR && minutes < MARKET_OPEN_MINUTE) return false
+
+  // After market close
+  if (hours > MARKET_CLOSE_HOUR) return false
+  if (hours === MARKET_CLOSE_HOUR && minutes >= MARKET_CLOSE_MINUTE) return false
+
+  return true
+}
+
+/**
+ * Get the most recent market close time (walks backward from `now`)
+ * Returns a UTC Date representing when the market last closed.
+ */
+export function getLastMarketClose(now: Date = new Date()): Date {
+  const ctNow = toCentralTime(now)
+
+  // Start with today's close
+  const candidate = new Date(ctNow)
+  candidate.setHours(MARKET_CLOSE_HOUR, MARKET_CLOSE_MINUTE, 0, 0)
+
+  // If today is a trading day and we're past close, today's close is the answer
+  if (isTradingDay(ctNow) && ctNow >= candidate) {
+    // Convert CT close time back to UTC by computing offset
+    return ctCloseToUtc(candidate, now)
+  }
+
+  // Otherwise, walk backward to find the most recent trading day
+  const walker = new Date(ctNow)
+  // If we haven't passed close today (or today isn't a trading day), start from yesterday
+  walker.setDate(walker.getDate() - 1)
+  let attempts = 0
+  while (attempts < 10) {
+    if (isTradingDay(walker)) {
+      walker.setHours(MARKET_CLOSE_HOUR, MARKET_CLOSE_MINUTE, 0, 0)
+      return ctCloseToUtc(walker, now)
+    }
+    walker.setDate(walker.getDate() - 1)
+    attempts++
+  }
+
+  // Fallback: return a week ago
+  return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+}
+
+/**
+ * Convert a CT close time back to a UTC Date.
+ * We compute the offset by comparing the CT representation with the original UTC date.
+ */
+function ctCloseToUtc(ctClose: Date, referenceUtc: Date): Date {
+  // Get the CT offset by comparing reference dates
+  const refCt = toCentralTime(referenceUtc)
+  const offsetMs = refCt.getTime() - referenceUtc.getTime()
+
+  // Subtract the offset to go from CT back to UTC
+  return new Date(ctClose.getTime() - offsetMs)
 }
 
 /**
  * Get the next market open time
  */
 export function getNextMarketOpen(date: Date = new Date()): Date {
-  const etDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }))
+  const ctDate = toCentralTime(date)
 
-  // Start with tomorrow
-  const nextOpen = new Date(etDate)
-  nextOpen.setDate(nextOpen.getDate() + 1)
-  nextOpen.setHours(MARKET_OPEN_HOUR, MARKET_OPEN_MINUTE, 0, 0)
+  // Start with today if before open, otherwise tomorrow
+  const candidate = new Date(ctDate)
 
-  // Keep checking until we find a valid market day
+  // If today is a trading day and we're before open, use today
+  if (isTradingDay(ctDate)) {
+    const todayOpen = new Date(ctDate)
+    todayOpen.setHours(MARKET_OPEN_HOUR, MARKET_OPEN_MINUTE, 0, 0)
+    if (ctDate < todayOpen) {
+      return ctCloseToUtc(todayOpen, date)
+    }
+  }
+
+  // Otherwise start from tomorrow
+  candidate.setDate(candidate.getDate() + 1)
+  candidate.setHours(MARKET_OPEN_HOUR, MARKET_OPEN_MINUTE, 0, 0)
+
   let attempts = 0
-  while (!isMarketOpen(nextOpen) && attempts < 10) {
-    nextOpen.setDate(nextOpen.getDate() + 1)
+  while (!isTradingDay(candidate) && attempts < 10) {
+    candidate.setDate(candidate.getDate() + 1)
     attempts++
   }
 
-  return nextOpen
+  return ctCloseToUtc(candidate, date)
+}
+
+/**
+ * Determine if a price can be refreshed and when the next refresh is available
+ *
+ * Rules:
+ * - Market open: can refresh if updatedAt > 4 hours ago; nextRefreshAt = updatedAt + 4h
+ * - Market closed: can refresh only if updatedAt < last market close; nextRefreshAt = next market open
+ */
+export function canRefreshPrice(updatedAt: Date, now: Date = new Date()): RefreshEligibility {
+  const marketOpen = isMarketOpen(now)
+  const lastClose = getLastMarketClose(now)
+
+  if (marketOpen) {
+    const timeSinceUpdate = now.getTime() - new Date(updatedAt).getTime()
+    if (timeSinceUpdate >= REFRESH_COOLDOWN_MS) {
+      return {
+        canRefresh: true,
+        lastUpdated: updatedAt,
+        nextRefreshAt: null,
+        reason: 'Price is older than 4 hours',
+      }
+    }
+    const nextRefreshAt = new Date(new Date(updatedAt).getTime() + REFRESH_COOLDOWN_MS)
+    return {
+      canRefresh: false,
+      lastUpdated: updatedAt,
+      nextRefreshAt,
+      reason: 'Recently updated during market hours',
+    }
+  }
+
+  // Market is closed
+  if (new Date(updatedAt) < lastClose) {
+    return {
+      canRefresh: true,
+      lastUpdated: updatedAt,
+      nextRefreshAt: null,
+      reason: 'Not yet updated since last market close',
+    }
+  }
+
+  const nextOpen = getNextMarketOpen(now)
+  return {
+    canRefresh: false,
+    lastUpdated: updatedAt,
+    nextRefreshAt: nextOpen,
+    reason: 'Already updated since last close',
+  }
 }
 
 /**

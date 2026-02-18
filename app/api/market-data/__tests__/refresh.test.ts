@@ -3,11 +3,12 @@ import { POST } from '../refresh/route'
 import { NextRequest } from 'next/server'
 
 // Mock the market data service
-const mockBatchFetchPrices = vi.fn()
+const mockSmartBatchRefresh = vi.fn()
 const mockGetActiveTickers = vi.fn()
 
 vi.mock('@/lib/services/market-data', () => ({
-  batchFetchPrices: (...args: unknown[]) => mockBatchFetchPrices(...args),
+  smartBatchRefresh: (...args: unknown[]) => mockSmartBatchRefresh(...args),
+  fetchStockPrice: vi.fn(),
 }))
 
 vi.mock('@/lib/utils/market', () => ({
@@ -22,11 +23,14 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
   describe('Successful Refresh', () => {
     it('should refresh all active tickers when no body provided', async () => {
       mockGetActiveTickers.mockResolvedValue(['AAPL', 'TSLA', 'MSFT'])
-      mockBatchFetchPrices.mockResolvedValue([
-        { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
-        { ticker: 'TSLA', price: 198.75, date: new Date(), success: true },
-        { ticker: 'MSFT', price: 345.6, date: new Date(), success: true },
-      ])
+      mockSmartBatchRefresh.mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
+          { ticker: 'TSLA', price: 198.75, date: new Date(), success: true },
+          { ticker: 'MSFT', price: 345.6, date: new Date(), success: true },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {
         method: 'POST',
@@ -43,10 +47,13 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
     })
 
     it('should refresh specified tickers when provided in body', async () => {
-      mockBatchFetchPrices.mockResolvedValue([
-        { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
-        { ticker: 'TSLA', price: 198.75, date: new Date(), success: true },
-      ])
+      mockSmartBatchRefresh.mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
+          { ticker: 'TSLA', price: 198.75, date: new Date(), success: true },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {
         method: 'POST',
@@ -59,16 +66,19 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
       const response = await POST(request)
       const data = await response.json()
 
-      expect(mockBatchFetchPrices).toHaveBeenCalledWith(['AAPL', 'TSLA'])
+      expect(mockSmartBatchRefresh).toHaveBeenCalledWith(['AAPL', 'TSLA'])
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.summary.successful).toBe(2)
     })
 
     it('should uppercase ticker symbols', async () => {
-      mockBatchFetchPrices.mockResolvedValue([
-        { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
-      ])
+      mockSmartBatchRefresh.mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {
         method: 'POST',
@@ -80,16 +90,19 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
 
       await POST(request)
 
-      expect(mockBatchFetchPrices).toHaveBeenCalledWith(['AAPL'])
+      expect(mockSmartBatchRefresh).toHaveBeenCalledWith(['AAPL'])
     })
 
     it('should return results with successful and failed tickers', async () => {
       mockGetActiveTickers.mockResolvedValue(['AAPL', 'INVALID', 'TSLA'])
-      mockBatchFetchPrices.mockResolvedValue([
-        { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
-        { ticker: 'INVALID', price: 0, date: new Date(), success: false, error: 'Invalid ticker' },
-        { ticker: 'TSLA', price: 198.75, date: new Date(), success: true },
-      ])
+      mockSmartBatchRefresh.mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
+          { ticker: 'INVALID', price: 0, date: new Date(), success: false, error: 'Invalid ticker' },
+          { ticker: 'TSLA', price: 198.75, date: new Date(), success: true },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {
         method: 'POST',
@@ -142,16 +155,19 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
 
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
-      expect(mockBatchFetchPrices).not.toHaveBeenCalled()
+      expect(mockSmartBatchRefresh).not.toHaveBeenCalled()
     })
   })
 
   describe('Error Handling', () => {
     it('should handle invalid JSON body gracefully', async () => {
       mockGetActiveTickers.mockResolvedValue(['AAPL'])
-      mockBatchFetchPrices.mockResolvedValue([
-        { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
-      ])
+      mockSmartBatchRefresh.mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 152.45, date: new Date(), success: true },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {
         method: 'POST',
@@ -169,9 +185,9 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
       expect(mockGetActiveTickers).toHaveBeenCalled()
     })
 
-    it('should return error response when batch fetch fails', async () => {
+    it('should return error response when smart refresh fails', async () => {
       mockGetActiveTickers.mockResolvedValue(['AAPL'])
-      mockBatchFetchPrices.mockRejectedValue(new Error('API service unavailable'))
+      mockSmartBatchRefresh.mockRejectedValue(new Error('API service unavailable'))
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {
         method: 'POST',
@@ -203,9 +219,12 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
   describe('Response Format', () => {
     it('should return correct response structure', async () => {
       mockGetActiveTickers.mockResolvedValue(['AAPL'])
-      mockBatchFetchPrices.mockResolvedValue([
-        { ticker: 'AAPL', price: 152.45, date: new Date('2026-02-09'), success: true },
-      ])
+      mockSmartBatchRefresh.mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 152.45, date: new Date('2026-02-09'), success: true },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {
         method: 'POST',
@@ -218,19 +237,24 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
       expect(data).toHaveProperty('message')
       expect(data).toHaveProperty('results')
       expect(data).toHaveProperty('summary')
+      expect(data).toHaveProperty('skipped')
       expect(data.results).toHaveProperty('successful')
       expect(data.results).toHaveProperty('failed')
       expect(data.summary).toHaveProperty('total')
       expect(data.summary).toHaveProperty('successful')
       expect(data.summary).toHaveProperty('failed')
+      expect(data.summary).toHaveProperty('skipped')
     })
 
     it('should include price, date, and ticker in successful results', async () => {
       const testDate = new Date('2026-02-09')
       mockGetActiveTickers.mockResolvedValue(['AAPL'])
-      mockBatchFetchPrices.mockResolvedValue([
-        { ticker: 'AAPL', price: 152.45, date: testDate, success: true },
-      ])
+      mockSmartBatchRefresh.mockResolvedValue({
+        refreshed: [
+          { ticker: 'AAPL', price: 152.45, date: testDate, success: true },
+        ],
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {
         method: 'POST',
@@ -256,7 +280,10 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
         date: new Date(),
         success: true,
       }))
-      mockBatchFetchPrices.mockResolvedValue(results)
+      mockSmartBatchRefresh.mockResolvedValue({
+        refreshed: results,
+        skipped: [],
+      })
 
       const request = new NextRequest('http://localhost/api/market-data/refresh', {
         method: 'POST',
@@ -268,7 +295,7 @@ describe('Market Data Refresh API - POST /api/market-data/refresh', () => {
       expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.summary.total).toBe(20)
-      expect(mockBatchFetchPrices).toHaveBeenCalledWith(manyTickers)
+      expect(mockSmartBatchRefresh).toHaveBeenCalledWith(manyTickers)
     })
   })
 })

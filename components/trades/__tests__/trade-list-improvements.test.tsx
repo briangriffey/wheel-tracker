@@ -130,12 +130,20 @@ describe('TradeList - Price Display', () => {
     expect(screen.getAllByText('$198.75').length).toBeGreaterThan(0)
   })
 
-  it('should mark stale prices with indicator', () => {
-    render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
+  it('should show time ago indicator when refreshInfo provided', () => {
+    const refreshInfo = {
+      TSLA: {
+        canRefresh: true,
+        nextRefreshAt: null,
+        reason: 'Price is older than 4 hours',
+        lastUpdated: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    }
+    render(<TradeList initialTrades={mockTrades} prices={mockPrices} refreshInfo={refreshInfo} />)
 
-    // TSLA price should be marked as stale (2 days old)
-    const staleIndicators = screen.getAllByText('stale')
-    expect(staleIndicators.length).toBeGreaterThan(0)
+    // TSLA price should show time ago indicator
+    const agoIndicators = screen.getAllByText(/ago/)
+    expect(agoIndicators.length).toBeGreaterThan(0)
   })
 
   it('should show dash when price not available', () => {

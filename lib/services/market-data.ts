@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
+import { canRefreshPrice, type RefreshEligibility } from '@/lib/utils/market'
 
 /**
  * FinancialData.net API response type
@@ -336,6 +337,42 @@ export async function getLatestPrices(tickers: string[]): Promise<Map<string, St
     console.error('Error getting latest prices:', error)
     return priceMap
   }
+}
+
+/**
+ * Smart batch refresh: only fetches prices for tickers that are eligible for refresh.
+ * Returns both refreshed results and skipped tickers with their eligibility info.
+ */
+export async function smartBatchRefresh(tickers: string[]): Promise<{
+  refreshed: StockPriceResult[]
+  skipped: { ticker: string; eligibility: RefreshEligibility }[]
+}> {
+  const uniqueTickers = [...new Set(tickers.map((t) => t.toUpperCase()))]
+  const cachedPrices = await getLatestPrices(uniqueTickers)
+  const now = new Date()
+
+  const eligible: string[] = []
+  const skipped: { ticker: string; eligibility: RefreshEligibility }[] = []
+
+  for (const ticker of uniqueTickers) {
+    const cached = cachedPrices.get(ticker)
+    if (!cached) {
+      // No cached price at all — always fetch
+      eligible.push(ticker)
+      continue
+    }
+
+    const eligibility = canRefreshPrice(cached.date, now)
+    if (eligibility.canRefresh) {
+      eligible.push(ticker)
+    } else {
+      skipped.push({ ticker, eligibility })
+    }
+  }
+
+  const refreshed = eligible.length > 0 ? await batchFetchPrices(eligible) : []
+
+  return { refreshed, skipped }
 }
 
 /**

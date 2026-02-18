@@ -31,6 +31,20 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
+// Mock market utils
+vi.mock('@/lib/utils/market', async (importOriginal) => {
+  const actual = await importOriginal() as Record<string, unknown>
+  return {
+    ...actual,
+    canRefreshPrice: vi.fn().mockReturnValue({
+      canRefresh: false,
+      lastUpdated: new Date(),
+      nextRefreshAt: null,
+      reason: 'Recently updated',
+    }),
+  }
+})
+
 describe('Price Actions', () => {
   const mockUser: User = {
     id: 'user1',
@@ -106,7 +120,15 @@ describe('Price Actions', () => {
       })
     })
 
-    it('should mark price as stale if older than 1 hour', async () => {
+    it('should include refresh eligibility info', async () => {
+      const { canRefreshPrice } = await import('@/lib/utils/market')
+      vi.mocked(canRefreshPrice).mockReturnValue({
+        canRefresh: true,
+        lastUpdated: new Date(),
+        nextRefreshAt: null,
+        reason: 'Price is older than 4 hours',
+      })
+
       const twoHoursAgo = new Date()
       twoHoursAgo.setHours(twoHoursAgo.getHours() - 2)
 
@@ -125,12 +147,21 @@ describe('Price Actions', () => {
 
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.isStale).toBe(true)
-        expect(result.data.ageInHours).toBeGreaterThan(1)
+        expect(result.data.canRefresh).toBe(true)
+        expect(result.data.refreshReason).toBe('Price is older than 4 hours')
       }
     })
 
-    it('should mark price as fresh if less than 1 hour old', async () => {
+    it('should report canRefresh=false when recently updated', async () => {
+      const { canRefreshPrice } = await import('@/lib/utils/market')
+      const nextRefresh = new Date(Date.now() + 2 * 60 * 60 * 1000)
+      vi.mocked(canRefreshPrice).mockReturnValue({
+        canRefresh: false,
+        lastUpdated: new Date(),
+        nextRefreshAt: nextRefresh,
+        reason: 'Recently updated during market hours',
+      })
+
       const thirtyMinutesAgo = new Date()
       thirtyMinutesAgo.setMinutes(thirtyMinutesAgo.getMinutes() - 30)
 
@@ -149,8 +180,8 @@ describe('Price Actions', () => {
 
       expect(result.success).toBe(true)
       if (result.success) {
-        expect(result.data.isStale).toBe(false)
-        expect(result.data.ageInHours).toBeLessThan(1)
+        expect(result.data.canRefresh).toBe(false)
+        expect(result.data.nextRefreshAt).toEqual(nextRefresh)
       }
     })
 

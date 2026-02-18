@@ -6,17 +6,26 @@ import { Prisma } from '@/lib/generated/prisma'
 import { getStatusColor, getPnlColor } from '@/lib/design/colors'
 import { Button } from '@/components/design-system/button/button'
 import type { StockPriceResult } from '@/lib/services/market-data'
+import { formatTimeAgo, formatNextRefreshTime } from '@/lib/utils/format'
 import { TradeActionsDialog } from './trade-actions-dialog'
+
+export interface RefreshInfo {
+  canRefresh: boolean
+  nextRefreshAt: string | null
+  reason: string
+  lastUpdated: string
+}
 
 interface TradeListProps {
   initialTrades: Trade[]
   prices: Map<string, StockPriceResult>
+  refreshInfo?: Record<string, RefreshInfo>
 }
 
 type SortField = 'expirationDate' | 'ticker' | 'premium'
 type SortDirection = 'asc' | 'desc'
 
-export function TradeList({ initialTrades, prices }: TradeListProps) {
+export function TradeList({ initialTrades, prices, refreshInfo = {} }: TradeListProps) {
   const [trades, setTrades] = useState<Trade[]>(initialTrades)
 
   // Sync state with props
@@ -136,12 +145,6 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
   // Get type badge color
   const getTypeColor = (type: TradeType) => {
     return type === 'PUT' ? 'bg-orange-100 text-orange-800' : 'bg-indigo-100 text-indigo-800'
-  }
-
-  // Check if price is stale (older than 1 day)
-  const isPriceStale = (date: Date) => {
-    const dayInMs = 24 * 60 * 60 * 1000
-    return Date.now() - new Date(date).getTime() > dayInMs
   }
 
   // Calculate if a trade is in the money or out of the money
@@ -465,12 +468,21 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {currentPrice ? (
                         <div>
-                          <div className={isPriceStale(currentPrice.date) ? 'text-gray-500' : ''}>
-                            ${currentPrice.price.toFixed(2)}
-                          </div>
-                          {isPriceStale(currentPrice.date) && (
-                            <div className="text-xs text-gray-400">stale</div>
-                          )}
+                          <div>${currentPrice.price.toFixed(2)}</div>
+                          {(() => {
+                            const info = refreshInfo[trade.ticker]
+                            if (!info) return null
+                            return (
+                              <div className="text-xs text-gray-400">
+                                {formatTimeAgo(new Date(info.lastUpdated))}
+                                {info.nextRefreshAt && (
+                                  <span className="ml-1">
+                                    · Next: {formatNextRefreshTime(new Date(info.nextRefreshAt))}
+                                  </span>
+                                )}
+                              </div>
+                            )
+                          })()}
                         </div>
                       ) : (
                         <span className="text-gray-400">-</span>
@@ -555,13 +567,17 @@ export function TradeList({ initialTrades, prices }: TradeListProps) {
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
                     {currentPrice && (
-                      <div
-                        className={`text-sm mt-1 ${isPriceStale(currentPrice.date) ? 'text-gray-500' : 'text-gray-700'}`}
-                      >
+                      <div className="text-sm mt-1 text-gray-700">
                         ${currentPrice.price.toFixed(2)}
-                        {isPriceStale(currentPrice.date) && (
-                          <span className="text-xs"> (stale)</span>
-                        )}
+                        {(() => {
+                          const info = refreshInfo[trade.ticker]
+                          if (!info) return null
+                          return (
+                            <span className="text-xs text-gray-400 ml-1">
+                              ({formatTimeAgo(new Date(info.lastUpdated))})
+                            </span>
+                          )
+                        })()}
                       </div>
                     )}
                     <div className="flex gap-2 mt-1">

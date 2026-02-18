@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { batchFetchPrices } from '@/lib/services/market-data'
+import { smartBatchRefresh } from '@/lib/services/market-data'
 import { getActiveTickers, isMarketOpen } from '@/lib/utils/market'
 
 /**
@@ -84,24 +84,31 @@ export async function POST(request: NextRequest) {
 
     console.log(`[CRON] Found ${tickers.length} active tickers:`, tickers.join(', '))
 
-    // 4. Fetch and update prices with rate limiting
-    const results = await batchFetchPrices(tickers)
+    // 4. Smart refresh: only fetches eligible tickers (respects 4h gating)
+    const { refreshed, skipped } = await smartBatchRefresh(tickers)
 
     // 5. Separate successful and failed results
-    const successful = results.filter((r) => r.success)
-    const failed = results.filter((r) => !r.success)
+    const successful = refreshed.filter((r) => r.success)
+    const failed = refreshed.filter((r) => !r.success)
 
     const duration = Date.now() - startTime
 
     // 6. Log results
     console.log(
-      `[CRON] Price update complete: ${successful.length}/${results.length} successful (${duration}ms)`
+      `[CRON] Price update complete: ${successful.length} refreshed, ${skipped.length} skipped (${duration}ms)`
     )
 
     if (successful.length > 0) {
       console.log(
         '[CRON] Successfully updated:',
         successful.map((r) => `${r.ticker}=$${r.price}`).join(', ')
+      )
+    }
+
+    if (skipped.length > 0) {
+      console.log(
+        '[CRON] Skipped (not eligible):',
+        skipped.map((s) => `${s.ticker}: ${s.eligibility.reason}`).join(', ')
       )
     }
 
@@ -116,13 +123,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: `Updated ${successful.length} of ${results.length} tickers`,
+        message: `Updated ${successful.length} of ${tickers.length} tickers (${skipped.length} skipped)`,
         timestamp: new Date().toISOString(),
         duration: `${duration}ms`,
         summary: {
-          total: results.length,
+          total: tickers.length,
           successful: successful.length,
           failed: failed.length,
+          skipped: skipped.length,
         },
         results: {
           successful: successful.map((r) => ({
@@ -133,6 +141,10 @@ export async function POST(request: NextRequest) {
           failed: failed.map((r) => ({
             ticker: r.ticker,
             error: r.error,
+          })),
+          skipped: skipped.map((s) => ({
+            ticker: s.ticker,
+            reason: s.eligibility.reason,
           })),
         },
       },

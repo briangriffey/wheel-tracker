@@ -9,6 +9,7 @@ import { deleteTrade, updateTradeStatus } from '@/lib/actions/trades'
 import { getStatusColor } from '@/lib/design/colors'
 import { Button } from '@/components/design-system/button/button'
 import type { StockPriceResult } from '@/lib/services/market-data'
+import { formatTimeAgo } from '@/lib/utils/format'
 
 interface TradeActionsDialogProps {
   trade: Trade
@@ -53,12 +54,6 @@ export function TradeActionsDialog({
   // Get type badge color
   const getTypeColor = (type: string) => {
     return type === 'PUT' ? 'bg-orange-100 text-orange-800' : 'bg-indigo-100 text-indigo-800'
-  }
-
-  // Check if price is stale (older than 1 day)
-  const isPriceStale = (date: Date) => {
-    const dayInMs = 24 * 60 * 60 * 1000
-    return Date.now() - new Date(date).getTime() > dayInMs
   }
 
   // Handle status update
@@ -171,11 +166,9 @@ export function TradeActionsDialog({
                     <span className="text-lg font-bold text-blue-900">
                       ${currentPrice.price.toFixed(2)}
                     </span>
-                    {isPriceStale(currentPrice.date) && (
-                      <div className="text-xs text-blue-700">
-                        as of {formatDate(currentPrice.date)}
-                      </div>
-                    )}
+                    <div className="text-xs text-blue-700">
+                      Updated {formatTimeAgo(new Date(currentPrice.date))}
+                    </div>
                   </div>
                 </div>
               </div>

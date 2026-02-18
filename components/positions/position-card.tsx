@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { formatCurrency, formatPercentage } from '@/lib/utils/format'
+import { formatCurrency, formatPercentage, formatTimeAgo, formatNextRefreshTime } from '@/lib/utils/format'
 import { getPnLColorClass, getPnLBackgroundClass, getStatusColor } from '@/lib/design/colors'
 import { refreshSinglePositionPrice, type PriceData } from '@/lib/actions/prices'
 import { AssignCallDialog } from './assign-call-dialog'
@@ -250,10 +250,10 @@ export function PositionCard({
         {/* Price Last Updated */}
         {priceData && !priceError && !refreshError && (
           <div className="mt-2 text-xs text-gray-500">
-            Last updated: {new Date(priceData.date).toLocaleString()}
-            {priceData.isStale && (
-              <span className="ml-2 text-orange-600 font-medium">
-                ({Math.floor(priceData.ageInHours)}h ago)
+            Updated {formatTimeAgo(new Date(priceData.date))}
+            {priceData.nextRefreshAt && (
+              <span className="ml-2 text-gray-400">
+                · Next: {formatNextRefreshTime(new Date(priceData.nextRefreshAt))}
               </span>
             )}
           </div>
@@ -289,8 +289,8 @@ export function PositionCard({
           </div>
         )}
 
-        {/* Price Staleness Warning */}
-        {!priceError && !refreshError && priceData?.isStale && position.status === 'OPEN' && (
+        {/* Price Refresh Available */}
+        {!priceError && !refreshError && priceData?.canRefresh && position.status === 'OPEN' && (
           <div className="rounded-md bg-orange-50 p-3 border border-orange-200">
             <div className="flex items-start">
               <div className="flex-shrink-0">
@@ -310,7 +310,7 @@ export function PositionCard({
               <div className="ml-3 flex-1">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-orange-800">
-                    Price data is stale ({Math.floor(priceData.ageInHours)} hours old)
+                    Price update available ({formatTimeAgo(new Date(priceData.date))})
                   </p>
                   <button
                     onClick={handleRefreshPrice}

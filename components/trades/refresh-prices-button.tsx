@@ -5,7 +5,11 @@ import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import { Button } from '@/components/design-system/button/button'
 
-export function RefreshPricesButton() {
+interface RefreshPricesButtonProps {
+  hasEligiblePrices?: boolean
+}
+
+export function RefreshPricesButton({ hasEligiblePrices = true }: RefreshPricesButtonProps) {
   const router = useRouter()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -19,7 +23,11 @@ export function RefreshPricesButton() {
       const data = await response.json()
 
       if (data.success) {
-        toast.success(`Refreshed ${data.summary.successful} prices`)
+        const skippedCount = data.summary.skipped || 0
+        const msg = skippedCount > 0
+          ? `Refreshed ${data.summary.successful} prices (${skippedCount} up to date)`
+          : `Refreshed ${data.summary.successful} prices`
+        toast.success(msg)
         router.refresh()
       } else {
         toast.error('Failed to refresh prices')
@@ -31,13 +39,15 @@ export function RefreshPricesButton() {
     }
   }
 
+  const isDisabled = isRefreshing || !hasEligiblePrices
+
   return (
     <Button
       onClick={handleRefreshPrices}
-      disabled={isRefreshing}
+      disabled={isDisabled}
       variant="outline"
       size="md"
-      aria-label="Refresh stock prices"
+      aria-label={hasEligiblePrices ? 'Refresh stock prices' : 'Prices up to date'}
       leftIcon={
         isRefreshing ? (
           <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -67,7 +77,7 @@ export function RefreshPricesButton() {
         )
       }
     >
-      {isRefreshing ? 'Refreshing...' : 'Refresh Prices'}
+      {isRefreshing ? 'Refreshing...' : hasEligiblePrices ? 'Refresh Prices' : 'Prices Up to Date'}
     </Button>
   )
 }

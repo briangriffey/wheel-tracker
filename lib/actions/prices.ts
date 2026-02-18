@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
+import { canRefreshPrice } from '@/lib/utils/market'
 
 /**
  * Server action result type
@@ -12,15 +13,16 @@ type ActionResult<T = unknown> =
   | { success: false; error: string; details?: unknown }
 
 /**
- * Price data with staleness information
+ * Price data with refresh eligibility information
  */
 export interface PriceData {
   ticker: string
   price: number
   date: Date
   source: string
-  isStale: boolean
-  ageInHours: number
+  canRefresh: boolean
+  nextRefreshAt: Date | null
+  refreshReason: string
 }
 
 /**
@@ -33,15 +35,6 @@ async function getCurrentUserId(): Promise<string> {
     throw new Error('No user found. Please create a user first.')
   }
   return user.id
-}
-
-/**
- * Calculate price age in hours
- */
-function calculatePriceAge(priceDate: Date): number {
-  const now = new Date()
-  const diff = now.getTime() - priceDate.getTime()
-  return diff / (1000 * 60 * 60) // Convert ms to hours
 }
 
 /**
@@ -63,8 +56,7 @@ export async function getLatestPrice(ticker: string): Promise<ActionResult<Price
       }
     }
 
-    const ageInHours = calculatePriceAge(latestPrice.updatedAt)
-    const isStale = ageInHours > 1 // Price is stale if older than 1 hour
+    const eligibility = canRefreshPrice(latestPrice.updatedAt)
 
     return {
       success: true,
@@ -73,8 +65,9 @@ export async function getLatestPrice(ticker: string): Promise<ActionResult<Price
         price: latestPrice.price.toNumber(),
         date: latestPrice.updatedAt,
         source: latestPrice.source,
-        isStale,
-        ageInHours,
+        canRefresh: eligibility.canRefresh,
+        nextRefreshAt: eligibility.nextRefreshAt,
+        refreshReason: eligibility.reason,
       },
     }
   } catch (error) {

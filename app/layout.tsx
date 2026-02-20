@@ -6,6 +6,7 @@ import { ToastProvider } from '@/components/toast-provider'
 import { UserMenu } from '@/components/user-menu'
 import { UpgradeNavCta } from '@/components/billing/upgrade-nav-cta'
 import { SkipLink } from '@/components/ui/skip-link'
+import { MobileNav } from '@/components/mobile-nav'
 import './globals.css'
 import './design-system.css'
 
@@ -27,7 +28,7 @@ export default async function RootLayout({
         <SkipLink />
         <SessionProvider>
           {session?.user && (
-            <header className="bg-white shadow-sm" role="banner">
+            <header className="relative bg-white shadow-sm" role="banner">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                   <div className="flex items-center gap-8">
@@ -80,7 +81,10 @@ export default async function RootLayout({
                       <UpgradeNavCta />
                     </nav>
                   </div>
-                  <UserMenu user={session.user} />
+                  <div className="flex items-center gap-2">
+                    <UserMenu user={session.user} />
+                    <MobileNav />
+                  </div>
                 </div>
               </div>
             </header>

@@ -15,10 +15,6 @@ vi.mock('next-auth/react', () => ({
   signOut: vi.fn(),
 }))
 
-vi.mock('@/components/billing/upgrade-nav-cta', () => ({
-  UpgradeNavCta: () => <div data-testid="upgrade-cta">Upgrade</div>,
-}))
-
 describe('MobileNav', () => {
   it('renders the hamburger button', () => {
     render(<MobileNav />)

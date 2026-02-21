@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { signOut } from 'next-auth/react'
-import { UpgradeNavCta } from '@/components/billing/upgrade-nav-cta'
 
 const links = [
   { href: '/dashboard', label: 'Dashboard' },
@@ -64,9 +63,6 @@ export function MobileNav({ user }: MobileNavProps) {
                 {link.label}
               </Link>
             ))}
-            <div className="py-3">
-              <UpgradeNavCta />
-            </div>
             {user && (
               <div className="border-t border-neutral-200 pt-3 pb-2 mt-1">
                 <span className="text-sm text-neutral-500">{userName}</span>

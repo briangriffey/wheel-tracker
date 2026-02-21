@@ -113,7 +113,7 @@ export function TradeDetailClient({ trade }: TradeDetailClientProps) {
 
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex items-start justify-between mb-4">
+          <div className="mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{trade.ticker}</h1>
               <div className="flex items-center gap-2 mt-2">
@@ -132,7 +132,7 @@ export function TradeDetailClient({ trade }: TradeDetailClientProps) {
                 </span>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-3">
               {canClose && (
                 <button
                   onClick={() => setIsCloseDialogOpen(true)}

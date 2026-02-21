@@ -77,7 +77,13 @@ export function RefreshPricesButton({ hasEligiblePrices = true }: RefreshPricesB
         )
       }
     >
-      {isRefreshing ? 'Refreshing...' : hasEligiblePrices ? 'Refresh Prices' : 'Prices Up to Date'}
+      {isRefreshing ? (
+        <><span className="hidden sm:inline">Refreshing...</span><span className="sm:hidden">...</span></>
+      ) : hasEligiblePrices ? (
+        <><span className="hidden sm:inline">Refresh Prices</span><span className="sm:hidden">Prices</span></>
+      ) : (
+        <><span className="hidden sm:inline">Prices Up to Date</span><span className="sm:hidden">Updated</span></>
+      )}
     </Button>
   )
 }

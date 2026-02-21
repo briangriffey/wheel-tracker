@@ -34,7 +34,7 @@ export function NewTradeButton() {
         leftIcon={PlusIcon}
         aria-label="Create new trade"
       >
-        New Trade
+        <span className="hidden sm:inline">New Trade</span><span className="sm:hidden">New</span>
       </Button>
 
       <Dialog isOpen={isModalOpen} onClose={handleCancel} title="Create New Trade" maxWidth="3xl">

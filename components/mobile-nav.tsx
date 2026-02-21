@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { signOut } from 'next-auth/react'
 import { UpgradeNavCta } from '@/components/billing/upgrade-nav-cta'
 
 const links = [
@@ -14,8 +15,16 @@ const links = [
   { href: '/billing', label: 'Billing' },
 ]
 
-export function MobileNav() {
+interface MobileNavProps {
+  user?: {
+    name?: string | null
+    email?: string | null
+  }
+}
+
+export function MobileNav({ user }: MobileNavProps) {
   const [open, setOpen] = useState(false)
+  const userName = user?.name || user?.email || 'User'
 
   return (
     <div className="md:hidden">
@@ -58,6 +67,17 @@ export function MobileNav() {
             <div className="py-3">
               <UpgradeNavCta />
             </div>
+            {user && (
+              <div className="border-t border-neutral-200 pt-3 pb-2 mt-1">
+                <span className="text-sm text-neutral-500">{userName}</span>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="mt-2 w-full text-left text-sm text-red-600 hover:text-red-800 font-medium py-2"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
           </div>
         </nav>
       )}

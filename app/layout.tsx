@@ -32,6 +32,7 @@ export default async function RootLayout({
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                   <div className="flex items-center gap-8">
+                    <MobileNav user={session.user} />
                     <Link href="/dashboard" className="text-xl font-bold text-neutral-900">
                       GreekWheel
                     </Link>
@@ -81,9 +82,8 @@ export default async function RootLayout({
                       <UpgradeNavCta />
                     </nav>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="hidden md:flex items-center gap-2">
                     <UserMenu user={session.user} />
-                    <MobileNav />
                   </div>
                 </div>
               </div>

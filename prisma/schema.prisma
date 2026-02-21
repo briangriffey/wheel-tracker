@@ -76,6 +76,8 @@ model User {
   accounts         Account[]
   sessions         Session[]
   analyticsEvents  AnalyticsEvent[]
+  watchlistTickers WatchlistTicker[]
+  scanResults      ScanResult[]
 
   @@index([email])
   @@index([subscriptionTier])
@@ -348,4 +350,94 @@ model WebhookLog {
   @@index([success])
   @@index([timestamp])
   @@index([eventId])
+}
+
+model WatchlistTicker {
+  id        String   @id @default(cuid())
+  userId    String
+  ticker    String
+  notes     String?
+  addedAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, ticker])
+  @@index([userId])
+}
+
+model ScanResult {
+  id       String   @id @default(cuid())
+  userId   String
+  scanDate DateTime
+
+  // Ticker identity
+  ticker String
+
+  // Phase 1: Stock data (always populated)
+  stockPrice     Decimal? @db.Decimal(10, 2)
+  sma200         Decimal? @db.Decimal(10, 2)
+  sma50          Decimal? @db.Decimal(10, 2)
+  avgVolume      Decimal? @db.Decimal(15, 0)
+  trendDirection String? // "rising", "flat", "falling"
+
+  // Phase 1 filter result
+  passedPhase1 Boolean @default(false)
+  phase1Reason String?
+
+  // Phase 2: IV data (populated if passed Phase 1)
+  currentIV Decimal? @db.Decimal(8, 6)
+  ivHigh52w Decimal? @db.Decimal(8, 6)
+  ivLow52w  Decimal? @db.Decimal(8, 6)
+  ivRank    Decimal? @db.Decimal(6, 2)
+
+  // Phase 2 filter result
+  passedPhase2 Boolean @default(false)
+  phase2Reason String?
+
+  // Phase 3: Selected option contract (populated if passed Phase 2)
+  contractName String?
+  strike       Decimal?  @db.Decimal(10, 2)
+  expiration   DateTime?
+  dte          Int?
+  delta        Decimal?  @db.Decimal(8, 6)
+  theta        Decimal?  @db.Decimal(8, 6)
+  bid          Decimal?  @db.Decimal(10, 4)
+  ask          Decimal?  @db.Decimal(10, 4)
+  iv           Decimal?  @db.Decimal(8, 6)
+  openInterest Int?
+  optionVolume Int?
+  premiumYield Decimal?  @db.Decimal(8, 2)
+
+  // Phase 3 filter result
+  passedPhase3 Boolean @default(false)
+  phase3Reason String?
+
+  // Phase 4: Scores (populated if passed Phase 3)
+  yieldScore     Decimal? @db.Decimal(6, 2)
+  ivScore        Decimal? @db.Decimal(6, 2)
+  deltaScore     Decimal? @db.Decimal(6, 2)
+  liquidityScore Decimal? @db.Decimal(6, 2)
+  trendScore     Decimal? @db.Decimal(6, 2)
+  compositeScore Decimal? @db.Decimal(6, 2)
+
+  // Phase 5: Portfolio checks
+  hasOpenCSP     Boolean @default(false)
+  hasAssignedPos Boolean @default(false)
+  portfolioFlag  String?
+
+  // Overall
+  passed      Boolean @default(false)
+  finalReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, scanDate])
+  @@index([userId, scanDate, passed])
+  @@index([scanDate])
+  @@index([compositeScore])
 }

@@ -68,6 +68,12 @@ export default async function RootLayout({
                         Deposits
                       </Link>
                       <Link
+                        href="/scanner"
+                        className="text-sm text-neutral-700 hover:text-neutral-900"
+                      >
+                        Scanner
+                      </Link>
+                      <Link
                         href="/help"
                         className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                       >

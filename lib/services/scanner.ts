@@ -565,6 +565,30 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
   }
 
   log.debug({ ticker, recordCount: priceHistory.records.length }, 'Phase 1: price history fetched, running filters')
+
+  // Persist the 60 most recent OHLCV records for charting
+  try {
+    const recentRecords = priceHistory.records.slice(-60)
+    await prisma.historicalStockPrice.deleteMany({
+      where: { ticker },
+    })
+    await prisma.historicalStockPrice.createMany({
+      data: recentRecords.map((r) => ({
+        ticker,
+        date: new Date(r.date),
+        open: r.open,
+        high: r.high,
+        low: r.low,
+        close: r.close,
+        volume: r.volume,
+      })),
+    })
+    log.debug({ ticker, count: recentRecords.length }, 'Persisted historical price data')
+  } catch (err) {
+    // Non-fatal — price persistence failing shouldn't block the scan
+    log.warn({ ticker, error: err }, 'Failed to persist historical price data')
+  }
+
   const p1 = runPhase1(priceHistory.records)
   result.stockPrice = p1.stockPrice
   result.sma200 = p1.sma200 ?? undefined

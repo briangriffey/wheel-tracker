@@ -367,6 +367,20 @@ model WatchlistTicker {
   @@index([userId])
 }
 
+model HistoricalStockPrice {
+  id     String   @id @default(cuid())
+  ticker String
+  date   DateTime
+  open   Decimal  @db.Decimal(10, 4)
+  high   Decimal  @db.Decimal(10, 4)
+  low    Decimal  @db.Decimal(10, 4)
+  close  Decimal  @db.Decimal(10, 4)
+  volume BigInt
+
+  @@unique([ticker, date])
+  @@index([ticker])
+}
+
 model ScanResult {
   id       String   @id @default(cuid())
   userId   String

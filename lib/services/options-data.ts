@@ -416,7 +416,7 @@ export async function fetchOptionGreeks(contractName: string): Promise<OptionGre
     }
 
     const latest = [...data].sort((a, b) => b.date.localeCompare(a.date))[0]
-    log.info(
+    log.debug(
       {
         endpoint,
         identifier: contractName,
@@ -498,12 +498,13 @@ export async function fetchOptionPrices(contractName: string): Promise<OptionPri
 
     const latest = [...data].sort((a, b) => b.date.localeCompare(a.date))[0]
 
-    if (latest.openInterest === undefined || latest.openInterest === null) {
-      log.warn(
-        { identifier: contractName, date: latest.date },
-        'openInterest field is missing from option price record'
-      )
-    }
+    //open interest is always null, so I"m jjust commenting this out
+    // if (latest.openInterest === undefined || latest.openInterest === null) {
+    //   log.warn(
+    //     { identifier: contractName, date: latest.date },
+    //     'openInterest field is missing from option price record'
+    //   )
+    // }
 
     log.info(
       {

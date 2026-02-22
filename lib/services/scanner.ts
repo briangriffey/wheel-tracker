@@ -5,6 +5,7 @@ import {
   fetchOptionChain,
   fetchOptionGreeks,
   fetchOptionPrices,
+  OptionType,
 } from './options-data'
 import type {
   FinancialDataPriceRecord,
@@ -608,7 +609,7 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
     return result
   }
 
-  const putContracts = chainResult.contracts.filter((c) => c.type === 'put')
+  const putContracts = chainResult.contracts.filter((c) => c.type === OptionType.Put)
   log.debug(
     { ticker, totalContracts: chainResult.contracts.length, putContracts: putContracts.length },
     'Phase 2: option chain filtered to puts'

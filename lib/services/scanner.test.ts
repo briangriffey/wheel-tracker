@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { OptionType } from './options-data'
 import type { FinancialDataPriceRecord, OptionChainRecord, OptionGreeksRecord, OptionPriceRecord } from './options-data'
 import { SCANNER } from './scanner-constants'
 
@@ -53,7 +54,7 @@ const {
   fetchOptionChain,
   fetchOptionGreeks,
   fetchOptionPrices,
-} = await import('./options-data') as {
+} = await import('./options-data') as unknown as {
   fetchStockPriceHistory: ReturnType<typeof vi.fn>
   fetchOptionChain: ReturnType<typeof vi.fn>
   fetchOptionGreeks: ReturnType<typeof vi.fn>
@@ -394,21 +395,21 @@ describe('Scanner', () => {
     })
   })
 
-  // Verify scanner correctly handles the API's "Put"/"Call" capitalization.
-  // fetchOptionChain maps put_or_call → type preserving the API case ("Put"/"Call").
-  // scanTicker filters with c.type === 'Put' — lowercase 'put' would silently find 0 contracts.
-  describe('option chain put filtering (capitalization)', () => {
+  // Verify scanner correctly filters OptionType.Put contracts and ignores OptionType.Call.
+  // The OptionType enum (enforced by fetchOptionChain's mapping) prevents the old bug where
+  // lowercase 'put' strings would silently produce zero matches.
+  describe('option chain put filtering (OptionType enum)', () => {
     const expDate = new Date(Date.now() + 35 * 86400000).toISOString().slice(0, 10)
 
-    it('should find put contracts when type is "Put" (API capitalization)', async () => {
+    it('should find put contracts and ignore call contracts', async () => {
       const priceRecords = makePriceRecords(250, 80, 2_000_000)
       fetchStockPriceHistory.mockResolvedValue({ ticker: 'MSFT', records: priceRecords, success: true })
 
       fetchOptionChain.mockResolvedValue({
         ticker: 'MSFT',
         contracts: [
-          { identifier: 'MSFT260321P00075000', strike: 75, expiration: expDate, type: 'Put' },
-          { identifier: 'MSFT260321C00090000', strike: 90, expiration: expDate, type: 'Call' },
+          { identifier: 'MSFT260321P00075000', strike: 75, expiration: expDate, type: OptionType.Put },
+          { identifier: 'MSFT260321C00090000', strike: 90, expiration: expDate, type: OptionType.Call },
         ],
         success: true,
       })
@@ -433,30 +434,9 @@ describe('Scanner', () => {
 
       const result = await scanTicker('MSFT', 'user-1')
 
-      // Should find the put and pass phases 1 & 2; 'Call' contract must not be treated as a put
+      // OptionType.Put contract found; OptionType.Call correctly excluded
       expect(result.passedPhase1).toBe(true)
       expect(result.passedPhase2).toBe(true)
-    })
-
-    it('should find zero puts when type is lowercase "put" (wrong format — regression guard)', async () => {
-      const priceRecords = makePriceRecords(250, 80, 2_000_000)
-      fetchStockPriceHistory.mockResolvedValue({ ticker: 'TEST', records: priceRecords, success: true })
-
-      // Simulate old (incorrect) format where type is lowercase
-      fetchOptionChain.mockResolvedValue({
-        ticker: 'TEST',
-        contracts: [
-          { identifier: 'TEST260321P00075000', strike: 75, expiration: expDate, type: 'put' },
-        ],
-        success: true,
-      })
-
-      const result = await scanTicker('TEST', 'user-1')
-
-      // 'put' !== 'Put' so no put contracts found → should fail at Phase 2
-      expect(result.passedPhase1).toBe(true)
-      expect(result.passedPhase2).toBe(false)
-      expect(result.phase2Reason).toContain('No put contracts')
     })
   })
 
@@ -469,7 +449,7 @@ describe('Scanner', () => {
         identifier: `TEST${exp.toISOString().slice(2, 10).replace(/-/g, '')}P${String(strike * 1000).padStart(8, '0')}`,
         strike,
         expiration: exp.toISOString().slice(0, 10),
-        type: 'Put',  // API returns "Put"/"Call" with capital first letter
+        type: OptionType.Put,
       }
     }
 

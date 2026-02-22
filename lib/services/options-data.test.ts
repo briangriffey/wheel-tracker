@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { OptionType } from './options-data'
 import type {
   StockPriceHistoryResult,
   OptionChainResult,
@@ -228,12 +229,12 @@ describe('Options Data Service', () => {
       expect(result.contracts[0].strike).toBe(660.0)
       // expiration_date → expiration
       expect(result.contracts[0].expiration).toBe('2027-12-17')
-      // put_or_call → type (preserves API capitalization: "Put" / "Call")
-      expect(result.contracts[0].type).toBe('Put')
-      expect(result.contracts[1].type).toBe('Call')
+      // put_or_call → type (mapped to OptionType enum)
+      expect(result.contracts[0].type).toBe(OptionType.Put)
+      expect(result.contracts[1].type).toBe(OptionType.Call)
     })
 
-    it('should preserve "Put"/"Call" capitalization from API (not lowercase)', async () => {
+    it('should map both Put and Call contracts to their OptionType enum values', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
@@ -243,10 +244,8 @@ describe('Options Data Service', () => {
       const result = await fetchOptionChain('MSFT')
 
       const types = result.contracts.map((c) => c.type)
-      expect(types).toContain('Put')
-      expect(types).toContain('Call')
-      expect(types).not.toContain('put')
-      expect(types).not.toContain('call')
+      expect(types).toContain(OptionType.Put)
+      expect(types).toContain(OptionType.Call)
     })
 
     it('should not expose raw API field names on returned contracts', async () => {

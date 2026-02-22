@@ -26,11 +26,16 @@ interface RawOptionChainRecord {
   strike_price: number
 }
 
+export enum OptionType {
+  Put = 'Put',
+  Call = 'Call',
+}
+
 export interface OptionChainRecord {
   identifier: string // from contract_name, e.g., "MSFT271217P00660000"
   strike: number     // from strike_price
   expiration: string // from expiration_date, "YYYY-MM-DD"
-  type: string       // from put_or_call — "Put" or "Call" (capital first letter)
+  type: OptionType   // from put_or_call
 }
 
 export interface OptionPriceRecord {
@@ -272,11 +277,11 @@ export async function fetchOptionChain(ticker: string): Promise<OptionChainResul
       identifier: r.contract_name,
       strike: r.strike_price,
       expiration: r.expiration_date,
-      type: r.put_or_call,  // "Put" or "Call"
+      type: r.put_or_call === 'Put' ? OptionType.Put : OptionType.Call,
     }))
 
-    const puts = contracts.filter((c) => c.type === 'Put')
-    const calls = contracts.filter((c) => c.type === 'Call')
+    const puts = contracts.filter((c) => c.type === OptionType.Put)
+    const calls = contracts.filter((c) => c.type === OptionType.Call)
     log.info(
       { endpoint, identifier: ticker, totalContracts: contracts.length, puts: puts.length, calls: calls.length },
       'Option chain fetched successfully'

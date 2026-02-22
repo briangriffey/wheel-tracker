@@ -290,13 +290,19 @@ export function ScannerClient({
                       className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
                       onClick={() => handleSort('ivRank')}
                     >
-                      IV Rank{sortIndicator('ivRank')}
+                      <span className="inline-flex items-center gap-1 justify-end">
+                        IV Rank{sortIndicator('ivRank')}
+                        <InfoTooltip text="IV Rank shows where current implied volatility sits within its 52-week range. Calculated as (Current IV - 52w Low) / (52w High - 52w Low) x 100. A rank of 50 means IV is halfway between its yearly low and high. Higher rank = richer premiums for selling options." />
+                      </span>
                     </th>
                     <th
                       className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
                       onClick={() => handleSort('premiumYield')}
                     >
-                      Yield%{sortIndicator('premiumYield')}
+                      <span className="inline-flex items-center gap-1 justify-end">
+                        Yield%{sortIndicator('premiumYield')}
+                        <InfoTooltip text="Annualized premium yield measures the return you'd earn if you repeatedly sold this put at the same rate all year. Calculated as (Bid / Strike) x (365 / DTE) x 100. For example, a $2 bid on a $100 strike with 35 DTE = 20.9% annualized yield." />
+                      </span>
                     </th>
                     <th
                       className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
@@ -655,6 +661,19 @@ function TickerRow({
         </tr>
       )}
     </>
+  )
+}
+
+function InfoTooltip({ text }: { text: string }) {
+  return (
+    <span className="relative group/tip inline-flex" onClick={(e) => e.stopPropagation()}>
+      <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-gray-300 text-gray-600 text-[9px] font-bold leading-none cursor-help select-none">
+        ?
+      </span>
+      <span className="pointer-events-none absolute bottom-full right-0 mb-2 w-64 rounded-lg bg-gray-900 px-3 py-2 text-xs font-normal normal-case tracking-normal text-left text-gray-100 shadow-lg opacity-0 transition-opacity group-hover/tip:opacity-100 group-hover/tip:pointer-events-auto z-50">
+        {text}
+      </span>
+    </span>
   )
 }
 

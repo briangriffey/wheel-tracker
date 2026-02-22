@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/design-system/button/button'
+import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/design-system/input/input'
 import { Badge } from '@/components/design-system/badge/badge'
 import {
@@ -36,6 +37,7 @@ export function ScannerClient({
   const [expandedTicker, setExpandedTicker] = useState<string | null>(null)
   const [isScanning, setIsScanning] = useState(false)
   const [scanError, setScanError] = useState<string | null>(null)
+  const [showScanConfirm, setShowScanConfirm] = useState(false)
   const [sortField, setSortField] = useState<SortField>('compositeScore')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
@@ -154,7 +156,7 @@ export function ScannerClient({
             <Button
               variant="primary"
               size="md"
-              onClick={handleRunScan}
+              onClick={() => setShowScanConfirm(true)}
               loading={isScanning}
               disabled={isScanning || initialWatchlist.length === 0}
             >
@@ -194,6 +196,96 @@ export function ScannerClient({
               <div className="pl-6">{initialMetadata.passedPhase3} passed option selection</div>
             </div>
           </div>
+        </div>
+
+        {/* How does this work? */}
+        <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+          <details>
+            <summary className="px-6 py-4 cursor-pointer hover:bg-gray-50">
+              <span className="text-lg font-semibold text-gray-900">
+                How does this work?
+              </span>
+            </summary>
+            <div className="px-6 py-4 border-t border-gray-200 space-y-6 text-sm text-gray-700">
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Getting Started</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Add tickers to your watchlist at the bottom of the page</li>
+                  <li>The scanner runs automatically after market close each day, or you can trigger a manual scan</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">The 5-Phase Pipeline</h4>
+                <ol className="list-decimal pl-5 space-y-2">
+                  <li>
+                    <span className="font-medium">Stock Filter</span> — Price between $13–$150, avg volume above 1M, price above rising 200-day SMA
+                  </li>
+                  <li>
+                    <span className="font-medium">IV Screen</span> — IV Rank must be at least 20 (elevated volatility = richer premiums)
+                  </li>
+                  <li>
+                    <span className="font-medium">Option Selection</span> — Finds the best OTM put: 5–45 DTE, delta between -0.02 and -0.30, minimum 20 contracts volume, annualized yield above 8%
+                  </li>
+                  <li>
+                    <span className="font-medium">Scoring</span> — Composite score from 5 weighted factors (see below)
+                  </li>
+                  <li>
+                    <span className="font-medium">Portfolio Check</span> — Flags tickers where you already have an open CSP or assigned shares
+                  </li>
+                </ol>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">Scoring Breakdown</h4>
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="py-1.5 pr-4 font-medium text-gray-900">Factor</th>
+                      <th className="py-1.5 pr-4 font-medium text-gray-900">Weight</th>
+                      <th className="py-1.5 font-medium text-gray-900">What it measures</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-gray-600">
+                    <tr className="border-b border-gray-100">
+                      <td className="py-1.5 pr-4">Yield</td>
+                      <td className="py-1.5 pr-4">30%</td>
+                      <td className="py-1.5">Annualized premium yield (8–24% range)</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="py-1.5 pr-4">IV Rank</td>
+                      <td className="py-1.5 pr-4">25%</td>
+                      <td className="py-1.5">Where current IV sits in its 52-week range (20–70)</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="py-1.5 pr-4">Delta</td>
+                      <td className="py-1.5 pr-4">15%</td>
+                      <td className="py-1.5">Proximity to the sweet spot (-0.22 to -0.25)</td>
+                    </tr>
+                    <tr className="border-b border-gray-100">
+                      <td className="py-1.5 pr-4">Liquidity</td>
+                      <td className="py-1.5 pr-4">15%</td>
+                      <td className="py-1.5">Open interest relative to 500 preferred</td>
+                    </tr>
+                    <tr>
+                      <td className="py-1.5 pr-4">Trend</td>
+                      <td className="py-1.5 pr-4">15%</td>
+                      <td className="py-1.5">How far price is above the 200-day SMA</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-1">Reading the Results</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Candidates are sorted by composite score by default</li>
+                  <li>Click any row to expand detailed scores and contract info</li>
+                  <li>Tickers that don&apos;t pass are grouped under &quot;Filtered Tickers&quot; with the reason</li>
+                </ul>
+              </div>
+            </div>
+          </details>
         </div>
 
         {/* Results Table */}
@@ -410,6 +502,44 @@ export function ScannerClient({
             )}
           </div>
         </div>
+        {/* Scan Confirmation Dialog */}
+        <Dialog
+          isOpen={showScanConfirm}
+          onClose={() => setShowScanConfirm(false)}
+          title="Run Manual Scan?"
+          maxWidth="md"
+        >
+          <div className="space-y-3 text-sm text-gray-600">
+            <p>
+              The scanner runs <span className="font-medium text-gray-900">automatically every day after market close</span> (around 5:00 PM ET).
+            </p>
+            <p>
+              Results will be populated overnight — no need to manually trigger unless you want fresh results right now.
+            </p>
+            <p>
+              A manual scan may take <span className="font-medium text-gray-900">several minutes</span> depending on watchlist size.
+            </p>
+          </div>
+          <div className="mt-6 flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => setShowScanConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => {
+                setShowScanConfirm(false)
+                handleRunScan()
+              }}
+            >
+              Run Scan Now
+            </Button>
+          </div>
+        </Dialog>
       </div>
     </div>
   )

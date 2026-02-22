@@ -1,7 +1,7 @@
 export const SCANNER = {
   // Phase 1: Stock Universe Filter
-  MIN_PRICE: 13,
-  MAX_PRICE: 150,
+  MIN_PRICE: 10,
+  MAX_PRICE: 250,
   MIN_AVG_VOLUME: 1_000_000,
   SMA_PERIOD: 200,
   SMA_SHORT_PERIOD: 50,

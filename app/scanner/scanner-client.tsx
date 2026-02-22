@@ -11,6 +11,7 @@ import {
 } from '@/lib/actions/watchlist'
 import type { WatchlistTickerData } from '@/lib/actions/watchlist'
 import type { ScanResultData, ScanMetadata, HistoricalPriceData } from '@/lib/queries/scanner'
+import { CandlestickChart } from '@/components/charts/candlestick-chart'
 
 interface ScannerClientProps {
   initialWatchlist: WatchlistTickerData[]
@@ -331,6 +332,7 @@ export function ScannerClient({
                         formatCurrency={formatCurrency}
                         formatPercent={formatPercent}
                         formatExpiration={formatExpiration}
+                        priceHistory={priceHistory[result.ticker]}
                       />
                     )
                   })}
@@ -478,6 +480,7 @@ function TickerRow({
   formatCurrency,
   formatPercent,
   formatExpiration,
+  priceHistory,
 }: {
   result: ScanResultData
   scoreColor: string
@@ -486,6 +489,7 @@ function TickerRow({
   formatCurrency: (v: number | null) => string
   formatPercent: (v: number | null) => string
   formatExpiration: (v: Date | null) => string
+  priceHistory?: HistoricalPriceData[]
 }) {
   return (
     <>
@@ -541,6 +545,14 @@ function TickerRow({
       {isExpanded && (
         <tr>
           <td colSpan={11} className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+            {priceHistory && priceHistory.length > 0 && (
+              <div className="mb-4">
+                <CandlestickChart
+                  data={priceHistory}
+                  strikePrice={result.strike}
+                />
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Component Scores */}
               <div>

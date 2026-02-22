@@ -199,7 +199,7 @@ describe('Scanner', () => {
     })
 
     it('should return 0 outside target range', () => {
-      expect(computeDeltaScore(-0.10)).toBe(0)  // abs 0.10 < TARGET_MAX_DELTA abs 0.12
+      expect(computeDeltaScore(-0.01)).toBe(0)  // abs 0.01 < TARGET_MAX_DELTA abs 0.02
       expect(computeDeltaScore(-0.35)).toBe(0)  // abs 0.35 > TARGET_MIN_DELTA abs 0.30
     })
 
@@ -210,7 +210,7 @@ describe('Scanner', () => {
     })
 
     it('should return 0 at the minimum target edge', () => {
-      const score = computeDeltaScore(-0.12)  // abs 0.12 = TARGET_MAX_DELTA abs — min edge of range
+      const score = computeDeltaScore(-0.02)  // abs 0.02 = TARGET_MAX_DELTA abs — min edge of range
       expect(score).toBe(0)
     })
   })
@@ -488,14 +488,14 @@ describe('Scanner', () => {
     })
 
     it('should reject contracts with delta outside range', () => {
-      const contracts = [makeContractData(95, 35, { delta: -0.10 })]
+      const contracts = [makeContractData(95, 35, { delta: -0.01 })]  // abs 0.01 < TARGET_MAX_DELTA abs 0.02
 
       const result = selectBestContract(contracts, now)
       expect(result.passed).toBe(false)
     })
 
-    it('should reject contracts with low open interest', () => {
-      const contracts = [makeContractData(95, 35, { openInterest: 50 })] // Below MIN_OPEN_INTEREST (100)
+    it('should reject contracts with low volume', () => {
+      const contracts = [makeContractData(95, 35, { volume: 5 })] // Below MIN_OPTION_VOLUME (20)
 
       const result = selectBestContract(contracts, now)
       expect(result.passed).toBe(false)

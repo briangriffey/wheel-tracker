@@ -615,20 +615,28 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
   }
 
   const putContracts = chainResult.contracts.filter((c) => c.type === OptionType.Put)
+  const otmPuts = putContracts.filter((c) => c.strike <= p1.stockPrice)
   log.debug(
-    { ticker, totalContracts: chainResult.contracts.length, putContracts: putContracts.length },
-    'Phase 2: option chain filtered to puts'
+    {
+      ticker,
+      totalContracts: chainResult.contracts.length,
+      putContracts: putContracts.length,
+      itmPutsRemoved: putContracts.length - otmPuts.length,
+      otmPuts: otmPuts.length,
+      stockPrice: p1.stockPrice,
+    },
+    'Phase 2: option chain filtered to OTM puts (strike <= stock price)'
   )
 
-  if (putContracts.length === 0) {
-    log.warn({ ticker }, 'Phase 2: no put contracts in chain — ticker eliminated')
-    result.phase2Reason = 'No put contracts available'
-    result.finalReason = 'Phase 2: No put contracts available'
+  if (otmPuts.length === 0) {
+    log.warn({ ticker }, 'Phase 2: no OTM put contracts in chain — ticker eliminated')
+    result.phase2Reason = 'No OTM put contracts available'
+    result.finalReason = 'Phase 2: No OTM put contracts available'
     return result
   }
 
   // Pick the nearest-to-ATM put for IV data
-  const atmPut = putContracts.reduce((best, c) =>
+  const atmPut = otmPuts.reduce((best, c) =>
     Math.abs(c.strike - p1.stockPrice) < Math.abs(best.strike - p1.stockPrice) ? c : best
   )
   log.debug(
@@ -672,14 +680,14 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
 
   // ── Phase 3: Option Selection ────────────────────────────────────────────────
   const now = new Date()
-  const candidatePuts = putContracts.filter((c) => {
+  const candidatePuts = otmPuts.filter((c) => {
     const dte = computeDTE(new Date(c.expiration), now)
     return dte >= SCANNER.TARGET_MIN_DTE && dte <= SCANNER.TARGET_MAX_DTE
   })
 
   log.debug({
     ticker,
-    totalPuts: putContracts.length,
+    totalOtmPuts: otmPuts.length,
     candidatesInDteWindow: candidatePuts.length,
     dteMin: SCANNER.TARGET_MIN_DTE,
     dteMax: SCANNER.TARGET_MAX_DTE,

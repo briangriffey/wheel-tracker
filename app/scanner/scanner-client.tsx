@@ -105,6 +105,15 @@ export function ScannerClient({
     })
   }
 
+  const formatExpiration = (date: Date | null) => {
+    if (!date) return '-'
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: '2-digit',
+    })
+  }
+
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return '-'
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
@@ -209,6 +218,9 @@ export function ScannerClient({
                       Strike
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Exp
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       DTE
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -262,6 +274,7 @@ export function ScannerClient({
                         }
                         formatCurrency={formatCurrency}
                         formatPercent={formatPercent}
+                        formatExpiration={formatExpiration}
                       />
                     )
                   })}
@@ -409,6 +422,7 @@ function TickerRow({
   onToggle,
   formatCurrency,
   formatPercent,
+  formatExpiration,
 }: {
   result: ScanResultData
   scoreColor: string
@@ -416,6 +430,7 @@ function TickerRow({
   onToggle: () => void
   formatCurrency: (v: number | null) => string
   formatPercent: (v: number | null) => string
+  formatExpiration: (v: Date | null) => string
 }) {
   return (
     <>
@@ -428,6 +443,9 @@ function TickerRow({
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
           {formatCurrency(result.strike)}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+          {formatExpiration(result.expiration)}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
           {result.dte ?? '-'}
@@ -469,7 +487,7 @@ function TickerRow({
       </tr>
       {isExpanded && (
         <tr>
-          <td colSpan={10} className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+          <td colSpan={11} className="px-6 py-4 bg-gray-50 border-t border-gray-100">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Component Scores */}
               <div>

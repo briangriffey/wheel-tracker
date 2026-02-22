@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/scanner",
+    "noEmit": false,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "declaration": false
+  },
+  "include": [
+    "scripts/run-scanner.ts",
+    "lib/services/scanner.ts",
+    "lib/services/scanner-constants.ts",
+    "lib/services/options-data.ts",
+    "lib/services/rate-limiter.ts",
+    "lib/services/market-data.ts",
+    "lib/db/index.ts",
+    "lib/generated/**/*"
+  ]
+}

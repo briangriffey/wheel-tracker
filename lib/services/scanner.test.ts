@@ -8,7 +8,7 @@ vi.mock('@/lib/db', () => ({
     trade: { findFirst: vi.fn() },
     position: { findFirst: vi.fn() },
     watchlistTicker: { findMany: vi.fn() },
-    scanResult: { createMany: vi.fn() },
+    scanResult: { createMany: vi.fn(), deleteMany: vi.fn() },
   },
 }))
 
@@ -65,7 +65,7 @@ const { prisma } = await import('@/lib/db') as unknown as {
     trade: { findFirst: ReturnType<typeof vi.fn> }
     position: { findFirst: ReturnType<typeof vi.fn> }
     watchlistTicker: { findMany: ReturnType<typeof vi.fn> }
-    scanResult: { createMany: ReturnType<typeof vi.fn> }
+    scanResult: { createMany: ReturnType<typeof vi.fn>; deleteMany: ReturnType<typeof vi.fn> }
   }
 }
 

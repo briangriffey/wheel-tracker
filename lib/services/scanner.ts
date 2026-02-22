@@ -548,6 +548,9 @@ export async function runFullScan(userId: string): Promise<FullScanResult> {
     select: { ticker: true },
   })
 
+  // Delete previous scan results (keep only latest scan)
+  await prisma.scanResult.deleteMany({ where: { userId } })
+
   const results: ScanTickerResult[] = []
 
   // Process tickers sequentially to respect rate limits

@@ -9,6 +9,7 @@ import {
   type RemoveWatchlistTickerInput,
 } from '@/lib/validations/watchlist'
 import { auth } from '@/lib/auth'
+import { runFullScan, type FullScanResult } from '@/lib/services/scanner'
 
 type ActionResult<T = unknown> =
   | { success: true; data: T }
@@ -114,6 +115,28 @@ export async function removeWatchlistTicker(
     }
 
     return { success: false, error: 'Failed to remove ticker from watchlist' }
+  }
+}
+
+export async function triggerManualScan(): Promise<ActionResult<FullScanResult>> {
+  try {
+    const userId = await getCurrentUserId()
+    if (!userId) {
+      return { success: false, error: 'Unauthorized. Please log in.' }
+    }
+
+    const result = await runFullScan(userId)
+    revalidatePath('/scanner')
+
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('Error running manual scan:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: false, error: 'Failed to run scan' }
   }
 }
 

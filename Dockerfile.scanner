@@ -1,0 +1,38 @@
+# GreekWheel Scanner Dockerfile
+# Runs the nightly options scanner as a cron job
+
+FROM node:20-alpine AS base
+
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10.6.5 --activate
+COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma/
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10.6.5 --activate
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN pnpm prisma generate
+
+FROM base AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+RUN corepack enable && corepack prepare pnpm@10.6.5 --activate
+
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+RUN pnpm add -P prisma@7.3.0 @prisma/client@7.3.0 tsx
+
+COPY --from=builder /app/prisma ./prisma
+RUN pnpm prisma generate
+
+# Copy source files for tsx runtime
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/lib ./lib
+
+CMD ["npx", "tsx", "scripts/run-scanner.ts"]

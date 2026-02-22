@@ -394,6 +394,72 @@ describe('Scanner', () => {
     })
   })
 
+  // Verify scanner correctly handles the API's "Put"/"Call" capitalization.
+  // fetchOptionChain maps put_or_call → type preserving the API case ("Put"/"Call").
+  // scanTicker filters with c.type === 'Put' — lowercase 'put' would silently find 0 contracts.
+  describe('option chain put filtering (capitalization)', () => {
+    const expDate = new Date(Date.now() + 35 * 86400000).toISOString().slice(0, 10)
+
+    it('should find put contracts when type is "Put" (API capitalization)', async () => {
+      const priceRecords = makePriceRecords(250, 80, 2_000_000)
+      fetchStockPriceHistory.mockResolvedValue({ ticker: 'MSFT', records: priceRecords, success: true })
+
+      fetchOptionChain.mockResolvedValue({
+        ticker: 'MSFT',
+        contracts: [
+          { identifier: 'MSFT260321P00075000', strike: 75, expiration: expDate, type: 'Put' },
+          { identifier: 'MSFT260321C00090000', strike: 90, expiration: expDate, type: 'Call' },
+        ],
+        success: true,
+      })
+
+      fetchOptionGreeks.mockResolvedValue({
+        contractName: 'MSFT260321P00075000',
+        records: [
+          { date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.35 },
+          { date: '2025-08-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.20 },
+        ],
+        success: true,
+      })
+
+      fetchOptionPrices.mockResolvedValue({
+        contractName: 'MSFT260321P00075000',
+        records: [{ date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 50, openInterest: 600 }],
+        success: true,
+      })
+
+      prisma.trade.findFirst.mockResolvedValue(null)
+      prisma.position.findFirst.mockResolvedValue(null)
+
+      const result = await scanTicker('MSFT', 'user-1')
+
+      // Should find the put and pass phases 1 & 2; 'Call' contract must not be treated as a put
+      expect(result.passedPhase1).toBe(true)
+      expect(result.passedPhase2).toBe(true)
+    })
+
+    it('should find zero puts when type is lowercase "put" (wrong format — regression guard)', async () => {
+      const priceRecords = makePriceRecords(250, 80, 2_000_000)
+      fetchStockPriceHistory.mockResolvedValue({ ticker: 'TEST', records: priceRecords, success: true })
+
+      // Simulate old (incorrect) format where type is lowercase
+      fetchOptionChain.mockResolvedValue({
+        ticker: 'TEST',
+        contracts: [
+          { identifier: 'TEST260321P00075000', strike: 75, expiration: expDate, type: 'put' },
+        ],
+        success: true,
+      })
+
+      const result = await scanTicker('TEST', 'user-1')
+
+      // 'put' !== 'Put' so no put contracts found → should fail at Phase 2
+      expect(result.passedPhase1).toBe(true)
+      expect(result.passedPhase2).toBe(false)
+      expect(result.phase2Reason).toContain('No put contracts')
+    })
+  })
+
   describe('selectBestContract', () => {
     const now = new Date('2026-02-14')
 
@@ -403,7 +469,7 @@ describe('Scanner', () => {
         identifier: `TEST${exp.toISOString().slice(2, 10).replace(/-/g, '')}P${String(strike * 1000).padStart(8, '0')}`,
         strike,
         expiration: exp.toISOString().slice(0, 10),
-        type: 'put',
+        type: 'Put',  // API returns "Put"/"Call" with capital first letter
       }
     }
 
@@ -559,8 +625,8 @@ describe('Scanner', () => {
       fetchOptionChain.mockResolvedValue({
         ticker: 'AAPL',
         contracts: [
-          { identifier: 'AAPL260321P00075000', strike: 75, expiration: expDate, type: 'put' },
-          { identifier: 'AAPL260321P00080000', strike: 80, expiration: expDate, type: 'put' },
+          { identifier: 'AAPL260321P00075000', strike: 75, expiration: expDate, type: 'Put' },
+          { identifier: 'AAPL260321P00080000', strike: 80, expiration: expDate, type: 'Put' },
         ],
         success: true,
       })
@@ -627,7 +693,7 @@ describe('Scanner', () => {
       fetchOptionChain.mockResolvedValue({
         ticker: 'LOW',
         contracts: [
-          { identifier: 'LOW260321P00080000', strike: 80, expiration: expDate, type: 'put' },
+          { identifier: 'LOW260321P00080000', strike: 80, expiration: expDate, type: 'Put' },
         ],
         success: true,
       })
@@ -670,6 +736,7 @@ describe('Scanner', () => {
         { ticker: 'AAPL' },
         { ticker: 'MSFT' },
       ])
+      prisma.scanResult.deleteMany.mockResolvedValue({ count: 0 })
 
       // Both tickers fail at phase 1 for simplicity
       fetchStockPriceHistory.mockResolvedValue({
@@ -693,6 +760,7 @@ describe('Scanner', () => {
 
     it('should handle errors for individual tickers without failing scan', async () => {
       prisma.watchlistTicker.findMany.mockResolvedValue([{ ticker: 'ERR' }])
+      prisma.scanResult.deleteMany.mockResolvedValue({ count: 0 })
 
       fetchStockPriceHistory.mockRejectedValue(new Error('Network failure'))
 
@@ -707,6 +775,7 @@ describe('Scanner', () => {
 
     it('should handle empty watchlist', async () => {
       prisma.watchlistTicker.findMany.mockResolvedValue([])
+      prisma.scanResult.deleteMany.mockResolvedValue({ count: 0 })
       prisma.scanResult.createMany.mockResolvedValue({ count: 0 })
 
       const result = await runFullScan('user-1')

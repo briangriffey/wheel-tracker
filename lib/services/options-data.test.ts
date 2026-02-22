@@ -177,26 +177,99 @@ describe('Options Data Service', () => {
   // === fetchOptionChain ===
 
   describe('fetchOptionChain', () => {
+    // Real API response format — field names differ from our OptionChainRecord interface.
+    // The API uses: contract_name, strike_price, expiration_date, put_or_call ("Put"/"Call")
     const mockChainData = [
-      { identifier: 'AAPL260320P00170000', strike: 170, expiration: '2026-03-20', type: 'put' },
-      { identifier: 'AAPL260320C00190000', strike: 190, expiration: '2026-03-20', type: 'call' },
-      { identifier: 'AAPL260417P00165000', strike: 165, expiration: '2026-04-17', type: 'put' },
+      {
+        trading_symbol: 'MSFT',
+        central_index_key: '0000789019',
+        registrant_name: 'MICROSOFT CORP',
+        contract_name: 'MSFT271217P00660000',
+        expiration_date: '2027-12-17',
+        put_or_call: 'Put',
+        strike_price: 660.0,
+      },
+      {
+        trading_symbol: 'MSFT',
+        central_index_key: '0000789019',
+        registrant_name: 'MICROSOFT CORP',
+        contract_name: 'MSFT271217C00660000',
+        expiration_date: '2027-12-17',
+        put_or_call: 'Call',
+        strike_price: 660.0,
+      },
+      {
+        trading_symbol: 'MSFT',
+        central_index_key: '0000789019',
+        registrant_name: 'MICROSOFT CORP',
+        contract_name: 'MSFT271219P00620000',
+        expiration_date: '2027-12-19',
+        put_or_call: 'Put',
+        strike_price: 620.0,
+      },
     ]
 
-    it('should return option chain contracts on success', async () => {
+    it('should map raw API fields to canonical OptionChainRecord shape', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
         json: () => Promise.resolve(mockChainData),
       }))
 
-      const result: OptionChainResult = await fetchOptionChain('AAPL')
+      const result: OptionChainResult = await fetchOptionChain('MSFT')
 
       expect(result.success).toBe(true)
-      expect(result.ticker).toBe('AAPL')
+      expect(result.ticker).toBe('MSFT')
       expect(result.contracts).toHaveLength(3)
-      expect(result.contracts[0].identifier).toBe('AAPL260320P00170000')
-      expect(result.contracts[0].type).toBe('put')
+
+      // contract_name → identifier
+      expect(result.contracts[0].identifier).toBe('MSFT271217P00660000')
+      // strike_price → strike
+      expect(result.contracts[0].strike).toBe(660.0)
+      // expiration_date → expiration
+      expect(result.contracts[0].expiration).toBe('2027-12-17')
+      // put_or_call → type (preserves API capitalization: "Put" / "Call")
+      expect(result.contracts[0].type).toBe('Put')
+      expect(result.contracts[1].type).toBe('Call')
+    })
+
+    it('should preserve "Put"/"Call" capitalization from API (not lowercase)', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(mockChainData),
+      }))
+
+      const result = await fetchOptionChain('MSFT')
+
+      const types = result.contracts.map((c) => c.type)
+      expect(types).toContain('Put')
+      expect(types).toContain('Call')
+      expect(types).not.toContain('put')
+      expect(types).not.toContain('call')
+    })
+
+    it('should not expose raw API field names on returned contracts', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(mockChainData),
+      }))
+
+      const result = await fetchOptionChain('MSFT')
+      const contract = result.contracts[0] as unknown as Record<string, unknown>
+
+      // Raw field names must not leak through
+      expect(contract['contract_name']).toBeUndefined()
+      expect(contract['strike_price']).toBeUndefined()
+      expect(contract['expiration_date']).toBeUndefined()
+      expect(contract['put_or_call']).toBeUndefined()
+
+      // Canonical field names must be present
+      expect(contract['identifier']).toBeDefined()
+      expect(contract['strike']).toBeDefined()
+      expect(contract['expiration']).toBeDefined()
+      expect(contract['type']).toBeDefined()
     })
 
     it('should uppercase the ticker', async () => {
@@ -206,9 +279,9 @@ describe('Options Data Service', () => {
         json: () => Promise.resolve(mockChainData),
       }))
 
-      const result = await fetchOptionChain('aapl')
+      const result = await fetchOptionChain('msft')
 
-      expect(result.ticker).toBe('AAPL')
+      expect(result.ticker).toBe('MSFT')
     })
 
     it('should call correct API endpoint', async () => {
@@ -219,10 +292,10 @@ describe('Options Data Service', () => {
       })
       vi.stubGlobal('fetch', mockFetch)
 
-      await fetchOptionChain('AAPL')
+      await fetchOptionChain('MSFT')
 
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('option-chain?identifier=AAPL&key=test-api-key')
+        expect.stringContaining('option-chain?identifier=MSFT&key=test-api-key')
       )
     })
 
@@ -246,7 +319,7 @@ describe('Options Data Service', () => {
         statusText: 'Unauthorized',
       }))
 
-      const result = await fetchOptionChain('AAPL')
+      const result = await fetchOptionChain('MSFT')
 
       expect(result.success).toBe(false)
       expect(result.error).toContain('authentication')
@@ -259,7 +332,7 @@ describe('Options Data Service', () => {
         statusText: 'Too Many Requests',
       }))
 
-      const result = await fetchOptionChain('AAPL')
+      const result = await fetchOptionChain('MSFT')
 
       expect(result.success).toBe(false)
       expect(result.error).toContain('rate limit')
@@ -268,7 +341,7 @@ describe('Options Data Service', () => {
     it('should return error when fetch throws', async () => {
       vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Connection refused')))
 
-      const result = await fetchOptionChain('AAPL')
+      const result = await fetchOptionChain('MSFT')
 
       expect(result.success).toBe(false)
       expect(result.error).toContain('Failed to fetch')
@@ -277,7 +350,7 @@ describe('Options Data Service', () => {
     it('should throw when API key is not configured', async () => {
       delete process.env.FINANCIAL_DATA_API_KEY
 
-      await expect(fetchOptionChain('AAPL')).rejects.toThrow('FINANCIAL_DATA_API_KEY')
+      await expect(fetchOptionChain('MSFT')).rejects.toThrow('FINANCIAL_DATA_API_KEY')
     })
   })
 

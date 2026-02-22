@@ -14,11 +14,23 @@ export interface FinancialDataPriceRecord {
   volume: number
 }
 
+// Raw shape returned by the FinancialData.net option-chain endpoint.
+// Field names differ from our canonical OptionChainRecord.
+interface RawOptionChainRecord {
+  trading_symbol: string
+  central_index_key: string
+  registrant_name: string
+  contract_name: string    // e.g. "MSFT271217P00660000"
+  expiration_date: string  // "YYYY-MM-DD"
+  put_or_call: string      // "Put" or "Call"
+  strike_price: number
+}
+
 export interface OptionChainRecord {
-  identifier: string // contract name, e.g., "AAPL250321P00170000"
-  strike: number
-  expiration: string // "YYYY-MM-DD"
-  type: string // "put" or "call"
+  identifier: string // from contract_name, e.g., "MSFT271217P00660000"
+  strike: number     // from strike_price
+  expiration: string // from expiration_date, "YYYY-MM-DD"
+  type: string       // from put_or_call — "Put" or "Call" (capital first letter)
 }
 
 export interface OptionPriceRecord {
@@ -238,13 +250,13 @@ export async function fetchOptionChain(ticker: string): Promise<OptionChainResul
       return { ticker, contracts: [], success: false, error: httpError }
     }
 
-    const data = (await response.json()) as OptionChainRecord[]
+    const raw = (await response.json()) as RawOptionChainRecord[]
 
-    log.debug({ endpoint, identifier: ticker, payload: data }, 'Full response payload')
+    log.debug({ endpoint, identifier: ticker, payload: raw }, 'Full response payload')
 
-    if (!Array.isArray(data) || data.length === 0) {
+    if (!Array.isArray(raw) || raw.length === 0) {
       log.warn(
-        { endpoint, identifier: ticker, dataType: typeof data, isArray: Array.isArray(data) },
+        { endpoint, identifier: ticker, dataType: typeof raw, isArray: Array.isArray(raw) },
         'Empty or non-array response'
       )
       return {
@@ -255,21 +267,29 @@ export async function fetchOptionChain(ticker: string): Promise<OptionChainResul
       }
     }
 
-    const puts = data.filter((c) => c.type === 'put')
-    const calls = data.filter((c) => c.type === 'call')
+    // Map raw API field names to our canonical OptionChainRecord shape
+    const contracts: OptionChainRecord[] = raw.map((r) => ({
+      identifier: r.contract_name,
+      strike: r.strike_price,
+      expiration: r.expiration_date,
+      type: r.put_or_call,  // "Put" or "Call"
+    }))
+
+    const puts = contracts.filter((c) => c.type === 'Put')
+    const calls = contracts.filter((c) => c.type === 'Call')
     log.info(
-      { endpoint, identifier: ticker, totalContracts: data.length, puts: puts.length, calls: calls.length },
+      { endpoint, identifier: ticker, totalContracts: contracts.length, puts: puts.length, calls: calls.length },
       'Option chain fetched successfully'
     )
 
-    // Check first contract for empty fields
-    if (data[0]) {
-      warnEmptyFields(data[0] as unknown as Record<string, unknown>, `${ticker} first option chain record`)
+    // Check first raw record for empty fields (before mapping)
+    if (raw[0]) {
+      warnEmptyFields(raw[0] as unknown as Record<string, unknown>, `${ticker} first option chain record`)
     }
 
     return {
       ticker: ticker.toUpperCase(),
-      contracts: data,
+      contracts,
       success: true,
     }
   } catch (error) {

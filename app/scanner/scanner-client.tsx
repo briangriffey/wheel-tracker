@@ -10,12 +10,13 @@ import {
   removeWatchlistTicker,
 } from '@/lib/actions/watchlist'
 import type { WatchlistTickerData } from '@/lib/actions/watchlist'
-import type { ScanResultData, ScanMetadata } from '@/lib/queries/scanner'
+import type { ScanResultData, ScanMetadata, HistoricalPriceData } from '@/lib/queries/scanner'
 
 interface ScannerClientProps {
   initialWatchlist: WatchlistTickerData[]
   initialScanResults: ScanResultData[]
   initialMetadata: ScanMetadata
+  priceHistory: Record<string, HistoricalPriceData[]>
 }
 
 type SortField = 'compositeScore' | 'premiumYield' | 'ivRank'
@@ -27,6 +28,7 @@ export function ScannerClient({
   initialWatchlist,
   initialScanResults,
   initialMetadata,
+  priceHistory,
 }: ScannerClientProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()

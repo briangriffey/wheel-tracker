@@ -137,6 +137,46 @@ export const getLatestScanResults = cache(async (): Promise<ScanResultData[]> =>
   }))
 })
 
+export interface HistoricalPriceData {
+  date: Date
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+}
+
+export const getHistoricalPricesForTickers = cache(
+  async (tickers: string[]): Promise<Map<string, HistoricalPriceData[]>> => {
+    if (tickers.length === 0) return new Map()
+
+    const rows = await prisma.historicalStockPrice.findMany({
+      where: { ticker: { in: tickers } },
+      orderBy: [{ ticker: 'asc' }, { date: 'asc' }],
+    })
+
+    const result = new Map<string, HistoricalPriceData[]>()
+    for (const row of rows) {
+      const entry: HistoricalPriceData = {
+        date: row.date,
+        open: row.open.toNumber(),
+        high: row.high.toNumber(),
+        low: row.low.toNumber(),
+        close: row.close.toNumber(),
+        volume: Number(row.volume),
+      }
+      const existing = result.get(row.ticker)
+      if (existing) {
+        existing.push(entry)
+      } else {
+        result.set(row.ticker, [entry])
+      }
+    }
+
+    return result
+  }
+)
+
 export const getScanMetadata = cache(async (): Promise<ScanMetadata> => {
   const userId = await getCurrentUserId()
   if (!userId) {

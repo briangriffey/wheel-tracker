@@ -1,4 +1,7 @@
 import { apiRateLimiter } from './rate-limiter'
+import { logger } from '../logger'
+
+const log = logger.child({ module: 'options-data' })
 
 // === API Response Types (validate against actual API) ===
 
@@ -86,6 +89,13 @@ function buildUrl(endpoint: string, identifier: string): string {
 }
 
 /**
+ * Build a sanitized URL for logging (API key redacted)
+ */
+function buildSanitizedUrl(endpoint: string, identifier: string): string {
+  return `https://financialdata.net/api/v1/${endpoint}?identifier=${encodeURIComponent(identifier)}&key=[REDACTED]`
+}
+
+/**
  * Handle common HTTP error responses.
  * Returns an error string if the response is not ok, or null if ok.
  */
@@ -105,6 +115,18 @@ function handleHttpError(response: Response, identifier: string): string | null 
 }
 
 /**
+ * Check a record for null/undefined/NaN fields and log a warning if any are found.
+ */
+function warnEmptyFields(record: Record<string, unknown>, context: string): void {
+  const empty = Object.entries(record)
+    .filter(([, v]) => v === null || v === undefined || (typeof v === 'number' && isNaN(v)))
+    .map(([k]) => k)
+  if (empty.length > 0) {
+    log.warn({ emptyFields: empty, context }, 'Record contains null/undefined/NaN fields')
+  }
+}
+
+/**
  * Fetch full stock price history for a ticker.
  * Returns the entire array of daily records (unlike fetchStockPrice which returns only the latest).
  * Used by the scanner for SMA calculations.
@@ -112,19 +134,38 @@ function handleHttpError(response: Response, identifier: string): string | null 
 export async function fetchStockPriceHistory(ticker: string): Promise<StockPriceHistoryResult> {
   validateApiKey()
 
-  const url = buildUrl('stock-prices', ticker.toUpperCase())
+  const endpoint = 'stock-prices'
+  const url = buildUrl(endpoint, ticker.toUpperCase())
+  const sanitizedUrl = buildSanitizedUrl(endpoint, ticker.toUpperCase())
+
+  log.debug(
+    { endpoint, identifier: ticker, url: sanitizedUrl, queueLength: apiRateLimiter.getQueueLength() },
+    'HTTP GET enqueued'
+  )
 
   try {
     const response = await apiRateLimiter.enqueue(() => fetch(url))
 
+    log.debug(
+      { endpoint, identifier: ticker, status: response.status, statusText: response.statusText },
+      'HTTP response received'
+    )
+
     const httpError = handleHttpError(response, ticker)
     if (httpError) {
+      log.warn({ endpoint, identifier: ticker, status: response.status, error: httpError }, 'HTTP error response')
       return { ticker, records: [], success: false, error: httpError }
     }
 
     const data = (await response.json()) as FinancialDataPriceRecord[]
 
+    log.debug({ endpoint, identifier: ticker, payload: data }, 'Full response payload')
+
     if (!Array.isArray(data) || data.length === 0) {
+      log.warn(
+        { endpoint, identifier: ticker, dataType: typeof data, isArray: Array.isArray(data) },
+        'Empty or non-array response'
+      )
       return {
         ticker,
         records: [],
@@ -133,6 +174,23 @@ export async function fetchStockPriceHistory(ticker: string): Promise<StockPrice
       }
     }
 
+    const sorted = [...data].sort((a, b) => b.date.localeCompare(a.date))
+    log.info(
+      {
+        endpoint,
+        identifier: ticker,
+        recordCount: data.length,
+        latestDate: sorted[0]?.date,
+        oldestDate: sorted[sorted.length - 1]?.date,
+        latestClose: sorted[0]?.close,
+        latestVolume: sorted[0]?.volume,
+      },
+      'Price history fetched successfully'
+    )
+
+    // Check most recent record for empty fields
+    warnEmptyFields(sorted[0] as unknown as Record<string, unknown>, `${ticker} latest price record`)
+
     return {
       ticker: ticker.toUpperCase(),
       records: data,
@@ -140,7 +198,7 @@ export async function fetchStockPriceHistory(ticker: string): Promise<StockPrice
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error(`Error fetching price history for ${ticker}:`, message)
+    log.error({ endpoint, identifier: ticker, error: message }, 'Exception fetching price history')
     return {
       ticker,
       records: [],
@@ -157,25 +215,56 @@ export async function fetchStockPriceHistory(ticker: string): Promise<StockPrice
 export async function fetchOptionChain(ticker: string): Promise<OptionChainResult> {
   validateApiKey()
 
-  const url = buildUrl('option-chain', ticker.toUpperCase())
+  const endpoint = 'option-chain'
+  const url = buildUrl(endpoint, ticker.toUpperCase())
+  const sanitizedUrl = buildSanitizedUrl(endpoint, ticker.toUpperCase())
+
+  log.debug(
+    { endpoint, identifier: ticker, url: sanitizedUrl, queueLength: apiRateLimiter.getQueueLength() },
+    'HTTP GET enqueued'
+  )
 
   try {
     const response = await apiRateLimiter.enqueue(() => fetch(url))
 
+    log.debug(
+      { endpoint, identifier: ticker, status: response.status, statusText: response.statusText },
+      'HTTP response received'
+    )
+
     const httpError = handleHttpError(response, ticker)
     if (httpError) {
+      log.warn({ endpoint, identifier: ticker, status: response.status, error: httpError }, 'HTTP error response')
       return { ticker, contracts: [], success: false, error: httpError }
     }
 
     const data = (await response.json()) as OptionChainRecord[]
 
+    log.debug({ endpoint, identifier: ticker, payload: data }, 'Full response payload')
+
     if (!Array.isArray(data) || data.length === 0) {
+      log.warn(
+        { endpoint, identifier: ticker, dataType: typeof data, isArray: Array.isArray(data) },
+        'Empty or non-array response'
+      )
       return {
         ticker,
         contracts: [],
         success: false,
         error: `No option chain data for ${ticker}`,
       }
+    }
+
+    const puts = data.filter((c) => c.type === 'put')
+    const calls = data.filter((c) => c.type === 'call')
+    log.info(
+      { endpoint, identifier: ticker, totalContracts: data.length, puts: puts.length, calls: calls.length },
+      'Option chain fetched successfully'
+    )
+
+    // Check first contract for empty fields
+    if (data[0]) {
+      warnEmptyFields(data[0] as unknown as Record<string, unknown>, `${ticker} first option chain record`)
     }
 
     return {
@@ -185,7 +274,7 @@ export async function fetchOptionChain(ticker: string): Promise<OptionChainResul
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error(`Error fetching option chain for ${ticker}:`, message)
+    log.error({ endpoint, identifier: ticker, error: message }, 'Exception fetching option chain')
     return {
       ticker,
       contracts: [],
@@ -202,19 +291,38 @@ export async function fetchOptionChain(ticker: string): Promise<OptionChainResul
 export async function fetchOptionGreeks(contractName: string): Promise<OptionGreeksResult> {
   validateApiKey()
 
-  const url = buildUrl('option-greeks', contractName)
+  const endpoint = 'option-greeks'
+  const url = buildUrl(endpoint, contractName)
+  const sanitizedUrl = buildSanitizedUrl(endpoint, contractName)
+
+  log.debug(
+    { endpoint, identifier: contractName, url: sanitizedUrl, queueLength: apiRateLimiter.getQueueLength() },
+    'HTTP GET enqueued'
+  )
 
   try {
     const response = await apiRateLimiter.enqueue(() => fetch(url))
 
+    log.debug(
+      { endpoint, identifier: contractName, status: response.status, statusText: response.statusText },
+      'HTTP response received'
+    )
+
     const httpError = handleHttpError(response, contractName)
     if (httpError) {
+      log.warn({ endpoint, identifier: contractName, status: response.status, error: httpError }, 'HTTP error response')
       return { contractName, records: [], success: false, error: httpError }
     }
 
     const data = (await response.json()) as OptionGreeksRecord[]
 
+    log.debug({ endpoint, identifier: contractName, payload: data }, 'Full response payload')
+
     if (!Array.isArray(data) || data.length === 0) {
+      log.warn(
+        { endpoint, identifier: contractName, dataType: typeof data, isArray: Array.isArray(data) },
+        'Empty or non-array response'
+      )
       return {
         contractName,
         records: [],
@@ -223,6 +331,24 @@ export async function fetchOptionGreeks(contractName: string): Promise<OptionGre
       }
     }
 
+    const latest = [...data].sort((a, b) => b.date.localeCompare(a.date))[0]
+    log.info(
+      {
+        endpoint,
+        identifier: contractName,
+        recordCount: data.length,
+        latestDate: latest.date,
+        latestDelta: latest.delta,
+        latestIV: latest.impliedVolatility,
+        latestTheta: latest.theta,
+        latestGamma: latest.gamma,
+      },
+      'Option greeks fetched successfully'
+    )
+
+    // Check most recent record for empty fields
+    warnEmptyFields(latest as unknown as Record<string, unknown>, `${contractName} latest greeks record`)
+
     return {
       contractName,
       records: data,
@@ -230,7 +356,7 @@ export async function fetchOptionGreeks(contractName: string): Promise<OptionGre
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error(`Error fetching option greeks for ${contractName}:`, message)
+    log.error({ endpoint, identifier: contractName, error: message }, 'Exception fetching option greeks')
     return {
       contractName,
       records: [],
@@ -247,19 +373,38 @@ export async function fetchOptionGreeks(contractName: string): Promise<OptionGre
 export async function fetchOptionPrices(contractName: string): Promise<OptionPriceResult> {
   validateApiKey()
 
-  const url = buildUrl('option-prices', contractName)
+  const endpoint = 'option-prices'
+  const url = buildUrl(endpoint, contractName)
+  const sanitizedUrl = buildSanitizedUrl(endpoint, contractName)
+
+  log.debug(
+    { endpoint, identifier: contractName, url: sanitizedUrl, queueLength: apiRateLimiter.getQueueLength() },
+    'HTTP GET enqueued'
+  )
 
   try {
     const response = await apiRateLimiter.enqueue(() => fetch(url))
 
+    log.debug(
+      { endpoint, identifier: contractName, status: response.status, statusText: response.statusText },
+      'HTTP response received'
+    )
+
     const httpError = handleHttpError(response, contractName)
     if (httpError) {
+      log.warn({ endpoint, identifier: contractName, status: response.status, error: httpError }, 'HTTP error response')
       return { contractName, records: [], success: false, error: httpError }
     }
 
     const data = (await response.json()) as OptionPriceRecord[]
 
+    log.debug({ endpoint, identifier: contractName, payload: data }, 'Full response payload')
+
     if (!Array.isArray(data) || data.length === 0) {
+      log.warn(
+        { endpoint, identifier: contractName, dataType: typeof data, isArray: Array.isArray(data) },
+        'Empty or non-array response'
+      )
       return {
         contractName,
         records: [],
@@ -268,6 +413,34 @@ export async function fetchOptionPrices(contractName: string): Promise<OptionPri
       }
     }
 
+    const latest = [...data].sort((a, b) => b.date.localeCompare(a.date))[0]
+
+    if (latest.openInterest === undefined || latest.openInterest === null) {
+      log.warn(
+        { identifier: contractName, date: latest.date },
+        'openInterest field is missing from option price record'
+      )
+    }
+
+    log.info(
+      {
+        endpoint,
+        identifier: contractName,
+        recordCount: data.length,
+        latestDate: latest.date,
+        latestClose: latest.close,
+        latestOpen: latest.open,
+        latestHigh: latest.high,
+        latestLow: latest.low,
+        latestVolume: latest.volume,
+        openInterest: latest.openInterest ?? null,
+      },
+      'Option prices fetched successfully'
+    )
+
+    // Check most recent record for empty fields
+    warnEmptyFields(latest as unknown as Record<string, unknown>, `${contractName} latest price record`)
+
     return {
       contractName,
       records: data,
@@ -275,7 +448,7 @@ export async function fetchOptionPrices(contractName: string): Promise<OptionPri
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error(`Error fetching option prices for ${contractName}:`, message)
+    log.error({ endpoint, identifier: contractName, error: message }, 'Exception fetching option prices')
     return {
       contractName,
       records: [],

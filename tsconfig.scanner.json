@@ -15,6 +15,7 @@
     "lib/services/options-data.ts",
     "lib/services/rate-limiter.ts",
     "lib/services/market-data.ts",
+    "lib/logger.ts",
     "lib/db/index.ts",
     "lib/generated/**/*"
   ]

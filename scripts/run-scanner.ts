@@ -1,35 +1,48 @@
 import { prisma } from '../lib/db'
 import { runFullScan } from '../lib/services/scanner'
+import { logger } from '../lib/logger'
+
+const log = logger.child({ module: 'run-scanner' })
 
 async function main() {
-  console.log('[SCANNER] Starting nightly scan at', new Date().toISOString())
+  log.info({ startedAt: new Date().toISOString() }, '[SCANNER] Starting nightly scan')
 
   const users = await prisma.watchlistTicker.findMany({
     select: { userId: true },
     distinct: ['userId'],
   })
 
+  log.info({ userCount: users.length }, '[SCANNER] Users with watchlists found')
+
   if (users.length === 0) {
-    console.log('[SCANNER] No users with watchlists, exiting')
+    log.info('[SCANNER] No users with watchlists, exiting')
     await prisma.$disconnect()
     process.exit(0)
   }
 
   for (const { userId } of users) {
-    console.log(`[SCANNER] Scanning for user ${userId}`)
+    log.info({ userId }, '[SCANNER] Starting scan for user')
+
     const result = await runFullScan(userId)
-    console.log(
-      `[SCANNER] User ${userId}: ${result.totalScanned} scanned, ${result.totalPassed} candidates`
-    )
+
+    log.info({
+      userId,
+      totalScanned: result.totalScanned,
+      totalPassed: result.totalPassed,
+      scanDate: result.scanDate.toISOString(),
+    }, '[SCANNER] User scan complete')
   }
 
-  console.log('[SCANNER] Scan complete')
+  log.info('[SCANNER] All scans complete')
   await prisma.$disconnect()
   process.exit(0)
 }
 
 main().catch(async (err) => {
-  console.error('[SCANNER] Fatal error:', err)
+  logger.error(
+    { error: err instanceof Error ? err.message : String(err), stack: err instanceof Error ? err.stack : undefined },
+    '[SCANNER] Fatal error'
+  )
   await prisma.$disconnect()
   process.exit(1)
 })

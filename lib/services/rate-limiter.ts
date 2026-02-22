@@ -7,8 +7,8 @@
 export class RateLimiter {
   private queue: Array<() => Promise<void>> = []
   private requestTimes: number[] = []
-  private readonly maxRequestsPerMinute: number = 10
-  private readonly minIntervalMs: number = 6000 // 6 seconds between requests (10 per minute)
+  private readonly maxRequestsPerMinute: number = 600
+  private readonly minIntervalMs: number = 200 // 200ms between requests (5 per second)
   private processing: boolean = false
 
   /**

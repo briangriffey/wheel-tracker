@@ -100,16 +100,18 @@ function validateApiKey(): void {
 /**
  * Build API URL for a given endpoint and identifier
  */
-function buildUrl(endpoint: string, identifier: string): string {
+function buildUrl(endpoint: string, identifier: string, offset = 0): string {
   const apiKey = process.env.FINANCIAL_DATA_API_KEY
-  return `https://financialdata.net/api/v1/${endpoint}?identifier=${encodeURIComponent(identifier)}&key=${apiKey}`
+  const base = `https://financialdata.net/api/v1/${endpoint}?identifier=${encodeURIComponent(identifier)}&key=${apiKey}`
+  return offset > 0 ? `${base}&offset=${offset}` : base
 }
 
 /**
  * Build a sanitized URL for logging (API key redacted)
  */
-function buildSanitizedUrl(endpoint: string, identifier: string): string {
-  return `https://financialdata.net/api/v1/${endpoint}?identifier=${encodeURIComponent(identifier)}&key=[REDACTED]`
+function buildSanitizedUrl(endpoint: string, identifier: string, offset = 0): string {
+  const base = `https://financialdata.net/api/v1/${endpoint}?identifier=${encodeURIComponent(identifier)}&key=[REDACTED]`
+  return offset > 0 ? `${base}&offset=${offset}` : base
 }
 
 /**
@@ -225,55 +227,80 @@ export async function fetchStockPriceHistory(ticker: string): Promise<StockPrice
   }
 }
 
+/** Number of records returned per page by the option-chain endpoint. */
+const OPTION_CHAIN_PAGE_SIZE = 300
+
 /**
  * Fetch the option chain for a ticker.
- * Returns all available contracts; caller filters to puts and target DTE range.
+ * The API returns at most 300 records per request. This function paginates
+ * automatically using the `offset` query param until a partial page is
+ * returned, ensuring we collect all contracts including the most recent ones.
  */
 export async function fetchOptionChain(ticker: string): Promise<OptionChainResult> {
   validateApiKey()
 
   const endpoint = 'option-chain'
-  const url = buildUrl(endpoint, ticker.toUpperCase())
-  const sanitizedUrl = buildSanitizedUrl(endpoint, ticker.toUpperCase())
-
-  log.debug(
-    { endpoint, identifier: ticker, url: sanitizedUrl, queueLength: apiRateLimiter.getQueueLength() },
-    'HTTP GET enqueued'
-  )
+  const allRaw: RawOptionChainRecord[] = []
+  let offset = 0
 
   try {
-    const response = await apiRateLimiter.enqueue(() => fetch(url))
+    while (true) {
+      const url = buildUrl(endpoint, ticker.toUpperCase(), offset)
+      const sanitizedUrl = buildSanitizedUrl(endpoint, ticker.toUpperCase(), offset)
 
-    log.debug(
-      { endpoint, identifier: ticker, status: response.status, statusText: response.statusText },
-      'HTTP response received'
-    )
-
-    const httpError = handleHttpError(response, ticker)
-    if (httpError) {
-      log.warn({ endpoint, identifier: ticker, status: response.status, error: httpError }, 'HTTP error response')
-      return { ticker, contracts: [], success: false, error: httpError }
-    }
-
-    const raw = (await response.json()) as RawOptionChainRecord[]
-
-    log.debug({ endpoint, identifier: ticker, payload: raw }, 'Full response payload')
-
-    if (!Array.isArray(raw) || raw.length === 0) {
-      log.warn(
-        { endpoint, identifier: ticker, dataType: typeof raw, isArray: Array.isArray(raw) },
-        'Empty or non-array response'
+      log.debug(
+        { endpoint, identifier: ticker, url: sanitizedUrl, offset, queueLength: apiRateLimiter.getQueueLength() },
+        'HTTP GET enqueued'
       )
-      return {
-        ticker,
-        contracts: [],
-        success: false,
-        error: `No option chain data for ${ticker}`,
+
+      const response = await apiRateLimiter.enqueue(() => fetch(url))
+
+      log.debug(
+        { endpoint, identifier: ticker, status: response.status, statusText: response.statusText, offset },
+        'HTTP response received'
+      )
+
+      const httpError = handleHttpError(response, ticker)
+      if (httpError) {
+        log.warn({ endpoint, identifier: ticker, status: response.status, error: httpError, offset }, 'HTTP error response')
+        return { ticker, contracts: [], success: false, error: httpError }
       }
+
+      const page = (await response.json()) as RawOptionChainRecord[]
+
+      log.debug({ endpoint, identifier: ticker, offset, pageSize: Array.isArray(page) ? page.length : 'n/a', payload: page }, 'Full response payload')
+
+      if (!Array.isArray(page)) {
+        log.warn(
+          { endpoint, identifier: ticker, offset, dataType: typeof page },
+          'Non-array response'
+        )
+        return { ticker, contracts: [], success: false, error: `No option chain data for ${ticker}` }
+      }
+
+      // An empty page at offset=0 means no data at all
+      if (page.length === 0 && offset === 0) {
+        log.warn({ endpoint, identifier: ticker }, 'Empty response on first page')
+        return { ticker, contracts: [], success: false, error: `No option chain data for ${ticker}` }
+      }
+
+      allRaw.push(...page)
+
+      log.debug(
+        { endpoint, identifier: ticker, offset, pageSize: page.length, totalSoFar: allRaw.length },
+        'Page accumulated'
+      )
+
+      // Fewer than PAGE_SIZE records means this was the last page
+      if (page.length < OPTION_CHAIN_PAGE_SIZE) {
+        break
+      }
+
+      offset += OPTION_CHAIN_PAGE_SIZE
     }
 
     // Map raw API field names to our canonical OptionChainRecord shape
-    const contracts: OptionChainRecord[] = raw.map((r) => ({
+    const contracts: OptionChainRecord[] = allRaw.map((r) => ({
       identifier: r.contract_name,
       strike: r.strike_price,
       expiration: r.expiration_date,
@@ -283,13 +310,13 @@ export async function fetchOptionChain(ticker: string): Promise<OptionChainResul
     const puts = contracts.filter((c) => c.type === OptionType.Put)
     const calls = contracts.filter((c) => c.type === OptionType.Call)
     log.info(
-      { endpoint, identifier: ticker, totalContracts: contracts.length, puts: puts.length, calls: calls.length },
+      { endpoint, identifier: ticker, totalContracts: contracts.length, puts: puts.length, calls: calls.length, pages: offset / OPTION_CHAIN_PAGE_SIZE + 1 },
       'Option chain fetched successfully'
     )
 
     // Check first raw record for empty fields (before mapping)
-    if (raw[0]) {
-      warnEmptyFields(raw[0] as unknown as Record<string, unknown>, `${ticker} first option chain record`)
+    if (allRaw[0]) {
+      warnEmptyFields(allRaw[0] as unknown as Record<string, unknown>, `${ticker} first option chain record`)
     }
 
     return {

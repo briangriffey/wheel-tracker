@@ -32,6 +32,9 @@ importers:
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
+      lightweight-charts:
+        specifier: ^5.1.0
+        version: 5.1.0
       lucide-react:
         specifier: ^0.564.0
         version: 0.564.0(react@19.2.4)
@@ -2458,6 +2461,9 @@ packages:
     engines: {node: '>= 10.17.0'}
     hasBin: true
 
+  fancy-canvas@2.1.0:
+    resolution: {integrity: sha512-nifxXJ95JNLFR2NgRV4/MxVP45G9909wJTEKz5fg/TZS20JJZA6hfgRVh/bC9bwl2zBtBNcYPjiBE4njQHVBwQ==}
+
   fast-check@3.23.2:
     resolution: {integrity: sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==}
     engines: {node: '>=8.0.0'}
@@ -2999,6 +3005,9 @@ packages:
     resolution: {integrity: sha512-SsxFXPE0DoUv6rH3hva0luh0pbpyIx9McBQ1WUpqCYFMtArODT6l9Zpu1K3XSdkeMQ2/zFcMN5o3pPVhfVwnCA==}
     engines: {node: '>=22.19'}
     hasBin: true
+
+  lightweight-charts@5.1.0:
+    resolution: {integrity: sha512-jEAYR4ODYeyNZcWUigsoLTl52rbPmgXnvd5FLIv/ZoA/2sSDw63YKnef8n4yhzum7W926yHeFwlm7ididKb7YQ==}
 
   lilconfig@2.1.0:
     resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
@@ -6939,6 +6948,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  fancy-canvas@2.1.0: {}
+
   fast-check@3.23.2:
     dependencies:
       pure-rand: 6.1.0
@@ -7550,6 +7561,10 @@ snapshots:
       - react-native-b4a
       - supports-color
       - utf-8-validate
+
+  lightweight-charts@5.1.0:
+    dependencies:
+      fancy-canvas: 2.1.0
 
   lilconfig@2.1.0: {}
 

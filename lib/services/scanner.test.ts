@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { OptionType } from './options-data'
-import type { FinancialDataPriceRecord, OptionGreeksRecord } from './options-data'
-import type { ContractData } from './scanner'
+import type { FinancialDataPriceRecord } from './options-data'
+import type { ContractData, IVDataPoint } from './scanner'
 import { SCANNER } from './scanner-constants'
 
 // Mock dependencies
@@ -29,6 +29,14 @@ vi.mock('./options-data', async (importOriginal) => {
     fetchOptionChain: vi.fn(),
     fetchOptionGreeks: vi.fn(),
     fetchOptionPrices: vi.fn(),
+  }
+})
+
+vi.mock('./black-scholes', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./black-scholes')>()
+  return {
+    ...actual,
+    computeIV: vi.fn(),
   }
 })
 
@@ -60,6 +68,10 @@ const {
   fetchOptionChain: ReturnType<typeof vi.fn>
   fetchOptionGreeks: ReturnType<typeof vi.fn>
   fetchOptionPrices: ReturnType<typeof vi.fn>
+}
+
+const { computeIV: computeIVMock } = await import('./black-scholes') as unknown as {
+  computeIV: ReturnType<typeof vi.fn>
 }
 
 const { prisma } = await import('@/lib/db') as unknown as {
@@ -362,13 +374,13 @@ describe('Scanner', () => {
 
   describe('runPhase2', () => {
     it('should pass when IV rank is above minimum', () => {
-      const customRecords: OptionGreeksRecord[] = [
-        { date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.35 },
-        { date: '2026-01-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.45 },
-        { date: '2025-08-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.20 },
+      const ivData: IVDataPoint[] = [
+        { date: '2026-02-14', iv: 0.35 },
+        { date: '2026-01-14', iv: 0.45 },
+        { date: '2025-08-14', iv: 0.20 },
       ]
 
-      const result = runPhase2(customRecords)
+      const result = runPhase2(ivData)
       // currentIV = 0.35, low = 0.20, high = 0.45
       // IVRank = (0.35 - 0.20) / (0.45 - 0.20) * 100 = 60
       expect(result.passed).toBe(true)
@@ -376,13 +388,13 @@ describe('Scanner', () => {
     })
 
     it('should fail when IV rank is below minimum', () => {
-      const records: OptionGreeksRecord[] = [
-        { date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.22 },
-        { date: '2025-08-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.20 },
-        { date: '2025-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.50 },
+      const ivData: IVDataPoint[] = [
+        { date: '2026-02-14', iv: 0.22 },
+        { date: '2025-08-14', iv: 0.20 },
+        { date: '2025-02-14', iv: 0.50 },
       ]
 
-      const result = runPhase2(records)
+      const result = runPhase2(ivData)
       // currentIV = 0.22, IVRank = (0.22 - 0.20) / (0.50 - 0.20) * 100 = 6.67
       expect(result.passed).toBe(false)
       expect(result.reason).toContain('IV Rank')
@@ -418,17 +430,28 @@ describe('Scanner', () => {
       fetchOptionGreeks.mockResolvedValue({
         contractName: 'MSFT260321P00075000',
         records: [
-          { date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.35 },
-          { date: '2025-08-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.20 },
+          { date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08 },
+          { date: '2025-08-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08 },
         ],
         success: true,
       })
 
       fetchOptionPrices.mockResolvedValue({
         contractName: 'MSFT260321P00075000',
-        records: [{ date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 50, openInterest: 600 }],
+        records: [
+          { date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 50, openInterest: 600 },
+          { date: '2026-01-14', open: 1.8, high: 2.2, low: 1.7, close: 2.00, volume: 40, openInterest: 550 },
+          { date: '2025-08-14', open: 1.5, high: 1.9, low: 1.4, close: 1.60, volume: 30, openInterest: 500 },
+        ],
         success: true,
       })
+
+      // Mock computeIV: Phase 2 IV data points, then Phase 3 contract IV
+      computeIVMock
+        .mockReturnValueOnce(0.35)
+        .mockReturnValueOnce(0.45)
+        .mockReturnValueOnce(0.20)
+        .mockReturnValue(0.30)
 
       prisma.trade.findFirst.mockResolvedValue(null)
       prisma.position.findFirst.mockResolvedValue(null)
@@ -458,7 +481,7 @@ describe('Scanner', () => {
         theta: -0.045,
         vega: 0.32,
         rho: -0.08,
-        impliedVolatility: 0.30,
+        computedIV: 0.30,
         pricesDate: '2026-02-14',
         open: 2.0,
         high: 2.5,
@@ -598,9 +621,9 @@ describe('Scanner', () => {
       fetchOptionGreeks.mockResolvedValue({
         contractName: 'AAPL260321P00075000',
         records: [
-          { date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.35 },
-          { date: '2026-01-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.45 },
-          { date: '2025-08-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.20 },
+          { date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08 },
+          { date: '2026-01-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08 },
+          { date: '2025-08-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08 },
         ],
         success: true,
       })
@@ -609,9 +632,18 @@ describe('Scanner', () => {
         contractName: 'AAPL260321P00075000',
         records: [
           { date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 50, openInterest: 600 },
+          { date: '2026-01-14', open: 1.8, high: 2.2, low: 1.7, close: 2.00, volume: 40, openInterest: 550 },
+          { date: '2025-08-14', open: 1.5, high: 1.9, low: 1.4, close: 1.60, volume: 30, openInterest: 500 },
         ],
         success: true,
       })
+
+      // Mock computeIV: Phase 2 IV data points (3 matching dates), then Phase 3 contract IVs
+      computeIVMock
+        .mockReturnValueOnce(0.35)  // Phase 2: 2026-02-14
+        .mockReturnValueOnce(0.45)  // Phase 2: 2026-01-14
+        .mockReturnValueOnce(0.20)  // Phase 2: 2025-08-14
+        .mockReturnValue(0.30)      // Phase 3: all contract IVs
 
       // Phase 5: Clean portfolio
       prisma.trade.findFirst.mockResolvedValue(null)
@@ -665,12 +697,28 @@ describe('Scanner', () => {
       fetchOptionGreeks.mockResolvedValue({
         contractName: 'LOW260321P00080000',
         records: [
-          { date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.22 },
-          { date: '2025-08-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.20 },
-          { date: '2025-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.50 },
+          { date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08 },
+          { date: '2025-08-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08 },
+          { date: '2025-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08 },
         ],
         success: true,
       })
+
+      fetchOptionPrices.mockResolvedValue({
+        contractName: 'LOW260321P00080000',
+        records: [
+          { date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 50, openInterest: 600 },
+          { date: '2026-01-14', open: 1.5, high: 1.9, low: 1.4, close: 1.60, volume: 30, openInterest: 500 },
+          { date: '2025-08-14', open: 1.2, high: 1.5, low: 1.1, close: 1.30, volume: 25, openInterest: 450 },
+        ],
+        success: true,
+      })
+
+      // Low IV rank: currentIV=0.22, low=0.20, high=0.50 → rank=6.67
+      computeIVMock
+        .mockReturnValueOnce(0.22)
+        .mockReturnValueOnce(0.20)
+        .mockReturnValueOnce(0.50)
 
       const result = await scanTicker('LOW', 'user-1')
 

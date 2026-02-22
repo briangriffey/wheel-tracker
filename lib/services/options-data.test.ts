@@ -468,7 +468,6 @@ describe('Options Data Service', () => {
         theta: -0.045,
         vega: 0.32,
         rho: -0.08,
-        impliedVolatility: 0.285,
       },
       {
         date: '2026-02-13',
@@ -477,7 +476,6 @@ describe('Options Data Service', () => {
         theta: -0.043,
         vega: 0.31,
         rho: -0.079,
-        impliedVolatility: 0.290,
       },
     ]
 
@@ -494,7 +492,6 @@ describe('Options Data Service', () => {
       expect(result.contractName).toBe('AAPL260320P00170000')
       expect(result.records).toHaveLength(2)
       expect(result.records[0].delta).toBe(-0.228)
-      expect(result.records[0].impliedVolatility).toBe(0.285)
     })
 
     it('should call correct API endpoint', async () => {

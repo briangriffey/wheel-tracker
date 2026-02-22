@@ -55,7 +55,6 @@ export interface OptionGreeksRecord {
   theta: number
   vega: number
   rho: number
-  impliedVolatility: number
 }
 
 // === Result types ===
@@ -424,7 +423,6 @@ export async function fetchOptionGreeks(contractName: string): Promise<OptionGre
         recordCount: data.length,
         latestDate: latest.date,
         latestDelta: latest.delta,
-        latestIV: latest.impliedVolatility,
         latestTheta: latest.theta,
         latestGamma: latest.gamma,
       },

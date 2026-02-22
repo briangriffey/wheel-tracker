@@ -9,8 +9,8 @@ import {
 } from './options-data'
 import type {
   FinancialDataPriceRecord,
-  OptionGreeksRecord,
 } from './options-data'
+import { computeIV, dteToYears, RISK_FREE_RATE } from './black-scholes'
 import { logger } from '../logger'
 
 const log = logger.child({ module: 'scanner' })
@@ -228,6 +228,11 @@ export function runPhase1(records: FinancialDataPriceRecord[]): Phase1Result {
 
 // === Phase 2: IV Screen ===
 
+export interface IVDataPoint {
+  date: string
+  iv: number
+}
+
 interface Phase2Result {
   passed: boolean
   reason?: string
@@ -237,21 +242,21 @@ interface Phase2Result {
   ivRank: number
 }
 
-export function runPhase2(greeksRecords: OptionGreeksRecord[]): Phase2Result {
-  if (greeksRecords.length === 0) {
-    log.debug('Phase 2: no greeks records — cannot compute IV rank')
+export function runPhase2(ivData: IVDataPoint[]): Phase2Result {
+  if (ivData.length === 0) {
+    log.debug('Phase 2: no IV data points — cannot compute IV rank')
     return { passed: false, reason: 'No IV data available', currentIV: 0, ivHigh52w: 0, ivLow52w: 0, ivRank: 0 }
   }
 
-  const sorted = [...greeksRecords].sort((a, b) => b.date.localeCompare(a.date))
-  const currentIV = sorted[0].impliedVolatility
-  const ivValues = sorted.map((r) => r.impliedVolatility)
+  const sorted = [...ivData].sort((a, b) => b.date.localeCompare(a.date))
+  const currentIV = sorted[0].iv
+  const ivValues = sorted.map((r) => r.iv)
   const ivHigh52w = Math.max(...ivValues)
   const ivLow52w = Math.min(...ivValues)
   const ivRank = computeIVRank(currentIV, ivLow52w, ivHigh52w)
 
   log.debug({
-    recordCount: greeksRecords.length,
+    recordCount: ivData.length,
     latestDate: sorted[0].date,
     currentIV,
     ivHigh52w,
@@ -289,7 +294,8 @@ export interface ContractData {
   theta: number
   vega: number
   rho: number
-  impliedVolatility: number
+  // Computed via Black-Scholes
+  computedIV?: number
   // From latest OptionPriceRecord
   pricesDate: string
   open: number
@@ -298,6 +304,8 @@ export interface ContractData {
   close: number
   volume: number
   openInterest?: number
+  // Stock price at the time of the option price record (for IV computation)
+  stockPrice?: number
 }
 
 interface SelectedContract {
@@ -410,7 +418,7 @@ export function selectBestContract(
       theta: cd.theta,
       bid,
       ask,
-      iv: cd.impliedVolatility,
+      iv: cd.computedIV ?? 0,
       openInterest: oi,
       optionVolume: vol,
       premiumYield,
@@ -644,7 +652,12 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
     'Phase 2: ATM put selected for IV data'
   )
 
-  const greeksResult = await fetchOptionGreeks(atmPut.identifier)
+  // Fetch greeks and option prices in parallel for the ATM put
+  const [greeksResult, atmPricesResult] = await Promise.all([
+    fetchOptionGreeks(atmPut.identifier),
+    fetchOptionPrices(atmPut.identifier),
+  ])
+
   if (!greeksResult.success) {
     log.warn({ ticker, contract: atmPut.identifier, error: greeksResult.error }, 'Phase 2: greeks fetch failed — ticker eliminated')
     result.phase2Reason = greeksResult.error
@@ -652,11 +665,40 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
     return result
   }
 
+  if (!atmPricesResult.success) {
+    log.warn({ ticker, contract: atmPut.identifier, error: atmPricesResult.error }, 'Phase 2: ATM option prices fetch failed — ticker eliminated')
+    result.phase2Reason = atmPricesResult.error
+    result.finalReason = `Phase 2 failed: ${atmPricesResult.error}`
+    return result
+  }
+
+  // Build a stock price lookup by date from Phase 1's price history
+  const stockPriceByDate = new Map<string, number>()
+  for (const rec of priceHistory.records) {
+    stockPriceByDate.set(rec.date, rec.close)
+  }
+
+  // Compute IV for each option price record using Black-Scholes
+  const ivDataPoints: IVDataPoint[] = []
+  for (const priceRec of atmPricesResult.records) {
+    const stockClose = stockPriceByDate.get(priceRec.date)
+    if (stockClose === undefined || priceRec.close <= 0) continue
+
+    const dte = computeDTE(new Date(atmPut.expiration), new Date(priceRec.date))
+    if (dte <= 0) continue
+
+    const T = dteToYears(dte)
+    const iv = computeIV(priceRec.close, stockClose, atmPut.strike, T, RISK_FREE_RATE)
+    if (iv !== null) {
+      ivDataPoints.push({ date: priceRec.date, iv })
+    }
+  }
+
   log.debug(
-    { ticker, contract: atmPut.identifier, greeksRecordCount: greeksResult.records.length },
-    'Phase 2: greeks fetched, running IV screen'
+    { ticker, contract: atmPut.identifier, optionPriceRecords: atmPricesResult.records.length, ivDataPoints: ivDataPoints.length },
+    'Phase 2: IV computed from option prices, running IV screen'
   )
-  const p2 = runPhase2(greeksResult.records)
+  const p2 = runPhase2(ivDataPoints)
   result.currentIV = p2.currentIV
   result.ivHigh52w = p2.ivHigh52w
   result.ivLow52w = p2.ivLow52w
@@ -722,6 +764,13 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
     const g = [...gResult.records].sort((a, b) => b.date.localeCompare(a.date))[0]
     const p = [...pResult.records].sort((a, b) => b.date.localeCompare(a.date))[0]
 
+    // Compute IV from latest option price using Black-Scholes
+    const contractDte = computeDTE(new Date(contract.expiration), new Date(p.date))
+    const contractT = dteToYears(contractDte)
+    const contractIV = (p.close > 0 && contractDte > 0)
+      ? computeIV(p.close, p1.stockPrice, contract.strike, contractT, RISK_FREE_RATE) ?? undefined
+      : undefined
+
     const cd: ContractData = {
       identifier: contract.identifier,
       strike: contract.strike,
@@ -733,7 +782,7 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
       theta: g.theta,
       vega: g.vega,
       rho: g.rho,
-      impliedVolatility: g.impliedVolatility,
+      computedIV: contractIV,
       pricesDate: p.date,
       open: p.open,
       high: p.high,
@@ -741,6 +790,7 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
       close: p.close,
       volume: p.volume,
       openInterest: p.openInterest,
+      stockPrice: p1.stockPrice,
     }
 
     contractDataList.push(cd)

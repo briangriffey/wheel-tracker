@@ -37,7 +37,6 @@ export interface ScanResultData {
   delta: number | null
   theta: number | null
   bid: number | null
-  ask: number | null
   iv: number | null
   openInterest: number | null
   optionVolume: number | null
@@ -118,7 +117,6 @@ export const getLatestScanResults = cache(async (): Promise<ScanResultData[]> =>
     delta: decimalToNumber(r.delta),
     theta: decimalToNumber(r.theta),
     bid: decimalToNumber(r.bid),
-    ask: decimalToNumber(r.ask),
     iv: decimalToNumber(r.iv),
     openInterest: r.openInterest,
     optionVolume: r.optionVolume,

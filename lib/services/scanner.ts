@@ -60,10 +60,8 @@ export function computeDeltaScore(delta: number): number {
   return linearScore(rangeMax - absDelta, 0, rangeMax - sweetMin)
 }
 
-export function computeLiquidityScore(openInterest: number, spreadPct: number): number {
-  const oiScore = Math.min(100, (openInterest / SCANNER.PREFERRED_OI) * 100)
-  const spreadScore = spreadPct <= 0 ? 100 : Math.max(0, 100 - (spreadPct / SCANNER.MAX_SPREAD_PCT) * 100)
-  return oiScore * 0.5 + spreadScore * 0.5
+export function computeLiquidityScore(openInterest: number): number {
+  return Math.min(100, (openInterest / SCANNER.PREFERRED_OI) * 100)
 }
 
 export function computeTrendScore(price: number, sma200: number): number {
@@ -105,7 +103,6 @@ export interface ScanTickerResult {
   delta?: number
   theta?: number
   bid?: number
-  ask?: number
   iv?: number
   openInterest?: number
   optionVolume?: number
@@ -314,7 +311,6 @@ interface SelectedContract {
   delta: number
   theta: number
   bid: number
-  ask: number
   iv: number
   openInterest: number
   optionVolume: number
@@ -337,7 +333,6 @@ export function selectBestContract(
   let rejectedDelta = 0
   let rejectedOI = 0
   let rejectedVolume = 0
-  let rejectedSpread = 0
   let rejectedYield = 0
 
   for (const cd of contractDataList) {
@@ -359,7 +354,6 @@ export function selectBestContract(
     }
 
     const bid = cd.close // Use last close as proxy for bid
-    const ask = bid * 1.02 // Estimate ask from close if not available separately
     const oi = cd.openInterest ?? 0
     const vol = cd.volume
 
@@ -381,17 +375,6 @@ export function selectBestContract(
       continue
     }
 
-    const mid = (bid + ask) / 2
-    const spreadPct = mid > 0 ? (ask - bid) / mid : 1
-    if (spreadPct > SCANNER.MAX_SPREAD_PCT) {
-      rejectedSpread++
-      log.debug(
-        { contractData: cd, spreadPct: parseFloat(spreadPct.toFixed(4)), maxSpread: SCANNER.MAX_SPREAD_PCT },
-        'Phase 3: contract rejected — spread too wide'
-      )
-      continue
-    }
-
     const premiumYield = computePremiumYield(bid, cd.strike, dte)
     if (premiumYield < SCANNER.MIN_PREMIUM_YIELD) {
       rejectedYield++
@@ -406,8 +389,6 @@ export function selectBestContract(
       contractData: cd,
       dte,
       bid,
-      ask,
-      spreadPct: parseFloat(spreadPct.toFixed(4)),
       premiumYield: parseFloat(premiumYield.toFixed(2)),
     }, 'Phase 3: contract qualifies as candidate')
 
@@ -417,7 +398,6 @@ export function selectBestContract(
       delta: cd.delta,
       theta: cd.theta,
       bid,
-      ask,
       iv: cd.computedIV ?? 0,
       openInterest: oi,
       optionVolume: vol,
@@ -431,7 +411,6 @@ export function selectBestContract(
     rejectedDelta,
     rejectedOI,
     rejectedVolume,
-    rejectedSpread,
     rejectedYield,
     qualifyingCandidates: candidates.length,
   }, 'Phase 3: contract selection summary')
@@ -474,14 +453,13 @@ export function computeScores(
   ivRank: number,
   delta: number,
   openInterest: number,
-  spreadPct: number,
   stockPrice: number,
   sma200: number
 ): Phase4Scores {
   const yieldScore = linearScore(premiumYield, SCANNER.YIELD_RANGE_MIN, SCANNER.YIELD_RANGE_MAX)
   const ivScore = linearScore(ivRank, SCANNER.IV_RANK_RANGE_MIN, SCANNER.IV_RANK_RANGE_MAX)
   const deltaScore = computeDeltaScore(delta)
-  const liquidityScore = computeLiquidityScore(openInterest, spreadPct)
+  const liquidityScore = computeLiquidityScore(openInterest)
   const trendScore = computeTrendScore(stockPrice, sma200)
 
   const compositeScore =
@@ -497,7 +475,6 @@ export function computeScores(
       ivRank: parseFloat(ivRank.toFixed(1)),
       delta,
       openInterest,
-      spreadPct: parseFloat(spreadPct.toFixed(4)),
     },
     scores: {
       yieldScore: parseFloat(yieldScore.toFixed(1)),
@@ -820,7 +797,6 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
   result.delta = sel.delta
   result.theta = sel.theta
   result.bid = sel.bid
-  result.ask = sel.ask
   result.iv = sel.iv
   result.openInterest = sel.openInterest
   result.optionVolume = sel.optionVolume
@@ -839,14 +815,11 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
   }, 'Phase 3: PASSED — contract selected')
 
   // ── Phase 4: Scoring ─────────────────────────────────────────────────────────
-  const mid = (sel.bid + sel.ask) / 2
-  const spreadPct = mid > 0 ? (sel.ask - sel.bid) / mid : 0
   const scores = computeScores(
     sel.premiumYield,
     p2.ivRank,
     sel.delta,
     sel.openInterest,
-    spreadPct,
     p1.stockPrice,
     p1.sma200!
   )
@@ -974,7 +947,6 @@ export async function runFullScan(userId: string): Promise<FullScanResult> {
       delta: r.delta,
       theta: r.theta,
       bid: r.bid,
-      ask: r.ask,
       iv: r.iv,
       openInterest: r.openInterest,
       optionVolume: r.optionVolume,

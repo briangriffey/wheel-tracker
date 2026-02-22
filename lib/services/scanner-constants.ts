@@ -20,7 +20,6 @@ export const SCANNER = {
   MIN_PREMIUM_YIELD: 8,
   MIN_OPEN_INTEREST: 0,
   MIN_OPTION_VOLUME: 20,
-  MAX_SPREAD_PCT: 0.10,
 
   // Phase 4: Scoring Weights
   WEIGHTS: {

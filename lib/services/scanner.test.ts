@@ -228,26 +228,24 @@ describe('Scanner', () => {
   })
 
   describe('computeLiquidityScore', () => {
-    it('should return high score for high OI and tight spread', () => {
-      const score = computeLiquidityScore(500, 0)
+    it('should return 100 for OI at preferred level', () => {
+      const score = computeLiquidityScore(500)
       expect(score).toBe(100)
     })
 
-    it('should return 50 for half-preferred OI with zero spread', () => {
-      const score = computeLiquidityScore(250, 0)
-      expect(score).toBe(75) // 50 (OI) + 50 (spread component at 100 * 0.5)
+    it('should return 50 for half-preferred OI', () => {
+      const score = computeLiquidityScore(250)
+      expect(score).toBe(50)
     })
 
-    it('should penalize wide spreads', () => {
-      const tight = computeLiquidityScore(500, 0.02)
-      const wide = computeLiquidityScore(500, 0.08)
-      expect(tight).toBeGreaterThan(wide)
+    it('should cap at 100 for OI above preferred level', () => {
+      const score = computeLiquidityScore(1000)
+      expect(score).toBe(100)
     })
 
-    it('should cap OI contribution at preferred level', () => {
-      const atPref = computeLiquidityScore(500, 0.05)
-      const abovePref = computeLiquidityScore(1000, 0.05)
-      expect(atPref).toBe(abovePref)
+    it('should return 0 for zero OI', () => {
+      const score = computeLiquidityScore(0)
+      expect(score).toBe(0)
     })
   })
 
@@ -533,26 +531,26 @@ describe('Scanner', () => {
 
   describe('computeScores', () => {
     it('should produce weighted composite score', () => {
-      const scores = computeScores(16, 45, -0.23, 500, 0.02, 110, 100)
+      const scores = computeScores(16, 45, -0.23, 500, 110, 100)
 
       expect(scores.yieldScore).toBe(50) // 16 is midpoint of 8-24
       expect(scores.ivScore).toBe(50) // 45 is midpoint of 20-70
       expect(scores.deltaScore).toBe(100) // -0.23 is in sweet spot
-      expect(scores.liquidityScore).toBeGreaterThan(0)
+      expect(scores.liquidityScore).toBe(100) // 500 = PREFERRED_OI
       expect(scores.trendScore).toBe(50) // 10% above SMA, max=20%
       expect(scores.compositeScore).toBeGreaterThan(0)
     })
 
     it('should weight yield highest (30%)', () => {
-      const highYield = computeScores(24, 20, -0.20, 100, 0.10, 100, 100)
-      const lowYield = computeScores(8, 20, -0.20, 100, 0.10, 100, 100)
+      const highYield = computeScores(24, 20, -0.20, 100, 100, 100)
+      const lowYield = computeScores(8, 20, -0.20, 100, 100, 100)
 
       expect(highYield.compositeScore).toBeGreaterThan(lowYield.compositeScore)
     })
 
     it('should weight IV second highest (25%)', () => {
-      const highIV = computeScores(16, 70, -0.23, 500, 0, 100, 100)
-      const lowIV = computeScores(16, 20, -0.23, 500, 0, 100, 100)
+      const highIV = computeScores(16, 70, -0.23, 500, 100, 100)
+      const lowIV = computeScores(16, 20, -0.23, 500, 100, 100)
 
       expect(highIV.compositeScore).toBeGreaterThan(lowIV.compositeScore)
     })

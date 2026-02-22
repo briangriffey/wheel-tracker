@@ -227,7 +227,7 @@ export function ScannerClient({
                       Delta
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Bid/Ask
+                      Bid
                     </th>
                     <th
                       className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
@@ -454,9 +454,7 @@ function TickerRow({
           {result.delta !== null ? result.delta.toFixed(4) : '-'}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-          {result.bid !== null && result.ask !== null
-            ? `${formatCurrency(result.bid)} / ${formatCurrency(result.ask)}`
-            : '-'}
+          {result.bid !== null ? formatCurrency(result.bid) : '-'}
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
           {formatPercent(result.ivRank)}

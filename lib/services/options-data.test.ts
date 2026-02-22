@@ -180,15 +180,15 @@ describe('Options Data Service', () => {
   describe('fetchOptionChain', () => {
     // Real API response format — field names differ from our OptionChainRecord interface.
     // The API uses: contract_name, strike_price, expiration_date, put_or_call ("Put"/"Call").
-    // Dates are in the past so the default minDte=0 stopping condition triggers on the first
-    // page, preventing tests from needing to mock multiple fetch calls.
+    // Dates are far in the future (2099) so they always survive the post-filter that strips
+    // contracts with expiration_date < today + minDte.
     const mockChainData = [
       {
         trading_symbol: 'MSFT',
         central_index_key: '0000789019',
         registrant_name: 'MICROSOFT CORP',
-        contract_name: 'MSFT250101P00660000',
-        expiration_date: '2025-01-01',
+        contract_name: 'MSFT990101P00660000',
+        expiration_date: '2099-01-01',
         put_or_call: 'Put',
         strike_price: 660.0,
       },
@@ -196,8 +196,8 @@ describe('Options Data Service', () => {
         trading_symbol: 'MSFT',
         central_index_key: '0000789019',
         registrant_name: 'MICROSOFT CORP',
-        contract_name: 'MSFT250101C00660000',
-        expiration_date: '2025-01-01',
+        contract_name: 'MSFT990101C00660000',
+        expiration_date: '2099-01-01',
         put_or_call: 'Call',
         strike_price: 660.0,
       },
@@ -205,19 +205,17 @@ describe('Options Data Service', () => {
         trading_symbol: 'MSFT',
         central_index_key: '0000789019',
         registrant_name: 'MICROSOFT CORP',
-        contract_name: 'MSFT250103P00620000',
-        expiration_date: '2025-01-03',
+        contract_name: 'MSFT990103P00620000',
+        expiration_date: '2099-01-03',
         put_or_call: 'Put',
         strike_price: 620.0,
       },
     ]
 
     it('should map raw API fields to canonical OptionChainRecord shape', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockChainData),
-      }))
+      vi.stubGlobal('fetch', vi.fn()
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(mockChainData) })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve([]) }))
 
       const result: OptionChainResult = await fetchOptionChain('MSFT')
 
@@ -226,22 +224,20 @@ describe('Options Data Service', () => {
       expect(result.contracts).toHaveLength(3)
 
       // contract_name → identifier
-      expect(result.contracts[0].identifier).toBe('MSFT250101P00660000')
+      expect(result.contracts[0].identifier).toBe('MSFT990101P00660000')
       // strike_price → strike
       expect(result.contracts[0].strike).toBe(660.0)
       // expiration_date → expiration
-      expect(result.contracts[0].expiration).toBe('2025-01-01')
+      expect(result.contracts[0].expiration).toBe('2099-01-01')
       // put_or_call → type (mapped to OptionType enum)
       expect(result.contracts[0].type).toBe(OptionType.Put)
       expect(result.contracts[1].type).toBe(OptionType.Call)
     })
 
     it('should map both Put and Call contracts to their OptionType enum values', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockChainData),
-      }))
+      vi.stubGlobal('fetch', vi.fn()
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(mockChainData) })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve([]) }))
 
       const result = await fetchOptionChain('MSFT')
 
@@ -251,11 +247,9 @@ describe('Options Data Service', () => {
     })
 
     it('should not expose raw API field names on returned contracts', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockChainData),
-      }))
+      vi.stubGlobal('fetch', vi.fn()
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(mockChainData) })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve([]) }))
 
       const result = await fetchOptionChain('MSFT')
       const contract = result.contracts[0] as unknown as Record<string, unknown>
@@ -274,11 +268,9 @@ describe('Options Data Service', () => {
     })
 
     it('should uppercase the ticker', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockChainData),
-      }))
+      vi.stubGlobal('fetch', vi.fn()
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(mockChainData) })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve([]) }))
 
       const result = await fetchOptionChain('msft')
 
@@ -286,11 +278,9 @@ describe('Options Data Service', () => {
     })
 
     it('should call correct API endpoint', async () => {
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(mockChainData),
-      })
+      const mockFetch = vi.fn()
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(mockChainData) })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve([]) })
       vi.stubGlobal('fetch', mockFetch)
 
       await fetchOptionChain('MSFT')
@@ -358,16 +348,17 @@ describe('Options Data Service', () => {
     //
     // The API returns contracts newest-expiration-first. We paginate until we
     // see a contract whose expiration_date < today + minDte. Tests pin "today"
-    // to 2026-02-21 via fake timers.
+    // to 2026-02-21 via fake timers. cutoff = today + 5 = 2026-02-26.
     //
-    // FAR_FUTURE dates (2027+) are beyond the cutoff → keep paginating.
-    // NEAR_TERM dates (2026-02-26 with minDte=5) are below the cutoff → stop.
+    // FAR_FUTURE (2027-12-17) > cutoff → page does not trigger stop, contracts kept.
+    // NEAR_TERM  (2026-02-20) < cutoff → page triggers stop AND contracts are
+    //   stripped by the post-filter (expiration_date >= cutoffDateStr).
 
     describe('Pagination', () => {
       const FIXED_TODAY = new Date('2026-02-21T12:00:00.000Z')
       // today + 5 DTE cutoff = 2026-02-26
-      const FAR_FUTURE = '2027-12-17'  // > cutoff → continue
-      const NEAR_TERM  = '2026-02-20'  // < cutoff → stop
+      const FAR_FUTURE = '2027-12-17'  // > cutoff → keep paginating, contract kept
+      const NEAR_TERM  = '2026-02-20'  // < cutoff → stop pagination, contract filtered out
 
       const makePage = (expiration: string, count = 300) =>
         Array.from({ length: count }, (_, i) => ({
@@ -389,9 +380,12 @@ describe('Options Data Service', () => {
         vi.useRealTimers()
       })
 
-      it('should stop after the first page when it contains a near-term expiration', async () => {
+      it('should stop after one page and filter out near-term contracts from result', async () => {
+        // Page contains 100 FAR_FUTURE + 200 NEAR_TERM. The NEAR_TERM contracts
+        // trigger the stop condition; after stopping, the post-filter discards them.
+        const page = [...makePage(FAR_FUTURE, 100), ...makePage(NEAR_TERM, 200)]
         const mockFetch = vi.fn().mockResolvedValueOnce({
-          ok: true, status: 200, json: () => Promise.resolve(makePage(NEAR_TERM, 300)),
+          ok: true, status: 200, json: () => Promise.resolve(page),
         })
         vi.stubGlobal('fetch', mockFetch)
 
@@ -399,10 +393,12 @@ describe('Options Data Service', () => {
 
         expect(mockFetch).toHaveBeenCalledTimes(1)
         expect(result.success).toBe(true)
-        expect(result.contracts).toHaveLength(300)
+        // Only the 100 FAR_FUTURE contracts survive the post-filter
+        expect(result.contracts).toHaveLength(100)
       })
 
-      it('should fetch a second page when first page has only far-future expirations', async () => {
+      it('should fetch a second page and discard near-term contracts from it', async () => {
+        // Page 1: 300 FAR_FUTURE → continue. Page 2: 50 NEAR_TERM → stop + filtered out.
         const mockFetch = vi.fn()
           .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(FAR_FUTURE, 300)) })
           .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(NEAR_TERM, 50)) })
@@ -413,10 +409,12 @@ describe('Options Data Service', () => {
         expect(mockFetch).toHaveBeenCalledTimes(2)
         expect(mockFetch).toHaveBeenNthCalledWith(2, expect.stringContaining('offset=300'))
         expect(result.success).toBe(true)
-        expect(result.contracts).toHaveLength(350)
+        // Only the 300 FAR_FUTURE contracts from page 1 survive; page 2's NEAR_TERM are filtered
+        expect(result.contracts).toHaveLength(300)
       })
 
-      it('should accumulate records across multiple far-future pages before stopping', async () => {
+      it('should accumulate far-future contracts across pages and discard the stopping page', async () => {
+        // Pages 1+2: FAR_FUTURE → continue, all kept. Page 3: NEAR_TERM → stop + filtered out.
         const mockFetch = vi.fn()
           .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(FAR_FUTURE, 300)) })
           .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(FAR_FUTURE, 300)) })
@@ -428,7 +426,8 @@ describe('Options Data Service', () => {
         expect(mockFetch).toHaveBeenCalledTimes(3)
         expect(mockFetch).toHaveBeenNthCalledWith(2, expect.stringContaining('offset=300'))
         expect(mockFetch).toHaveBeenNthCalledWith(3, expect.stringContaining('offset=600'))
-        expect(result.contracts).toHaveLength(900)
+        // 600 FAR_FUTURE contracts kept; 300 NEAR_TERM contracts from page 3 filtered out
+        expect(result.contracts).toHaveLength(600)
       })
 
       it('should stop on an empty page when no near-term contracts are encountered', async () => {

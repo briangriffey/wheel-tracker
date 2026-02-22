@@ -179,14 +179,16 @@ describe('Options Data Service', () => {
 
   describe('fetchOptionChain', () => {
     // Real API response format — field names differ from our OptionChainRecord interface.
-    // The API uses: contract_name, strike_price, expiration_date, put_or_call ("Put"/"Call")
+    // The API uses: contract_name, strike_price, expiration_date, put_or_call ("Put"/"Call").
+    // Dates are in the past so the default minDte=0 stopping condition triggers on the first
+    // page, preventing tests from needing to mock multiple fetch calls.
     const mockChainData = [
       {
         trading_symbol: 'MSFT',
         central_index_key: '0000789019',
         registrant_name: 'MICROSOFT CORP',
-        contract_name: 'MSFT271217P00660000',
-        expiration_date: '2027-12-17',
+        contract_name: 'MSFT250101P00660000',
+        expiration_date: '2025-01-01',
         put_or_call: 'Put',
         strike_price: 660.0,
       },
@@ -194,8 +196,8 @@ describe('Options Data Service', () => {
         trading_symbol: 'MSFT',
         central_index_key: '0000789019',
         registrant_name: 'MICROSOFT CORP',
-        contract_name: 'MSFT271217C00660000',
-        expiration_date: '2027-12-17',
+        contract_name: 'MSFT250101C00660000',
+        expiration_date: '2025-01-01',
         put_or_call: 'Call',
         strike_price: 660.0,
       },
@@ -203,8 +205,8 @@ describe('Options Data Service', () => {
         trading_symbol: 'MSFT',
         central_index_key: '0000789019',
         registrant_name: 'MICROSOFT CORP',
-        contract_name: 'MSFT271219P00620000',
-        expiration_date: '2027-12-19',
+        contract_name: 'MSFT250103P00620000',
+        expiration_date: '2025-01-03',
         put_or_call: 'Put',
         strike_price: 620.0,
       },
@@ -224,11 +226,11 @@ describe('Options Data Service', () => {
       expect(result.contracts).toHaveLength(3)
 
       // contract_name → identifier
-      expect(result.contracts[0].identifier).toBe('MSFT271217P00660000')
+      expect(result.contracts[0].identifier).toBe('MSFT250101P00660000')
       // strike_price → strike
       expect(result.contracts[0].strike).toBe(660.0)
       // expiration_date → expiration
-      expect(result.contracts[0].expiration).toBe('2027-12-17')
+      expect(result.contracts[0].expiration).toBe('2025-01-01')
       // put_or_call → type (mapped to OptionType enum)
       expect(result.contracts[0].type).toBe(OptionType.Put)
       expect(result.contracts[1].type).toBe(OptionType.Call)
@@ -352,111 +354,107 @@ describe('Options Data Service', () => {
       await expect(fetchOptionChain('MSFT')).rejects.toThrow('FINANCIAL_DATA_API_KEY')
     })
 
-    // === Pagination ===
+    // === Pagination (date-based stopping) ===
+    //
+    // The API returns contracts newest-expiration-first. We paginate until we
+    // see a contract whose expiration_date < today + minDte. Tests pin "today"
+    // to 2026-02-21 via fake timers.
+    //
+    // FAR_FUTURE dates (2027+) are beyond the cutoff → keep paginating.
+    // NEAR_TERM dates (2026-02-26 with minDte=5) are below the cutoff → stop.
 
-    it('should make a second request with offset=300 when first page is full', async () => {
-      const fullPage = Array.from({ length: 300 }, (_, i) => ({
-        trading_symbol: 'MSFT',
-        central_index_key: '0000789019',
-        registrant_name: 'MICROSOFT CORP',
-        contract_name: `MSFT271217P${String(i).padStart(8, '0')}`,
-        expiration_date: '2027-12-17',
-        put_or_call: 'Put',
-        strike_price: 100 + i,
-      }))
-      const lastPage = [mockChainData[0]] // 1 record — signals last page
+    describe('Pagination', () => {
+      const FIXED_TODAY = new Date('2026-02-21T12:00:00.000Z')
+      // today + 5 DTE cutoff = 2026-02-26
+      const FAR_FUTURE = '2027-12-17'  // > cutoff → continue
+      const NEAR_TERM  = '2026-02-20'  // < cutoff → stop
 
-      const mockFetch = vi.fn()
-        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(fullPage) })
-        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(lastPage) })
-      vi.stubGlobal('fetch', mockFetch)
-
-      const result = await fetchOptionChain('MSFT')
-
-      expect(mockFetch).toHaveBeenCalledTimes(2)
-      expect(mockFetch).toHaveBeenNthCalledWith(1, expect.stringContaining('option-chain?identifier=MSFT&key=test-api-key'))
-      expect(mockFetch).toHaveBeenNthCalledWith(2, expect.stringContaining('option-chain?identifier=MSFT&key=test-api-key&offset=300'))
-    })
-
-    it('should accumulate all records across multiple pages', async () => {
-      const page1 = Array.from({ length: 300 }, (_, i) => ({
-        trading_symbol: 'MSFT',
-        central_index_key: '0000789019',
-        registrant_name: 'MICROSOFT CORP',
-        contract_name: `MSFT271217P${String(i).padStart(8, '0')}`,
-        expiration_date: '2027-12-17',
-        put_or_call: 'Put',
-        strike_price: 100 + i,
-      }))
-      const page2 = Array.from({ length: 50 }, (_, i) => ({
-        trading_symbol: 'MSFT',
-        central_index_key: '0000789019',
-        registrant_name: 'MICROSOFT CORP',
-        contract_name: `MSFT271219P${String(i).padStart(8, '0')}`,
-        expiration_date: '2027-12-19',
-        put_or_call: 'Call',
-        strike_price: 200 + i,
-      }))
-
-      const mockFetch = vi.fn()
-        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(page1) })
-        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(page2) })
-      vi.stubGlobal('fetch', mockFetch)
-
-      const result = await fetchOptionChain('MSFT')
-
-      expect(result.success).toBe(true)
-      expect(result.contracts).toHaveLength(350)
-      expect(mockFetch).toHaveBeenCalledTimes(2)
-    })
-
-    it('should stop paginating after three full pages followed by a partial page', async () => {
-      const makeFullPage = (prefix: string) =>
-        Array.from({ length: 300 }, (_, i) => ({
+      const makePage = (expiration: string, count = 300) =>
+        Array.from({ length: count }, (_, i) => ({
           trading_symbol: 'MSFT',
           central_index_key: '0000789019',
           registrant_name: 'MICROSOFT CORP',
-          contract_name: `${prefix}${String(i).padStart(8, '0')}`,
-          expiration_date: '2027-12-17',
+          contract_name: `MSFT${expiration.replace(/-/g, '')}P${String(i).padStart(8, '0')}`,
+          expiration_date: expiration,
           put_or_call: 'Put',
           strike_price: 100 + i,
         }))
 
-      const mockFetch = vi.fn()
-        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makeFullPage('A')) })
-        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makeFullPage('B')) })
-        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makeFullPage('C')) })
-        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve([mockChainData[0]]) })
-      vi.stubGlobal('fetch', mockFetch)
+      beforeEach(() => {
+        vi.useFakeTimers()
+        vi.setSystemTime(FIXED_TODAY)
+      })
 
-      const result = await fetchOptionChain('MSFT')
+      afterEach(() => {
+        vi.useRealTimers()
+      })
 
-      expect(mockFetch).toHaveBeenCalledTimes(4)
-      expect(result.contracts).toHaveLength(901)
-      expect(mockFetch).toHaveBeenNthCalledWith(3, expect.stringContaining('offset=600'))
-      expect(mockFetch).toHaveBeenNthCalledWith(4, expect.stringContaining('offset=900'))
-    })
+      it('should stop after the first page when it contains a near-term expiration', async () => {
+        const mockFetch = vi.fn().mockResolvedValueOnce({
+          ok: true, status: 200, json: () => Promise.resolve(makePage(NEAR_TERM, 300)),
+        })
+        vi.stubGlobal('fetch', mockFetch)
 
-    it('should return error when a subsequent page returns an HTTP error', async () => {
-      const fullPage = Array.from({ length: 300 }, (_, i) => ({
-        trading_symbol: 'MSFT',
-        central_index_key: '0000789019',
-        registrant_name: 'MICROSOFT CORP',
-        contract_name: `MSFT271217P${String(i).padStart(8, '0')}`,
-        expiration_date: '2027-12-17',
-        put_or_call: 'Put',
-        strike_price: 100 + i,
-      }))
+        const result = await fetchOptionChain('MSFT', 5)
 
-      const mockFetch = vi.fn()
-        .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(fullPage) })
-        .mockResolvedValueOnce({ ok: false, status: 429, statusText: 'Too Many Requests' })
-      vi.stubGlobal('fetch', mockFetch)
+        expect(mockFetch).toHaveBeenCalledTimes(1)
+        expect(result.success).toBe(true)
+        expect(result.contracts).toHaveLength(300)
+      })
 
-      const result = await fetchOptionChain('MSFT')
+      it('should fetch a second page when first page has only far-future expirations', async () => {
+        const mockFetch = vi.fn()
+          .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(FAR_FUTURE, 300)) })
+          .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(NEAR_TERM, 50)) })
+        vi.stubGlobal('fetch', mockFetch)
 
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('rate limit')
+        const result = await fetchOptionChain('MSFT', 5)
+
+        expect(mockFetch).toHaveBeenCalledTimes(2)
+        expect(mockFetch).toHaveBeenNthCalledWith(2, expect.stringContaining('offset=300'))
+        expect(result.success).toBe(true)
+        expect(result.contracts).toHaveLength(350)
+      })
+
+      it('should accumulate records across multiple far-future pages before stopping', async () => {
+        const mockFetch = vi.fn()
+          .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(FAR_FUTURE, 300)) })
+          .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(FAR_FUTURE, 300)) })
+          .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(NEAR_TERM, 300)) })
+        vi.stubGlobal('fetch', mockFetch)
+
+        const result = await fetchOptionChain('MSFT', 5)
+
+        expect(mockFetch).toHaveBeenCalledTimes(3)
+        expect(mockFetch).toHaveBeenNthCalledWith(2, expect.stringContaining('offset=300'))
+        expect(mockFetch).toHaveBeenNthCalledWith(3, expect.stringContaining('offset=600'))
+        expect(result.contracts).toHaveLength(900)
+      })
+
+      it('should stop on an empty page when no near-term contracts are encountered', async () => {
+        const mockFetch = vi.fn()
+          .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(FAR_FUTURE, 300)) })
+          .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve([]) })
+        vi.stubGlobal('fetch', mockFetch)
+
+        const result = await fetchOptionChain('MSFT', 5)
+
+        expect(mockFetch).toHaveBeenCalledTimes(2)
+        expect(result.success).toBe(true)
+        expect(result.contracts).toHaveLength(300)
+      })
+
+      it('should return error when a subsequent page returns an HTTP error', async () => {
+        const mockFetch = vi.fn()
+          .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve(makePage(FAR_FUTURE, 300)) })
+          .mockResolvedValueOnce({ ok: false, status: 429, statusText: 'Too Many Requests' })
+        vi.stubGlobal('fetch', mockFetch)
+
+        const result = await fetchOptionChain('MSFT', 5)
+
+        expect(result.success).toBe(false)
+        expect(result.error).toContain('rate limit')
+      })
     })
   })
 

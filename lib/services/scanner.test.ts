@@ -198,8 +198,8 @@ describe('Scanner', () => {
     })
 
     it('should return 0 outside target range', () => {
-      expect(computeDeltaScore(-0.15)).toBe(0)
-      expect(computeDeltaScore(-0.35)).toBe(0)
+      expect(computeDeltaScore(-0.10)).toBe(0)  // abs 0.10 < TARGET_MAX_DELTA abs 0.12
+      expect(computeDeltaScore(-0.35)).toBe(0)  // abs 0.35 > TARGET_MIN_DELTA abs 0.30
     })
 
     it('should scale between edge and sweet spot', () => {
@@ -208,9 +208,9 @@ describe('Scanner', () => {
       expect(score).toBeLessThan(100)
     })
 
-    it('should return score at target edge', () => {
-      const score = computeDeltaScore(-0.20)
-      expect(score).toBe(0) // Edge of range
+    it('should return 0 at the minimum target edge', () => {
+      const score = computeDeltaScore(-0.12)  // abs 0.12 = TARGET_MAX_DELTA abs — min edge of range
+      expect(score).toBe(0)
     })
   })
 

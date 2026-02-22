@@ -227,21 +227,41 @@ export async function fetchStockPriceHistory(ticker: string): Promise<StockPrice
   }
 }
 
-/** Number of records returned per page by the option-chain endpoint. */
+/** Number of records per page for the option-chain offset parameter. */
 const OPTION_CHAIN_PAGE_SIZE = 300
 
 /**
- * Fetch the option chain for a ticker.
- * The API returns at most 300 records per request. This function paginates
- * automatically using the `offset` query param until a partial page is
- * returned, ensuring we collect all contracts including the most recent ones.
+ * Returns "YYYY-MM-DD" for today + days, in local time.
  */
-export async function fetchOptionChain(ticker: string): Promise<OptionChainResult> {
+function dateStringPlusDays(days: number): string {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() + days)
+  return d.toISOString().split('T')[0]
+}
+
+/**
+ * Fetch the option chain for a ticker.
+ *
+ * The API returns at most 300 records per request. This function paginates
+ * using the `offset` query param, stopping as soon as a page contains a
+ * contract whose expiration_date is earlier than today + minDte. The API
+ * returns contracts newest-expiration-first, so this guarantees we collect
+ * every contract in and beyond our target DTE window without fetching pages
+ * of already-expired contracts.
+ *
+ * @param minDte  Stop fetching once a record with expiration_date < today+minDte
+ *                is seen. Defaults to 0 (stop only on an empty page).
+ */
+export async function fetchOptionChain(ticker: string, minDte = 0): Promise<OptionChainResult> {
   validateApiKey()
 
   const endpoint = 'option-chain'
+  const cutoffDateStr = dateStringPlusDays(minDte)
   const allRaw: RawOptionChainRecord[] = []
   let offset = 0
+
+  log.debug({ ticker, cutoffDateStr, minDte }, 'fetchOptionChain: pagination cutoff computed')
 
   try {
     while (true) {
@@ -278,10 +298,14 @@ export async function fetchOptionChain(ticker: string): Promise<OptionChainResul
         return { ticker, contracts: [], success: false, error: `No option chain data for ${ticker}` }
       }
 
-      // An empty page at offset=0 means no data at all
-      if (page.length === 0 && offset === 0) {
-        log.warn({ endpoint, identifier: ticker }, 'Empty response on first page')
-        return { ticker, contracts: [], success: false, error: `No option chain data for ${ticker}` }
+      // Empty page: no data (at offset 0) or natural end of the dataset
+      if (page.length === 0) {
+        if (offset === 0) {
+          log.warn({ endpoint, identifier: ticker }, 'Empty response on first page')
+          return { ticker, contracts: [], success: false, error: `No option chain data for ${ticker}` }
+        }
+        log.debug({ endpoint, identifier: ticker, offset }, 'Empty page — end of data')
+        break
       }
 
       allRaw.push(...page)
@@ -291,8 +315,14 @@ export async function fetchOptionChain(ticker: string): Promise<OptionChainResul
         'Page accumulated'
       )
 
-      // Fewer than PAGE_SIZE records means this was the last page
-      if (page.length < OPTION_CHAIN_PAGE_SIZE) {
+      // Stop once we've reached contracts that expire before our DTE window.
+      // Subsequent pages would only contain shorter-dated / expired contracts.
+      const hasEarlyExpiry = page.some((r) => r.expiration_date < cutoffDateStr)
+      if (hasEarlyExpiry) {
+        log.debug(
+          { endpoint, identifier: ticker, offset, cutoffDateStr },
+          'Page contains contract below DTE cutoff — stopping pagination'
+        )
         break
       }
 
@@ -368,7 +398,7 @@ export async function fetchOptionGreeks(contractName: string): Promise<OptionGre
 
     const data = (await response.json()) as OptionGreeksRecord[]
 
-    log.debug({ endpoint, identifier: contractName, payload: data }, 'Full response payload')
+    log.info({ endpoint, identifier: contractName, payload: JSON.stringify(response.json()), }, 'Full response payload')
 
     if (!Array.isArray(data) || data.length === 0) {
       log.warn(

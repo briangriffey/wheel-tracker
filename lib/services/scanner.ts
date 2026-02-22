@@ -600,7 +600,7 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
 
   // ── Phase 2: IV Screen ───────────────────────────────────────────────────────
   log.debug({ ticker }, 'Phase 2: fetching option chain')
-  const chainResult = await fetchOptionChain(ticker)
+  const chainResult = await fetchOptionChain(ticker, SCANNER.TARGET_MIN_DTE)
 
   if (!chainResult.success) {
     log.warn({ ticker, error: chainResult.error }, 'Phase 2: option chain fetch failed — ticker eliminated')

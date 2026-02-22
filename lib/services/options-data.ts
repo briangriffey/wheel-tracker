@@ -329,8 +329,11 @@ export async function fetchOptionChain(ticker: string, minDte = 0): Promise<Opti
       offset += OPTION_CHAIN_PAGE_SIZE
     }
 
+    //Remove all of the contracts that are not within the DTE window
+    const rawContractsWithValidDates = allRaw.filter((r) => r.expiration_date >= cutoffDateStr)
+
     // Map raw API field names to our canonical OptionChainRecord shape
-    const contracts: OptionChainRecord[] = allRaw.map((r) => ({
+    const contracts: OptionChainRecord[] = rawContractsWithValidDates.map((r) => ({
       identifier: r.contract_name,
       strike: r.strike_price,
       expiration: r.expiration_date,

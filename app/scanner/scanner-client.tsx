@@ -3,13 +3,11 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/design-system/button/button'
-import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/design-system/input/input'
 import { Badge } from '@/components/design-system/badge/badge'
 import {
   addWatchlistTicker,
   removeWatchlistTicker,
-  triggerManualScan,
 } from '@/lib/actions/watchlist'
 import type { WatchlistTickerData } from '@/lib/actions/watchlist'
 import type { ScanResultData, ScanMetadata } from '@/lib/queries/scanner'
@@ -35,9 +33,6 @@ export function ScannerClient({
   const [tickerInput, setTickerInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [expandedTicker, setExpandedTicker] = useState<string | null>(null)
-  const [isScanning, setIsScanning] = useState(false)
-  const [scanError, setScanError] = useState<string | null>(null)
-  const [showScanConfirm, setShowScanConfirm] = useState(false)
   const [sortField, setSortField] = useState<SortField>('compositeScore')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
@@ -65,20 +60,6 @@ export function ScannerClient({
     if (e.key === 'Enter') {
       e.preventDefault()
       handleAddTicker()
-    }
-  }
-
-  const handleRunScan = async () => {
-    setIsScanning(true)
-    setScanError(null)
-
-    const result = await triggerManualScan()
-    setIsScanning(false)
-
-    if (result.success) {
-      startTransition(() => router.refresh())
-    } else {
-      setScanError(result.error)
     }
   }
 
@@ -145,30 +126,11 @@ export function ScannerClient({
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Options Scanner</h1>
-            <p className="text-gray-600 mt-2">
-              Scan your watchlist for wheel strategy put-selling candidates
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => setShowScanConfirm(true)}
-              loading={isScanning}
-              disabled={isScanning || initialWatchlist.length === 0}
-            >
-              {isScanning ? 'Scanning...' : 'Run Scan'}
-            </Button>
-            {isScanning && (
-              <p className="text-xs text-gray-500">
-                This may take several minutes
-              </p>
-            )}
-            {scanError && <p className="text-xs text-red-600">{scanError}</p>}
-          </div>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Options Scanner</h1>
+          <p className="text-gray-600 mt-2">
+            Your watchlist is scanned automatically after market close each day
+          </p>
         </div>
 
         {/* Scan Metadata */}
@@ -211,7 +173,7 @@ export function ScannerClient({
                 <h4 className="font-semibold text-gray-900 mb-1">Getting Started</h4>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>Add tickers to your watchlist at the bottom of the page</li>
-                  <li>The scanner runs automatically after market close each day, or you can trigger a manual scan</li>
+                  <li>The scanner runs automatically after market close each day (around 5:00 PM ET)</li>
                 </ul>
               </div>
 
@@ -381,8 +343,7 @@ export function ScannerClient({
           <div className="bg-white rounded-lg shadow p-12 text-center mb-6">
             <p className="text-gray-500 text-lg">No scan results yet.</p>
             <p className="text-sm text-gray-400 mt-1">
-              Add tickers to your watchlist below, then click &quot;Run Scan&quot; or wait for
-              the nightly scan.
+              Add tickers to your watchlist below. Results will appear after the next nightly scan.
             </p>
           </div>
         )}
@@ -502,44 +463,6 @@ export function ScannerClient({
             )}
           </div>
         </div>
-        {/* Scan Confirmation Dialog */}
-        <Dialog
-          isOpen={showScanConfirm}
-          onClose={() => setShowScanConfirm(false)}
-          title="Run Manual Scan?"
-          maxWidth="md"
-        >
-          <div className="space-y-3 text-sm text-gray-600">
-            <p>
-              The scanner runs <span className="font-medium text-gray-900">automatically every day after market close</span> (around 5:00 PM ET).
-            </p>
-            <p>
-              Results will be populated overnight — no need to manually trigger unless you want fresh results right now.
-            </p>
-            <p>
-              A manual scan may take <span className="font-medium text-gray-900">several minutes</span> depending on watchlist size.
-            </p>
-          </div>
-          <div className="mt-6 flex justify-end gap-3">
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => setShowScanConfirm(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => {
-                setShowScanConfirm(false)
-                handleRunScan()
-              }}
-            >
-              Run Scan Now
-            </Button>
-          </div>
-        </Dialog>
       </div>
     </div>
   )

@@ -38,6 +38,7 @@
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "lightweight-charts": "^5.1.0",
     "lucide-react": "^0.564.0",
     "next": "^15.1.5",
     "next-auth": "5.0.0-beta.30",

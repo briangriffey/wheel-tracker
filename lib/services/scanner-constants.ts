@@ -1,6 +1,6 @@
 export const SCANNER = {
   // Phase 1: Stock Universe Filter
-  MIN_PRICE: 20,
+  MIN_PRICE: 13,
   MAX_PRICE: 150,
   MIN_AVG_VOLUME: 1_000_000,
   SMA_PERIOD: 200,
@@ -11,10 +11,10 @@ export const SCANNER = {
   MIN_IV_RANK: 20,
 
   // Phase 3: Option Selection
-  TARGET_MIN_DTE: 30,
+  TARGET_MIN_DTE: 5,
   TARGET_MAX_DTE: 45,
   TARGET_MIN_DELTA: -0.30,
-  TARGET_MAX_DELTA: -0.20,
+  TARGET_MAX_DELTA: -0.12,
   DELTA_SWEET_SPOT_MIN: -0.25,
   DELTA_SWEET_SPOT_MAX: -0.22,
   MIN_PREMIUM_YIELD: 8,

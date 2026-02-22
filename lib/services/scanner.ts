@@ -343,7 +343,7 @@ export function selectBestContract(
 
     if (cd.delta > SCANNER.TARGET_MAX_DELTA || cd.delta < SCANNER.TARGET_MIN_DELTA) {
       rejectedDelta++
-      log.debug(
+      log.info(
         { contractData: cd, minDelta: SCANNER.TARGET_MIN_DELTA, maxDelta: SCANNER.TARGET_MAX_DELTA },
         'Phase 3: contract rejected — delta out of range'
       )
@@ -357,7 +357,7 @@ export function selectBestContract(
 
     if (oi < SCANNER.MIN_OPEN_INTEREST) {
       rejectedOI++
-      log.debug(
+      log.info(
         { contractData: cd, minOI: SCANNER.MIN_OPEN_INTEREST },
         'Phase 3: contract rejected — low open interest'
       )
@@ -366,7 +366,7 @@ export function selectBestContract(
 
     if (vol < SCANNER.MIN_OPTION_VOLUME) {
       rejectedVolume++
-      log.debug(
+      log.info(
         { contractData: cd, minVolume: SCANNER.MIN_OPTION_VOLUME },
         'Phase 3: contract rejected — low volume'
       )
@@ -387,14 +387,14 @@ export function selectBestContract(
     const premiumYield = computePremiumYield(bid, cd.strike, dte)
     if (premiumYield < SCANNER.MIN_PREMIUM_YIELD) {
       rejectedYield++
-      log.debug(
+      log.info(
         { contractData: cd, premiumYield: parseFloat(premiumYield.toFixed(2)), minYield: SCANNER.MIN_PREMIUM_YIELD },
         'Phase 3: contract rejected — premium yield too low'
       )
       continue
     }
 
-    log.debug({
+    log.info({
       contractData: cd,
       dte,
       bid,

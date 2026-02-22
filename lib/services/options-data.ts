@@ -398,7 +398,7 @@ export async function fetchOptionGreeks(contractName: string): Promise<OptionGre
 
     const data = (await response.json()) as OptionGreeksRecord[]
 
-    log.info({ endpoint, identifier: contractName, payload: JSON.stringify(response.json()), }, 'Full response payload')
+    log.info({ endpoint, identifier: contractName, payload: JSON.stringify(data), }, 'Full response payload')
 
     if (!Array.isArray(data) || data.length === 0) {
       log.warn(

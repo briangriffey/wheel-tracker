@@ -568,7 +568,8 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
 
   // Persist the 60 most recent OHLCV records for charting
   try {
-    const recentRecords = priceHistory.records.slice(-60)
+    //Prices come in with the most recent being first and goes backwards
+    const recentRecords = priceHistory.records.slice(0, 60)
     await prisma.historicalStockPrice.deleteMany({
       where: { ticker },
     })

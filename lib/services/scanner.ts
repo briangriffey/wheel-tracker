@@ -9,9 +9,7 @@ import {
 } from './options-data'
 import type {
   FinancialDataPriceRecord,
-  OptionChainRecord,
   OptionGreeksRecord,
-  OptionPriceRecord,
 } from './options-data'
 import { logger } from '../logger'
 
@@ -274,8 +272,36 @@ export function runPhase2(greeksRecords: OptionGreeksRecord[]): Phase2Result {
 
 // === Phase 3: Option Selection ===
 
+/**
+ * A fully hydrated contract: chain fields joined with the latest greeks
+ * and price data. Built in scanTicker before calling selectBestContract.
+ */
+export interface ContractData {
+  // From OptionChainRecord
+  identifier: string
+  strike: number
+  expiration: string
+  type: OptionType
+  // From latest OptionGreeksRecord
+  greeksDate: string
+  delta: number
+  gamma: number
+  theta: number
+  vega: number
+  rho: number
+  impliedVolatility: number
+  // From latest OptionPriceRecord
+  pricesDate: string
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+  openInterest?: number
+}
+
 interface SelectedContract {
-  contract: OptionChainRecord
+  contract: ContractData
   dte: number
   delta: number
   theta: number
@@ -294,23 +320,20 @@ interface Phase3Result {
 }
 
 export function selectBestContract(
-  putContracts: OptionChainRecord[],
-  greeksMap: Map<string, OptionGreeksRecord>,
-  pricesMap: Map<string, OptionPriceRecord>,
+  contractDataList: ContractData[],
   now: Date
 ): Phase3Result {
   const candidates: SelectedContract[] = []
 
   let rejectedDte = 0
-  let rejectedMissingData = 0
   let rejectedDelta = 0
   let rejectedOI = 0
   let rejectedVolume = 0
   let rejectedSpread = 0
   let rejectedYield = 0
 
-  for (const contract of putContracts) {
-    const expDate = new Date(contract.expiration)
+  for (const cd of contractDataList) {
+    const expDate = new Date(cd.expiration)
     const dte = computeDTE(expDate, now)
 
     if (dte < SCANNER.TARGET_MIN_DTE || dte > SCANNER.TARGET_MAX_DTE) {
@@ -318,36 +341,24 @@ export function selectBestContract(
       continue
     }
 
-    const greeks = greeksMap.get(contract.identifier)
-    const prices = pricesMap.get(contract.identifier)
-    if (!greeks || !prices) {
-      rejectedMissingData++
-      log.debug(
-        { identifier: contract.identifier, dte, hasGreeks: !!greeks, hasPrices: !!prices },
-        'Phase 3: contract skipped — missing greeks or prices data'
-      )
-      continue
-    }
-
-    const delta = greeks.delta
-    if (delta > SCANNER.TARGET_MAX_DELTA || delta < SCANNER.TARGET_MIN_DELTA) {
+    if (cd.delta > SCANNER.TARGET_MAX_DELTA || cd.delta < SCANNER.TARGET_MIN_DELTA) {
       rejectedDelta++
       log.debug(
-        { identifier: contract.identifier, delta, minDelta: SCANNER.TARGET_MIN_DELTA, maxDelta: SCANNER.TARGET_MAX_DELTA },
+        { contractData: cd, minDelta: SCANNER.TARGET_MIN_DELTA, maxDelta: SCANNER.TARGET_MAX_DELTA },
         'Phase 3: contract rejected — delta out of range'
       )
       continue
     }
 
-    const bid = prices.close // Use last close as proxy for bid
+    const bid = cd.close // Use last close as proxy for bid
     const ask = bid * 1.02 // Estimate ask from close if not available separately
-    const oi = prices.openInterest ?? 0
-    const vol = prices.volume
+    const oi = cd.openInterest ?? 0
+    const vol = cd.volume
 
     if (oi < SCANNER.MIN_OPEN_INTEREST) {
       rejectedOI++
       log.debug(
-        { identifier: contract.identifier, openInterest: oi, minOI: SCANNER.MIN_OPEN_INTEREST },
+        { contractData: cd, minOI: SCANNER.MIN_OPEN_INTEREST },
         'Phase 3: contract rejected — low open interest'
       )
       continue
@@ -356,7 +367,7 @@ export function selectBestContract(
     if (vol < SCANNER.MIN_OPTION_VOLUME) {
       rejectedVolume++
       log.debug(
-        { identifier: contract.identifier, volume: vol, minVolume: SCANNER.MIN_OPTION_VOLUME },
+        { contractData: cd, minVolume: SCANNER.MIN_OPTION_VOLUME },
         'Phase 3: contract rejected — low volume'
       )
       continue
@@ -367,44 +378,39 @@ export function selectBestContract(
     if (spreadPct > SCANNER.MAX_SPREAD_PCT) {
       rejectedSpread++
       log.debug(
-        { identifier: contract.identifier, spreadPct: parseFloat(spreadPct.toFixed(4)), maxSpread: SCANNER.MAX_SPREAD_PCT },
+        { contractData: cd, spreadPct: parseFloat(spreadPct.toFixed(4)), maxSpread: SCANNER.MAX_SPREAD_PCT },
         'Phase 3: contract rejected — spread too wide'
       )
       continue
     }
 
-    const premiumYield = computePremiumYield(bid, contract.strike, dte)
+    const premiumYield = computePremiumYield(bid, cd.strike, dte)
     if (premiumYield < SCANNER.MIN_PREMIUM_YIELD) {
       rejectedYield++
       log.debug(
-        { identifier: contract.identifier, premiumYield: parseFloat(premiumYield.toFixed(2)), minYield: SCANNER.MIN_PREMIUM_YIELD },
+        { contractData: cd, premiumYield: parseFloat(premiumYield.toFixed(2)), minYield: SCANNER.MIN_PREMIUM_YIELD },
         'Phase 3: contract rejected — premium yield too low'
       )
       continue
     }
 
     log.debug({
-      identifier: contract.identifier,
-      strike: contract.strike,
-      expiration: contract.expiration,
+      contractData: cd,
       dte,
-      delta,
       bid,
       ask,
-      openInterest: oi,
-      volume: vol,
       spreadPct: parseFloat(spreadPct.toFixed(4)),
       premiumYield: parseFloat(premiumYield.toFixed(2)),
     }, 'Phase 3: contract qualifies as candidate')
 
     candidates.push({
-      contract,
+      contract: cd,
       dte,
-      delta,
-      theta: greeks.theta,
+      delta: cd.delta,
+      theta: cd.theta,
       bid,
       ask,
-      iv: greeks.impliedVolatility,
+      iv: cd.impliedVolatility,
       openInterest: oi,
       optionVolume: vol,
       premiumYield,
@@ -412,9 +418,8 @@ export function selectBestContract(
   }
 
   log.debug({
-    totalPuts: putContracts.length,
+    totalContracts: contractDataList.length,
     rejectedDte,
-    rejectedMissingData,
     rejectedDelta,
     rejectedOI,
     rejectedVolume,
@@ -680,8 +685,7 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
     dteMax: SCANNER.TARGET_MAX_DTE,
   }, 'Phase 3: filtered puts to DTE window')
 
-  const greeksMap = new Map<string, OptionGreeksRecord>()
-  const pricesMap = new Map<string, OptionPriceRecord>()
+  const contractDataList: ContractData[] = []
 
   for (const contract of candidatePuts) {
     log.debug({ ticker, contract: contract.identifier, strike: contract.strike, expiration: contract.expiration }, 'Phase 3: fetching greeks + prices for candidate contract')
@@ -691,41 +695,56 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
       fetchOptionPrices(contract.identifier),
     ])
 
-    if (gResult.success && gResult.records.length > 0) {
-      const latestGreeks = [...gResult.records].sort((a, b) => b.date.localeCompare(a.date))[0]
-      greeksMap.set(contract.identifier, latestGreeks)
-      log.debug(
-        { ticker, contract: contract.identifier, date: latestGreeks.date, delta: latestGreeks.delta, iv: latestGreeks.impliedVolatility, theta: latestGreeks.theta },
-        'Phase 3: greeks loaded for contract'
-      )
-    } else {
+    if (!gResult.success || gResult.records.length === 0) {
       log.warn(
         { ticker, contract: contract.identifier, success: gResult.success, recordCount: gResult.records.length, error: gResult.error },
-        'Phase 3: greeks fetch failed or returned no records for contract'
+        'Phase 3: greeks fetch failed or returned no records — skipping contract'
       )
+      continue
     }
 
-    if (pResult.success && pResult.records.length > 0) {
-      const latestPrices = [...pResult.records].sort((a, b) => b.date.localeCompare(a.date))[0]
-      pricesMap.set(contract.identifier, latestPrices)
-      log.debug(
-        { ticker, contract: contract.identifier, date: latestPrices.date, close: latestPrices.close, volume: latestPrices.volume, openInterest: latestPrices.openInterest ?? null },
-        'Phase 3: prices loaded for contract'
-      )
-    } else {
+    if (!pResult.success || pResult.records.length === 0) {
       log.warn(
         { ticker, contract: contract.identifier, success: pResult.success, recordCount: pResult.records.length, error: pResult.error },
-        'Phase 3: prices fetch failed or returned no records for contract'
+        'Phase 3: prices fetch failed or returned no records — skipping contract'
       )
+      continue
     }
+
+    const g = [...gResult.records].sort((a, b) => b.date.localeCompare(a.date))[0]
+    const p = [...pResult.records].sort((a, b) => b.date.localeCompare(a.date))[0]
+
+    const cd: ContractData = {
+      identifier: contract.identifier,
+      strike: contract.strike,
+      expiration: contract.expiration,
+      type: contract.type,
+      greeksDate: g.date,
+      delta: g.delta,
+      gamma: g.gamma,
+      theta: g.theta,
+      vega: g.vega,
+      rho: g.rho,
+      impliedVolatility: g.impliedVolatility,
+      pricesDate: p.date,
+      open: p.open,
+      high: p.high,
+      low: p.low,
+      close: p.close,
+      volume: p.volume,
+      openInterest: p.openInterest,
+    }
+
+    contractDataList.push(cd)
+    log.debug({ ticker, contractData: cd }, 'Phase 3: contract data assembled')
   }
 
   log.debug(
-    { ticker, candidateContracts: candidatePuts.length, greeksLoaded: greeksMap.size, pricesLoaded: pricesMap.size },
+    { ticker, candidateContracts: candidatePuts.length, contractDataAssembled: contractDataList.length },
     'Phase 3: data loaded for all candidates, running selection'
   )
 
-  const p3 = selectBestContract(candidatePuts, greeksMap, pricesMap, now)
+  const p3 = selectBestContract(contractDataList, now)
   result.passedPhase3 = p3.passed
   result.phase3Reason = p3.reason
 

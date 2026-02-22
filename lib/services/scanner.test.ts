@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { OptionType } from './options-data'
-import type { FinancialDataPriceRecord, OptionChainRecord, OptionGreeksRecord, OptionPriceRecord } from './options-data'
+import type { FinancialDataPriceRecord, OptionGreeksRecord } from './options-data'
+import type { ContractData } from './scanner'
 import { SCANNER } from './scanner-constants'
 
 // Mock dependencies
@@ -443,82 +444,65 @@ describe('Scanner', () => {
   describe('selectBestContract', () => {
     const now = new Date('2026-02-14')
 
-    function makePut(strike: number, expDays: number): OptionChainRecord {
+    function makeContractData(strike: number, expDays: number, overrides: Partial<ContractData> = {}): ContractData {
       const exp = new Date(now.getTime() + expDays * 86400000)
+      const identifier = `TEST${exp.toISOString().slice(2, 10).replace(/-/g, '')}P${String(strike * 1000).padStart(8, '0')}`
       return {
-        identifier: `TEST${exp.toISOString().slice(2, 10).replace(/-/g, '')}P${String(strike * 1000).padStart(8, '0')}`,
+        identifier,
         strike,
         expiration: exp.toISOString().slice(0, 10),
         type: OptionType.Put,
+        greeksDate: '2026-02-14',
+        delta: -0.23,
+        gamma: 0.015,
+        theta: -0.045,
+        vega: 0.32,
+        rho: -0.08,
+        impliedVolatility: 0.30,
+        pricesDate: '2026-02-14',
+        open: 2.0,
+        high: 2.5,
+        low: 1.9,
+        close: 2.20,
+        volume: 50,
+        openInterest: 600,
+        ...overrides,
       }
     }
 
     it('should select the best yielding contract', () => {
-      const contracts = [makePut(95, 35), makePut(90, 35)]
+      const contracts = [makeContractData(95, 35), makeContractData(90, 35)]
 
-      const greeksMap = new Map<string, OptionGreeksRecord>()
-      const pricesMap = new Map<string, OptionPriceRecord>()
-
-      for (const c of contracts) {
-        greeksMap.set(c.identifier, {
-          date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.30,
-        })
-        pricesMap.set(c.identifier, {
-          date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 50, openInterest: 600,
-        })
-      }
-
-      const result = selectBestContract(contracts, greeksMap, pricesMap, now)
+      const result = selectBestContract(contracts, now)
       expect(result.passed).toBe(true)
       expect(result.selected).toBeDefined()
       expect(result.selected!.premiumYield).toBeGreaterThan(0)
     })
 
     it('should reject contracts outside DTE range', () => {
-      const contracts = [makePut(95, 10), makePut(90, 60)] // Too early, too late
-      const greeksMap = new Map<string, OptionGreeksRecord>()
-      const pricesMap = new Map<string, OptionPriceRecord>()
+      // TARGET_MIN_DTE=5, TARGET_MAX_DTE=45 — use 2 (too short) and 60 (too long)
+      const contracts = [makeContractData(95, 2), makeContractData(90, 60)]
 
-      const result = selectBestContract(contracts, greeksMap, pricesMap, now)
+      const result = selectBestContract(contracts, now)
       expect(result.passed).toBe(false)
     })
 
     it('should reject contracts with delta outside range', () => {
-      const contracts = [makePut(95, 35)]
+      const contracts = [makeContractData(95, 35, { delta: -0.10 })]
 
-      const greeksMap = new Map<string, OptionGreeksRecord>()
-      greeksMap.set(contracts[0].identifier, {
-        date: '2026-02-14', delta: -0.10, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.30,
-      })
-
-      const pricesMap = new Map<string, OptionPriceRecord>()
-      pricesMap.set(contracts[0].identifier, {
-        date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 50, openInterest: 600,
-      })
-
-      const result = selectBestContract(contracts, greeksMap, pricesMap, now)
+      const result = selectBestContract(contracts, now)
       expect(result.passed).toBe(false)
     })
 
     it('should reject contracts with low open interest', () => {
-      const contracts = [makePut(95, 35)]
+      const contracts = [makeContractData(95, 35, { openInterest: 50 })] // Below MIN_OPEN_INTEREST (100)
 
-      const greeksMap = new Map<string, OptionGreeksRecord>()
-      greeksMap.set(contracts[0].identifier, {
-        date: '2026-02-14', delta: -0.23, gamma: 0.015, theta: -0.045, vega: 0.32, rho: -0.08, impliedVolatility: 0.30,
-      })
-
-      const pricesMap = new Map<string, OptionPriceRecord>()
-      pricesMap.set(contracts[0].identifier, {
-        date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 50, openInterest: 50, // Below 100
-      })
-
-      const result = selectBestContract(contracts, greeksMap, pricesMap, now)
+      const result = selectBestContract(contracts, now)
       expect(result.passed).toBe(false)
     })
 
     it('should return failure message when no candidates', () => {
-      const result = selectBestContract([], new Map(), new Map(), now)
+      const result = selectBestContract([], now)
       expect(result.passed).toBe(false)
       expect(result.reason).toContain('No contracts')
     })

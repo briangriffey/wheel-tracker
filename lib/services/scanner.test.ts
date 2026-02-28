@@ -49,6 +49,9 @@ const {
   computeLiquidityScore,
   computeTrendScore,
   computeDTE,
+  computeEMA,
+  computeRollingVWAP,
+  computeMeanReversionScore,
   runPhase1,
   runPhase2,
   selectBestContract,
@@ -273,6 +276,99 @@ describe('Scanner', () => {
     })
   })
 
+  describe('computeEMA', () => {
+    it('returns null when insufficient data', () => {
+      expect(computeEMA([100, 101, 102], 8)).toBeNull()
+    })
+
+    it('computes EMA correctly for a known sequence', () => {
+      // 10 values, newest-first: [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+      // Chronological: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      // SMA seed (first 8): (1+2+3+4+5+6+7+8)/8 = 4.5
+      // multiplier = 2/(8+1) = 0.2222
+      // EMA after 9th: (9 - 4.5) * 0.2222 + 4.5 = 5.5
+      // EMA after 10th: (10 - 5.5) * 0.2222 + 5.5 = 6.5
+      const closes = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+      const result = computeEMA(closes, 8)
+      expect(result).toBeCloseTo(6.5, 1)
+    })
+
+    it('equals SMA when period equals data length', () => {
+      const closes = [5, 4, 3, 2, 1] // chronological: [1,2,3,4,5], SMA = 3
+      const result = computeEMA(closes, 5)
+      expect(result).toBeCloseTo(3, 5)
+    })
+  })
+
+  describe('computeRollingVWAP', () => {
+    it('returns null when insufficient data', () => {
+      const records = [{ high: 10, low: 8, close: 9, volume: 100 }]
+      expect(computeRollingVWAP(records, 20)).toBeNull()
+    })
+
+    it('returns null when total volume is zero', () => {
+      const records = Array.from({ length: 20 }, () => ({
+        high: 10, low: 8, close: 9, volume: 0,
+      }))
+      expect(computeRollingVWAP(records, 20)).toBeNull()
+    })
+
+    it('weights by volume correctly', () => {
+      // Day 1 (newest): typical = (12+8+10)/3 = 10, volume = 1000
+      // Day 2: typical = (22+18+20)/3 = 20, volume = 100
+      // VWAP = (10*1000 + 20*100) / (1000+100) = 12000/1100 ≈ 10.909
+      const records = [
+        { high: 12, low: 8, close: 10, volume: 1000 },
+        { high: 22, low: 18, close: 20, volume: 100 },
+      ]
+      const result = computeRollingVWAP(records, 2)
+      expect(result).toBeCloseTo(10.909, 2)
+    })
+
+    it('high-volume days dominate the result', () => {
+      // One high-volume day at $50, many low-volume days at $100
+      const records = [
+        { high: 52, low: 48, close: 50, volume: 10_000_000 },
+        ...Array.from({ length: 19 }, () => ({
+          high: 102, low: 98, close: 100, volume: 1000,
+        })),
+      ]
+      const result = computeRollingVWAP(records, 20)!
+      // Should be much closer to $50 than $100
+      expect(result).toBeLessThan(55)
+    })
+  })
+
+  describe('computeMeanReversionScore', () => {
+    it('returns ~100 when price is well below EMA8 and VWAP', () => {
+      // Price 3% below EMA8, 2% below VWAP
+      const score = computeMeanReversionScore(97, 100, 99)
+      expect(score).toBeGreaterThan(90)
+    })
+
+    it('returns ~0 when price is far above EMA8 and VWAP', () => {
+      // Price 6% above EMA8, 4% above VWAP
+      const score = computeMeanReversionScore(106, 100, 102)
+      expect(score).toBeLessThan(10)
+    })
+
+    it('returns mid-range when price is near averages', () => {
+      // Price 1% above EMA8, 0.5% above VWAP
+      const score = computeMeanReversionScore(101, 100, 100.5)
+      expect(score).toBeGreaterThan(30)
+      expect(score).toBeLessThan(80)
+    })
+
+    it('uses only EMA8 when VWAP is null', () => {
+      // Price 2% above EMA8, 3% above VWAP — VWAP sub-score will be 0
+      const withVwap = computeMeanReversionScore(102, 100, 99)
+      const withoutVwap = computeMeanReversionScore(102, 100, null)
+      // Without VWAP should use only EMA8 sub-score (not blended with VWAP)
+      expect(withoutVwap).toBeGreaterThan(0)
+      expect(withoutVwap).not.toEqual(withVwap)
+    })
+  })
+
   describe('computeDTE', () => {
     it('should compute days until expiration', () => {
       const now = new Date('2026-02-14')
@@ -300,14 +396,14 @@ describe('Scanner', () => {
     })
 
     it('should fail for price below minimum', () => {
-      // Build records where all prices are well below the MIN_PRICE ($10)
+      // Build records where all prices are well below the $20 minimum
       const records: FinancialDataPriceRecord[] = []
       for (let i = 0; i < 250; i++) {
         const date = new Date(2026, 1, 14 - i)
         records.push({
           date: date.toISOString().slice(0, 10),
-          open: 7, high: 9, low: 6,
-          close: 8,
+          open: 9, high: 11, low: 8,
+          close: 10,
           volume: 2_000_000,
         })
       }
@@ -319,7 +415,7 @@ describe('Scanner', () => {
     })
 
     it('should fail for price above maximum', () => {
-      const records = makePriceRecords(250, 260, 2_000_000)
+      const records = makePriceRecords(250, 200, 2_000_000)
       const result = runPhase1(records)
 
       expect(result.passed).toBe(false)
@@ -538,8 +634,10 @@ describe('Scanner', () => {
       expect(scores.deltaScore).toBe(100) // -0.23 is in sweet spot
       expect(scores.liquidityScore).toBe(100) // 500 = PREFERRED_OI
       expect(scores.trendScore).toBe(50) // 10% above SMA, max=20%
-      expect(scores.meanReversionScore).toBe(50) // null ema8 = neutral default
-      expect(scores.compositeScore).toBeGreaterThan(0)
+      expect(scores.meanReversionScore).toBe(50) // null ema8 → neutral default
+      // Composite: 50*0.25 + 50*0.20 + 100*0.15 + 100*0.10 + 50*0.10 + 50*0.20
+      // = 12.5 + 10 + 15 + 10 + 5 + 10 = 62.5
+      expect(scores.compositeScore).toBeCloseTo(62.5, 1)
     })
 
     it('should weight yield highest (25%)', () => {
@@ -554,6 +652,15 @@ describe('Scanner', () => {
       const lowIV = computeScores(16, 20, -0.23, 500, 100, 100, null, null)
 
       expect(highIV.compositeScore).toBeGreaterThan(lowIV.compositeScore)
+    })
+
+    it('should include meanReversion in composite when ema8 provided', () => {
+      // Price below EMA8 → high mean reversion score → higher composite
+      const belowEma = computeScores(16, 45, -0.23, 500, 97, 90, 100, null)
+      const aboveEma = computeScores(16, 45, -0.23, 500, 106, 90, 100, null)
+
+      expect(belowEma.meanReversionScore).toBeGreaterThan(aboveEma.meanReversionScore)
+      expect(belowEma.compositeScore).toBeGreaterThan(aboveEma.compositeScore)
     })
   })
 

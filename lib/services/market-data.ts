@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
 import { canRefreshPrice, type RefreshEligibility } from '@/lib/utils/market'
+import { fetchFromAlphaVantage } from './alpha-vantage'
 import { apiRateLimiter } from './rate-limiter'
 
 /**
@@ -134,7 +135,7 @@ async function fetchFromFinancialData(ticker: string): Promise<StockPriceResult>
  * Save stock price to database
  * Updates the existing row for the ticker or creates a new one
  */
-async function saveStockPrice(result: StockPriceResult): Promise<void> {
+async function saveStockPrice(result: StockPriceResult, source = 'financial_data'): Promise<void> {
   if (!result.success) {
     return
   }
@@ -151,7 +152,7 @@ async function saveStockPrice(result: StockPriceResult): Promise<void> {
       create: {
         ticker: result.ticker,
         price: new Prisma.Decimal(result.price),
-        source: 'financial_data',
+        source,
       },
     })
   } catch (error) {
@@ -164,14 +165,20 @@ async function saveStockPrice(result: StockPriceResult): Promise<void> {
  * Fetch stock price for a single ticker with rate limiting
  */
 export async function fetchStockPrice(ticker: string): Promise<StockPriceResult> {
-  const result = await apiRateLimiter.enqueue(() => fetchFromFinancialData(ticker))
+  let result: StockPriceResult
+
+  if (ticker.toUpperCase() === 'SPY') {
+    result = await fetchFromAlphaVantage(ticker)
+  } else {
+    result = await apiRateLimiter.enqueue(() => fetchFromFinancialData(ticker))
+  }
 
   if (!result.success) {
     console.error(`Could not fetch ticker result: ${JSON.stringify(result)}`)
   }
 
   if (result.success) {
-    await saveStockPrice(result)
+    await saveStockPrice(result, ticker.toUpperCase() === 'SPY' ? 'alpha_vantage' : 'financial_data')
   }
 
   return result

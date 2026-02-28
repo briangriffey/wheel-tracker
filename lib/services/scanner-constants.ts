@@ -21,13 +21,24 @@ export const SCANNER = {
   MIN_OPEN_INTEREST: 0,
   MIN_OPTION_VOLUME: 20,
 
-  // Phase 4: Scoring Weights
+  // Mean Reversion scoring
+  EMA_PERIOD: 8,
+  VWAP_PERIOD: 20,
+  EMA8_DISTANCE_BEST: -2.0,
+  EMA8_DISTANCE_WORST: 5.0,
+  VWAP_DISTANCE_BEST: -1.0,
+  VWAP_DISTANCE_WORST: 3.0,
+  EMA8_WEIGHT: 0.60,
+  VWAP_WEIGHT: 0.40,
+
+  // Phase 4: Scoring Weights (must sum to 1.0)
   WEIGHTS: {
-    yield: 0.30,
-    iv: 0.25,
+    yield: 0.25,
+    iv: 0.20,
     delta: 0.15,
-    liquidity: 0.15,
-    trend: 0.15,
+    liquidity: 0.10,
+    trend: 0.10,
+    meanReversion: 0.20,
   },
   YIELD_RANGE_MIN: 8,
   YIELD_RANGE_MAX: 24,

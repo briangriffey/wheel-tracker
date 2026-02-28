@@ -193,7 +193,7 @@ export function ScannerClient({
                     <span className="font-medium">Option Selection</span> — Finds the best OTM put: 5–45 DTE, delta between -0.02 and -0.30, minimum 20 contracts volume, annualized yield above 8%
                   </li>
                   <li>
-                    <span className="font-medium">Scoring</span> — Composite score from 5 weighted factors (see below)
+                    <span className="font-medium">Scoring</span> — Composite score from 6 weighted factors (see below)
                   </li>
                   <li>
                     <span className="font-medium">Portfolio Check</span> — Flags tickers where you already have an open CSP or assigned shares
@@ -214,12 +214,12 @@ export function ScannerClient({
                   <tbody className="text-gray-600">
                     <tr className="border-b border-gray-100">
                       <td className="py-1.5 pr-4">Yield</td>
-                      <td className="py-1.5 pr-4">30%</td>
+                      <td className="py-1.5 pr-4">25%</td>
                       <td className="py-1.5">Annualized premium yield (8–24% range)</td>
                     </tr>
                     <tr className="border-b border-gray-100">
                       <td className="py-1.5 pr-4">IV Rank</td>
-                      <td className="py-1.5 pr-4">25%</td>
+                      <td className="py-1.5 pr-4">20%</td>
                       <td className="py-1.5">Where current IV sits in its 52-week range (20–70)</td>
                     </tr>
                     <tr className="border-b border-gray-100">
@@ -229,13 +229,18 @@ export function ScannerClient({
                     </tr>
                     <tr className="border-b border-gray-100">
                       <td className="py-1.5 pr-4">Liquidity</td>
-                      <td className="py-1.5 pr-4">15%</td>
+                      <td className="py-1.5 pr-4">10%</td>
                       <td className="py-1.5">Open interest relative to 500 preferred</td>
                     </tr>
-                    <tr>
+                    <tr className="border-b border-gray-100">
                       <td className="py-1.5 pr-4">Trend</td>
-                      <td className="py-1.5 pr-4">15%</td>
+                      <td className="py-1.5 pr-4">10%</td>
                       <td className="py-1.5">How far price is above the 200-day SMA</td>
+                    </tr>
+                    <tr>
+                      <td className="py-1.5 pr-4">Mean Reversion</td>
+                      <td className="py-1.5 pr-4">20%</td>
+                      <td className="py-1.5">Distance below EMA8 and 20-day VWAP (below = better entry for selling puts)</td>
                     </tr>
                   </tbody>
                 </table>
@@ -564,11 +569,12 @@ function TickerRow({
               <div>
                 <h4 className="text-sm font-semibold text-gray-700 mb-2">Component Scores</h4>
                 <div className="space-y-1.5">
-                  <ScoreBar label="Yield (30%)" score={result.yieldScore} />
-                  <ScoreBar label="IV Rank (25%)" score={result.ivScore} />
+                  <ScoreBar label="Yield (25%)" score={result.yieldScore} />
+                  <ScoreBar label="IV Rank (20%)" score={result.ivScore} />
                   <ScoreBar label="Delta (15%)" score={result.deltaScore} />
-                  <ScoreBar label="Liquidity (15%)" score={result.liquidityScore} />
-                  <ScoreBar label="Trend (15%)" score={result.trendScore} />
+                  <ScoreBar label="Liquidity (10%)" score={result.liquidityScore} />
+                  <ScoreBar label="Trend (10%)" score={result.trendScore} />
+                  <ScoreBar label="Mean Reversion (20%)" score={result.meanReversionScore} />
                   <div className="pt-1 border-t border-gray-200">
                     <div className="flex justify-between text-sm">
                       <span className="font-semibold text-gray-700">Composite</span>
@@ -593,6 +599,14 @@ function TickerRow({
                   <div className="flex justify-between">
                     <dt className="text-gray-500">50-day SMA</dt>
                     <dd className="text-gray-900">{formatCurrency(result.sma50)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">EMA8</dt>
+                    <dd className="text-gray-900">{formatCurrency(result.ema8)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">20-day VWAP</dt>
+                    <dd className="text-gray-900">{formatCurrency(result.vwap)}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-500">Trend</dt>

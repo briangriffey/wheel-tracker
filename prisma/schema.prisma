@@ -429,12 +429,15 @@ model ScanResult {
   phase3Reason String?
 
   // Phase 4: Scores (populated if passed Phase 3)
-  yieldScore     Decimal? @db.Decimal(6, 2)
-  ivScore        Decimal? @db.Decimal(6, 2)
-  deltaScore     Decimal? @db.Decimal(6, 2)
-  liquidityScore Decimal? @db.Decimal(6, 2)
-  trendScore     Decimal? @db.Decimal(6, 2)
-  compositeScore Decimal? @db.Decimal(6, 2)
+  yieldScore         Decimal? @db.Decimal(6, 2)
+  ivScore            Decimal? @db.Decimal(6, 2)
+  deltaScore         Decimal? @db.Decimal(6, 2)
+  liquidityScore     Decimal? @db.Decimal(6, 2)
+  trendScore         Decimal? @db.Decimal(6, 2)
+  ema8               Decimal? @db.Decimal(10, 2)
+  vwap               Decimal? @db.Decimal(10, 2)
+  meanReversionScore Decimal? @db.Decimal(6, 2)
+  compositeScore     Decimal? @db.Decimal(6, 2)
 
   // Phase 5: Portfolio checks
   hasOpenCSP     Boolean @default(false)

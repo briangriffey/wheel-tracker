@@ -50,6 +50,9 @@ export interface ScanResultData {
   deltaScore: number | null
   liquidityScore: number | null
   trendScore: number | null
+  ema8: number | null
+  vwap: number | null
+  meanReversionScore: number | null
   compositeScore: number | null
 
   // Phase 5
@@ -128,6 +131,9 @@ export const getLatestScanResults = cache(async (): Promise<ScanResultData[]> =>
     deltaScore: decimalToNumber(r.deltaScore),
     liquidityScore: decimalToNumber(r.liquidityScore),
     trendScore: decimalToNumber(r.trendScore),
+    ema8: decimalToNumber(r.ema8),
+    vwap: decimalToNumber(r.vwap),
+    meanReversionScore: decimalToNumber(r.meanReversionScore),
     compositeScore: decimalToNumber(r.compositeScore),
     hasOpenCSP: r.hasOpenCSP,
     hasAssignedPos: r.hasAssignedPos,

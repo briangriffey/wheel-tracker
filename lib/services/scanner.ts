@@ -75,6 +75,84 @@ export function computeDTE(expirationDate: Date, now: Date): number {
   return Math.ceil((expirationDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
 }
 
+/**
+ * Compute Exponential Moving Average from an array of closes.
+ * Closes are sorted newest-first (same order as our price history data).
+ * Returns null if insufficient data.
+ */
+export function computeEMA(closes: number[], period: number): number | null {
+  if (closes.length < period) return null
+  // Reverse to chronological order for EMA calculation
+  const chronological = [...closes].reverse()
+  const multiplier = 2 / (period + 1)
+  // Seed with SMA of the first `period` values
+  let ema = chronological.slice(0, period).reduce((s, v) => s + v, 0) / period
+  for (let i = period; i < chronological.length; i++) {
+    ema = (chronological[i] - ema) * multiplier + ema
+  }
+  return ema
+}
+
+/**
+ * Compute a rolling Volume-Weighted Average Price over the most recent `period` days.
+ * Each record must have high, low, close, and volume fields.
+ * Records are sorted newest-first (same order as our price history data).
+ * Returns null if insufficient data or zero total volume.
+ *
+ * Formula: VWAP = Σ(typicalPrice_i * volume_i) / Σ(volume_i)
+ * where typicalPrice = (high + low + close) / 3
+ */
+export function computeRollingVWAP(
+  records: { high: number; low: number; close: number; volume: number }[],
+  period: number
+): number | null {
+  if (records.length < period) return null
+  const window = records.slice(0, period)
+  let sumTPxV = 0
+  let sumV = 0
+  for (const r of window) {
+    const typicalPrice = (r.high + r.low + r.close) / 3
+    sumTPxV += typicalPrice * r.volume
+    sumV += r.volume
+  }
+  if (sumV === 0) return null
+  return sumTPxV / sumV
+}
+
+/**
+ * Compute mean reversion score (0-100) from price distance to EMA8 and VWAP.
+ * Below EMA8/VWAP = high score (good put-selling entry).
+ * Far above EMA8/VWAP = low score (overextended, bad entry).
+ * If VWAP is null, uses only the EMA8 sub-score.
+ */
+export function computeMeanReversionScore(
+  stockPrice: number,
+  ema8: number,
+  vwap: number | null
+): number {
+  const ema8Distance = ((stockPrice - ema8) / ema8) * 100
+  // linearScore maps: BEST → 100, WORST → 0
+  // Negate the distance so "below" (negative distance) maps to higher scores
+  const ema8SubScore = linearScore(
+    -ema8Distance,
+    -SCANNER.EMA8_DISTANCE_WORST,
+    -SCANNER.EMA8_DISTANCE_BEST
+  )
+
+  if (vwap === null) {
+    return ema8SubScore
+  }
+
+  const vwapDistance = ((stockPrice - vwap) / vwap) * 100
+  const vwapSubScore = linearScore(
+    -vwapDistance,
+    -SCANNER.VWAP_DISTANCE_WORST,
+    -SCANNER.VWAP_DISTANCE_BEST
+  )
+
+  return ema8SubScore * SCANNER.EMA8_WEIGHT + vwapSubScore * SCANNER.VWAP_WEIGHT
+}
+
 // === Result Types ===
 
 export interface ScanTickerResult {
@@ -108,11 +186,15 @@ export interface ScanTickerResult {
   optionVolume?: number
   premiumYield?: number
 
+  ema8?: number
+  vwap?: number
+
   yieldScore?: number
   ivScore?: number
   deltaScore?: number
   liquidityScore?: number
   trendScore?: number
+  meanReversionScore?: number
   compositeScore?: number
 
   hasOpenCSP: boolean
@@ -445,6 +527,7 @@ export interface Phase4Scores {
   deltaScore: number
   liquidityScore: number
   trendScore: number
+  meanReversionScore: number
   compositeScore: number
 }
 
@@ -454,7 +537,9 @@ export function computeScores(
   delta: number,
   openInterest: number,
   stockPrice: number,
-  sma200: number
+  sma200: number,
+  ema8: number | null,
+  vwap: number | null
 ): Phase4Scores {
   const yieldScore = linearScore(premiumYield, SCANNER.YIELD_RANGE_MIN, SCANNER.YIELD_RANGE_MAX)
   const ivScore = linearScore(ivRank, SCANNER.IV_RANK_RANGE_MIN, SCANNER.IV_RANK_RANGE_MAX)
@@ -462,12 +547,17 @@ export function computeScores(
   const liquidityScore = computeLiquidityScore(openInterest)
   const trendScore = computeTrendScore(stockPrice, sma200)
 
+  const meanReversionScore = ema8 !== null
+    ? computeMeanReversionScore(stockPrice, ema8, vwap)
+    : 50 // neutral default if EMA8 can't be computed (insufficient history)
+
   const compositeScore =
     yieldScore * SCANNER.WEIGHTS.yield +
     ivScore * SCANNER.WEIGHTS.iv +
     deltaScore * SCANNER.WEIGHTS.delta +
     liquidityScore * SCANNER.WEIGHTS.liquidity +
-    trendScore * SCANNER.WEIGHTS.trend
+    trendScore * SCANNER.WEIGHTS.trend +
+    meanReversionScore * SCANNER.WEIGHTS.meanReversion
 
   log.debug({
     inputs: {
@@ -482,12 +572,13 @@ export function computeScores(
       deltaScore: parseFloat(deltaScore.toFixed(1)),
       liquidityScore: parseFloat(liquidityScore.toFixed(1)),
       trendScore: parseFloat(trendScore.toFixed(1)),
+      meanReversionScore: parseFloat(meanReversionScore.toFixed(1)),
       compositeScore: parseFloat(compositeScore.toFixed(1)),
     },
     weights: SCANNER.WEIGHTS,
   }, 'Phase 4: scores computed')
 
-  return { yieldScore, ivScore, deltaScore, liquidityScore, trendScore, compositeScore }
+  return { yieldScore, ivScore, deltaScore, liquidityScore, trendScore, meanReversionScore, compositeScore }
 }
 
 // === Phase 5: Portfolio Checks ===
@@ -611,6 +702,20 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
   log.info(
     { ticker, stockPrice: p1.stockPrice, sma200: p1.sma200, avgVolume: Math.round(p1.avgVolume), trendDirection: p1.trendDirection },
     'Phase 1: PASSED'
+  )
+
+  // Compute EMA8 and rolling VWAP for mean reversion scoring (Phase 4)
+  const sortedRecords = [...priceHistory.records].sort((a, b) => b.date.localeCompare(a.date))
+  const closes = sortedRecords.map((r) => r.close)
+  const ema8 = computeEMA(closes, SCANNER.EMA_PERIOD)
+  const vwap = computeRollingVWAP(sortedRecords, SCANNER.VWAP_PERIOD)
+
+  result.ema8 = ema8 ?? undefined
+  result.vwap = vwap ?? undefined
+
+  log.debug(
+    { ticker, ema8, vwap, stockPrice: p1.stockPrice },
+    'Mean reversion indicators computed'
   )
 
   // ── Phase 2: IV Screen ───────────────────────────────────────────────────────
@@ -846,7 +951,9 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
     sel.delta,
     sel.openInterest,
     p1.stockPrice,
-    p1.sma200!
+    p1.sma200!,
+    ema8,
+    vwap
   )
 
   result.yieldScore = scores.yieldScore
@@ -854,10 +961,11 @@ export async function scanTicker(ticker: string, userId: string): Promise<ScanTi
   result.deltaScore = scores.deltaScore
   result.liquidityScore = scores.liquidityScore
   result.trendScore = scores.trendScore
+  result.meanReversionScore = scores.meanReversionScore
   result.compositeScore = scores.compositeScore
 
   log.info(
-    { ticker, compositeScore: parseFloat(scores.compositeScore.toFixed(1)), yieldScore: parseFloat(scores.yieldScore.toFixed(1)), ivScore: parseFloat(scores.ivScore.toFixed(1)), deltaScore: parseFloat(scores.deltaScore.toFixed(1)), liquidityScore: parseFloat(scores.liquidityScore.toFixed(1)), trendScore: parseFloat(scores.trendScore.toFixed(1)) },
+    { ticker, compositeScore: parseFloat(scores.compositeScore.toFixed(1)), yieldScore: parseFloat(scores.yieldScore.toFixed(1)), ivScore: parseFloat(scores.ivScore.toFixed(1)), deltaScore: parseFloat(scores.deltaScore.toFixed(1)), liquidityScore: parseFloat(scores.liquidityScore.toFixed(1)), trendScore: parseFloat(scores.trendScore.toFixed(1)), meanReversionScore: parseFloat(scores.meanReversionScore.toFixed(1)) },
     'Phase 4: COMPLETE'
   )
 
@@ -983,6 +1091,9 @@ export async function runFullScan(userId: string): Promise<FullScanResult> {
       deltaScore: r.deltaScore,
       liquidityScore: r.liquidityScore,
       trendScore: r.trendScore,
+      ema8: r.ema8,
+      vwap: r.vwap,
+      meanReversionScore: r.meanReversionScore,
       compositeScore: r.compositeScore,
       hasOpenCSP: r.hasOpenCSP,
       hasAssignedPos: r.hasAssignedPos,

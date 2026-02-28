@@ -531,26 +531,27 @@ describe('Scanner', () => {
 
   describe('computeScores', () => {
     it('should produce weighted composite score', () => {
-      const scores = computeScores(16, 45, -0.23, 500, 110, 100)
+      const scores = computeScores(16, 45, -0.23, 500, 110, 100, null, null)
 
       expect(scores.yieldScore).toBe(50) // 16 is midpoint of 8-24
       expect(scores.ivScore).toBe(50) // 45 is midpoint of 20-70
       expect(scores.deltaScore).toBe(100) // -0.23 is in sweet spot
       expect(scores.liquidityScore).toBe(100) // 500 = PREFERRED_OI
       expect(scores.trendScore).toBe(50) // 10% above SMA, max=20%
+      expect(scores.meanReversionScore).toBe(50) // null ema8 = neutral default
       expect(scores.compositeScore).toBeGreaterThan(0)
     })
 
-    it('should weight yield highest (30%)', () => {
-      const highYield = computeScores(24, 20, -0.20, 100, 100, 100)
-      const lowYield = computeScores(8, 20, -0.20, 100, 100, 100)
+    it('should weight yield highest (25%)', () => {
+      const highYield = computeScores(24, 20, -0.20, 100, 100, 100, null, null)
+      const lowYield = computeScores(8, 20, -0.20, 100, 100, 100, null, null)
 
       expect(highYield.compositeScore).toBeGreaterThan(lowYield.compositeScore)
     })
 
-    it('should weight IV second highest (25%)', () => {
-      const highIV = computeScores(16, 70, -0.23, 500, 100, 100)
-      const lowIV = computeScores(16, 20, -0.23, 500, 100, 100)
+    it('should weight IV second highest (20%)', () => {
+      const highIV = computeScores(16, 70, -0.23, 500, 100, 100, null, null)
+      const lowIV = computeScores(16, 20, -0.23, 500, 100, 100, null, null)
 
       expect(highIV.compositeScore).toBeGreaterThan(lowIV.compositeScore)
     })

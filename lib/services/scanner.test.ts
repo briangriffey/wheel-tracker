@@ -396,14 +396,14 @@ describe('Scanner', () => {
     })
 
     it('should fail for price below minimum', () => {
-      // Build records where all prices are well below the $20 minimum
+      // Build records where all prices are well below the MIN_PRICE ($10)
       const records: FinancialDataPriceRecord[] = []
       for (let i = 0; i < 250; i++) {
         const date = new Date(2026, 1, 14 - i)
         records.push({
           date: date.toISOString().slice(0, 10),
-          open: 9, high: 11, low: 8,
-          close: 10,
+          open: 7, high: 9, low: 6,
+          close: 8,
           volume: 2_000_000,
         })
       }
@@ -415,7 +415,7 @@ describe('Scanner', () => {
     })
 
     it('should fail for price above maximum', () => {
-      const records = makePriceRecords(250, 200, 2_000_000)
+      const records = makePriceRecords(250, 260, 2_000_000)
       const result = runPhase1(records)
 
       expect(result.passed).toBe(false)

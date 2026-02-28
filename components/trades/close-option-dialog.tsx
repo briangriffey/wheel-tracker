@@ -34,10 +34,11 @@ export function CloseOptionDialog({
   const [closePremium, setClosePremium] = useState<string>('')
   const [showConfirmation, setShowConfirmation] = useState(false)
 
-  // Calculate net P/L
+  // Calculate net P/L (premiums are per-share; total = per-share * 100 * contracts)
   const closePremiumNum = parseFloat(closePremium) || 0
-  const netPL = originalPremium - closePremiumNum
-  const netPLPercent = originalPremium > 0 ? (netPL / originalPremium) * 100 : 0
+  const netPLPerShare = originalPremium - closePremiumNum
+  const totalPL = netPLPerShare * 100 * contracts
+  const netPLPercent = originalPremium > 0 ? (netPLPerShare / originalPremium) * 100 : 0
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,7 +64,7 @@ export function CloseOptionDialog({
 
       if (result.success) {
         toast.success(
-          `Option closed successfully! Net P/L: ${netPL >= 0 ? '+' : ''}${formatCurrency(netPL)}`
+          `Option closed successfully! Net P/L: ${totalPL >= 0 ? '+' : ''}${formatCurrency(totalPL)}`
         )
         onSuccess()
         onClose()
@@ -122,34 +123,37 @@ export function CloseOptionDialog({
               <div className="rounded-md bg-gray-50 p-4 border border-gray-200">
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Original Premium Collected:</span>
+                    <span className="text-gray-600">Original Premium (per share):</span>
                     <span className="font-medium text-green-600">
                       +{formatCurrency(originalPremium)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Close Premium Paid:</span>
+                    <span className="text-gray-600">Close Premium (per share):</span>
                     <span className="font-medium text-red-600">
                       -{formatCurrency(closePremiumNum)}
                     </span>
                   </div>
+                  <div className="flex justify-between text-gray-500">
+                    <span>{contracts} contract{contracts !== 1 ? 's' : ''} x 100 shares</span>
+                  </div>
                   <div className="pt-2 border-t border-gray-300 flex justify-between items-baseline">
-                    <span className="font-semibold text-gray-700">Net P/L:</span>
+                    <span className="font-semibold text-gray-700">Total P/L:</span>
                     <div className="flex flex-col items-end">
                       <span
                         className={`text-lg font-bold ${
-                          netPL >= 0 ? 'text-green-600' : 'text-red-600'
+                          totalPL >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
-                        {netPL >= 0 ? '+' : ''}
-                        {formatCurrency(netPL)}
+                        {totalPL >= 0 ? '+' : ''}
+                        {formatCurrency(totalPL)}
                       </span>
                       <span
                         className={`text-sm font-medium ${
-                          netPL >= 0 ? 'text-green-600' : 'text-red-600'
+                          totalPL >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
-                        {netPL >= 0 ? '+' : ''}
+                        {totalPL >= 0 ? '+' : ''}
                         {netPLPercent.toFixed(2)}% return
                       </span>
                     </div>
@@ -358,38 +362,41 @@ export function CloseOptionDialog({
             {closePremium && !isNaN(closePremiumNum) && (
               <div className="rounded-md bg-gray-50 p-4 border border-gray-200">
                 <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide mb-3">
-                  Net P/L Preview
+                  P/L Preview
                 </h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Premium Collected:</span>
+                    <span className="text-gray-600">Premium Collected (per share):</span>
                     <span className="font-medium text-green-600">
                       +{formatCurrency(originalPremium)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Premium Paid:</span>
+                    <span className="text-gray-600">Premium Paid (per share):</span>
                     <span className="font-medium text-red-600">
                       -{formatCurrency(closePremiumNum)}
                     </span>
                   </div>
+                  <div className="flex justify-between text-gray-500">
+                    <span>{contracts} contract{contracts !== 1 ? 's' : ''} x 100 shares</span>
+                  </div>
                   <div className="pt-2 border-t border-gray-300 flex justify-between items-baseline">
-                    <span className="font-semibold text-gray-700">Net P/L:</span>
+                    <span className="font-semibold text-gray-700">Total P/L:</span>
                     <div className="flex flex-col items-end">
                       <span
                         className={`text-lg font-bold ${
-                          netPL >= 0 ? 'text-green-600' : 'text-red-600'
+                          totalPL >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
-                        {netPL >= 0 ? '+' : ''}
-                        {formatCurrency(netPL)}
+                        {totalPL >= 0 ? '+' : ''}
+                        {formatCurrency(totalPL)}
                       </span>
                       <span
                         className={`text-sm font-medium ${
-                          netPL >= 0 ? 'text-green-600' : 'text-red-600'
+                          totalPL >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       >
-                        {netPL >= 0 ? '+' : ''}
+                        {totalPL >= 0 ? '+' : ''}
                         {netPLPercent.toFixed(2)}% return
                       </span>
                     </div>

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import {
   isMarketOpen,
   getNextMarketOpen,
@@ -11,6 +11,10 @@ import {
   isWeekend,
 } from './market'
 import { prisma } from '@/lib/db'
+
+vi.mock('@/lib/auth', () => ({
+  getCurrentUserId: vi.fn(),
+}))
 
 describe('Market Utilities', () => {
   let testUserId: string

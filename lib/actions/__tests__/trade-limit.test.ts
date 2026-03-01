@@ -20,6 +20,7 @@ vi.mock('@/lib/db', () => ({
 // Mock NextAuth
 vi.mock('@/lib/auth', () => ({
   auth: vi.fn(),
+  getCurrentUserId: vi.fn(),
 }))
 
 // Mock Next.js cache revalidation
@@ -32,7 +33,7 @@ vi.mock('@/lib/analytics-server', () => ({
   recordAnalyticsEvent: vi.fn(),
 }))
 
-import { auth } from '@/lib/auth'
+import { auth, getCurrentUserId } from '@/lib/auth'
 import { recordAnalyticsEvent } from '@/lib/analytics-server'
 
 const validTradeInput = {
@@ -55,6 +56,7 @@ describe('Trade Limit Enforcement', () => {
       user: { id: mockUserId },
       expires: '2026-12-31',
     } as never)
+    vi.mocked(getCurrentUserId).mockResolvedValue(mockUserId)
     // Simulate $transaction by executing the callback with the prisma mock
     vi.mocked(prisma.$transaction as unknown as ReturnType<typeof vi.fn>).mockImplementation(
       async (fn: (tx: typeof prisma) => Promise<unknown>) => fn(prisma)
@@ -140,6 +142,7 @@ describe('Trade Limit Enforcement', () => {
 
   it('should return unauthorized for unauthenticated users', async () => {
     vi.mocked(auth).mockResolvedValue(null as never)
+    vi.mocked(getCurrentUserId).mockResolvedValue(null)
 
     const result = await createTrade(validTradeInput)
 

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
 import type { User, StockPrice, Position } from '@/lib/generated/prisma'
+import { getCurrentUserId } from '@/lib/auth'
 import {
   getLatestPrice,
   getLatestPrices,
@@ -9,12 +10,14 @@ import {
   refreshSinglePositionPrice,
 } from '../prices'
 
+// Mock auth
+vi.mock('@/lib/auth', () => ({
+  getCurrentUserId: vi.fn(),
+}))
+
 // Mock Prisma
 vi.mock('@/lib/db', () => ({
   prisma: {
-    user: {
-      findFirst: vi.fn(),
-    },
     stockPrice: {
       findUnique: vi.fn(),
     },
@@ -67,8 +70,8 @@ describe('Price Actions', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    // Default: return mock user
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(mockUser)
+    // Default: return mock user ID
+    vi.mocked(getCurrentUserId).mockResolvedValue('user1')
   })
 
   afterEach(() => {

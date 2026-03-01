@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/db'
+import { getCurrentUserId } from '@/lib/auth'
 import { Prisma } from '@/lib/generated/prisma'
 import type { User, Trade, Position } from '@/lib/generated/prisma'
 import { getLatestPrice } from '@/lib/services/market-data'
@@ -14,12 +15,14 @@ vi.mock('react', async () => {
   }
 })
 
+// Mock auth
+vi.mock('@/lib/auth', () => ({
+  getCurrentUserId: vi.fn(),
+}))
+
 // Mock Prisma
 vi.mock('@/lib/db', () => ({
   prisma: {
-    user: {
-      findFirst: vi.fn(),
-    },
     position: {
       aggregate: vi.fn(),
       findMany: vi.fn(),
@@ -70,8 +73,8 @@ describe('getDashboardMetrics', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    // Default: return mock user
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(mockUser)
+    // Default: return mock user ID
+    vi.mocked(getCurrentUserId).mockResolvedValue('user1')
     // Default: return zero cash deposits and SPY price
     vi.mocked(prisma.cashDeposit.aggregate).mockResolvedValue(defaultCashDepositAgg as never)
     vi.mocked(getLatestPrice).mockResolvedValue(defaultSpyPrice)
@@ -470,8 +473,8 @@ describe('getDashboardMetrics', () => {
       await expect(getDashboardMetrics('All')).rejects.toThrow('Failed to fetch dashboard metrics')
     })
 
-    it('should throw error when no user found', async () => {
-      vi.mocked(prisma.user.findFirst).mockResolvedValue(null)
+    it('should throw error when not authenticated', async () => {
+      vi.mocked(getCurrentUserId).mockResolvedValue(null)
 
       await expect(getDashboardMetrics('All')).rejects.toThrow('Failed to fetch dashboard metrics')
     })
@@ -480,25 +483,7 @@ describe('getDashboardMetrics', () => {
 
 // Shared setup for getPLOverTime, getPLByTicker, getWinRateData tests
 const setupUserMock = () => {
-  const mockUser: User = {
-    id: 'user1',
-    email: 'test@example.com',
-    name: 'Test User',
-    emailVerified: null,
-    image: null,
-    password: null,
-    subscriptionTier: 'FREE',
-    subscriptionStartDate: null,
-    subscriptionEndDate: null,
-    stripeCustomerId: null,
-    stripeSubscriptionId: null,
-    subscriptionStatus: null,
-    subscriptionEndsAt: null,
-    onboardingCompletedAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  }
-  vi.mocked(prisma.user.findFirst).mockResolvedValue(mockUser)
+  vi.mocked(getCurrentUserId).mockResolvedValue('user1')
 }
 
 describe('getPLOverTime', () => {

@@ -7,6 +7,9 @@ import * as marketUtils from '@/lib/utils/market'
 // Mock the modules
 vi.mock('@/lib/services/market-data')
 vi.mock('@/lib/utils/market')
+vi.mock('@/lib/auth', () => ({
+  getCurrentUserId: vi.fn(),
+}))
 
 describe('Cron Job: Update Prices', () => {
   const mockCronSecret = 'test-cron-secret-12345'

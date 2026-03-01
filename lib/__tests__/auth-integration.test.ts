@@ -4,6 +4,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const mockAuth = vi.fn()
 vi.mock('@/lib/auth', () => ({
   auth: () => mockAuth(),
+  getCurrentUserId: async () => {
+    const session = await mockAuth()
+    return session?.user?.id ?? null
+  },
 }))
 
 // Mock prisma

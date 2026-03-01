@@ -3,15 +3,18 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { prisma } from '@/lib/db'
+import { getCurrentUserId } from '@/lib/auth'
 import { getUpcomingExpirations, getITMOptions, getPositionsWithoutCalls } from '../notifications'
 import * as pricesModule from '../prices'
+
+// Mock auth
+vi.mock('@/lib/auth', () => ({
+  getCurrentUserId: vi.fn(),
+}))
 
 // Mock Prisma
 vi.mock('@/lib/db', () => ({
   prisma: {
-    user: {
-      findFirst: vi.fn(),
-    },
     trade: {
       findMany: vi.fn(),
     },
@@ -32,7 +35,7 @@ describe('Notification Actions', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Mock getCurrentUserId
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({ id: mockUserId } as never)
+    vi.mocked(getCurrentUserId).mockResolvedValue(mockUserId)
   })
 
   describe('getUpcomingExpirations', () => {

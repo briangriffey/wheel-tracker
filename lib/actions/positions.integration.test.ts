@@ -6,6 +6,11 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
+vi.mock('@/lib/auth', () => ({
+  getCurrentUserId: vi.fn(),
+}))
+
+import { getCurrentUserId } from '@/lib/auth'
 import { assignPut, assignCall, getPositions, getActivePositions, getPosition } from './positions'
 
 // Test data IDs (will be set during test setup)
@@ -14,10 +19,15 @@ let testUserId: string
 describe('Position Assignment Integration Tests', () => {
   // Set up test user and clean database before all tests
   beforeAll(async () => {
-    // Clean up any existing test data
-    await prisma.position.deleteMany()
-    await prisma.trade.deleteMany()
-    await prisma.user.deleteMany()
+    // Clean up any existing test data for this specific test user
+    const existingUser = await prisma.user.findUnique({
+      where: { email: 'test-position@example.com' },
+    })
+    if (existingUser) {
+      await prisma.position.deleteMany({ where: { userId: existingUser.id } })
+      await prisma.trade.deleteMany({ where: { userId: existingUser.id } })
+      await prisma.user.delete({ where: { id: existingUser.id } })
+    }
 
     // Create test user
     const user = await prisma.user.create({
@@ -27,12 +37,13 @@ describe('Position Assignment Integration Tests', () => {
       },
     })
     testUserId = user.id
+    vi.mocked(getCurrentUserId).mockResolvedValue(testUserId)
   })
 
   // Clean up after all tests
   afterAll(async () => {
-    await prisma.position.deleteMany()
-    await prisma.trade.deleteMany()
+    await prisma.position.deleteMany({ where: { userId: testUserId } })
+    await prisma.trade.deleteMany({ where: { userId: testUserId } })
     await prisma.user.deleteMany({ where: { id: testUserId } })
     await prisma.$disconnect()
   })

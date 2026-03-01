@@ -18,6 +18,7 @@ vi.mock('@/lib/db', () => ({
 // Mock auth
 vi.mock('@/lib/auth', () => ({
   auth: vi.fn(),
+  getCurrentUserId: vi.fn(),
 }))
 
 // Mock Next.js cache revalidation
@@ -25,8 +26,9 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
-import { auth } from '@/lib/auth'
+import { auth, getCurrentUserId } from '@/lib/auth'
 const mockAuth = vi.mocked(auth)
+const mockGetCurrentUserId = vi.mocked(getCurrentUserId)
 
 describe('Subscription Actions', () => {
   const mockUserId = 'user1'
@@ -36,6 +38,7 @@ describe('Subscription Actions', () => {
     mockAuth.mockResolvedValue({
       user: { id: mockUserId },
     } as never)
+    mockGetCurrentUserId.mockResolvedValue(mockUserId)
   })
 
   describe('getTradeUsage', () => {
@@ -140,6 +143,7 @@ describe('Subscription Actions', () => {
 
     it('should return error when not authenticated', async () => {
       mockAuth.mockResolvedValue(null as never)
+      mockGetCurrentUserId.mockResolvedValue(null)
 
       const result = await getTradeUsage()
 

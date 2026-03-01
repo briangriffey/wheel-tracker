@@ -20,6 +20,7 @@ vi.mock('@/lib/db', () => ({
 // Mock NextAuth
 vi.mock('@/lib/auth', () => ({
   auth: vi.fn(),
+  getCurrentUserId: vi.fn(),
 }))
 
 // Mock Next.js cache revalidation
@@ -27,7 +28,7 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
-import { auth } from '@/lib/auth'
+import { auth, getCurrentUserId } from '@/lib/auth'
 
 const validTradeInput = {
   ticker: 'AAPL',
@@ -60,6 +61,7 @@ describe('Edge Cases & Hardening', () => {
       user: { id: mockUserId },
       expires: '2026-12-31',
     } as never)
+    vi.mocked(getCurrentUserId).mockResolvedValue(mockUserId)
     setupTransaction()
   })
 

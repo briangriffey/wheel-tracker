@@ -16,6 +16,10 @@ vi.mock('@/lib/db', () => ({
   },
 }))
 
+vi.mock('@/lib/auth', () => ({
+  getCurrentUserId: vi.fn(),
+}))
+
 // Import after mocks are set up
 const { fetchStockPrice, getLatestPrice, getLatestPrices } = await import('./market-data')
 

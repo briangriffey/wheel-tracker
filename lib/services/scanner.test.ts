@@ -481,7 +481,7 @@ describe('Scanner', () => {
       expect(result.ivRank).toBeCloseTo(60)
     })
 
-    it('should fail when IV rank is below minimum', () => {
+    it('should pass when IV rank is low but at or above minimum (MIN_IV_RANK=0)', () => {
       const ivData: IVDataPoint[] = [
         { date: '2026-02-14', iv: 0.22 },
         { date: '2025-08-14', iv: 0.20 },
@@ -490,9 +490,9 @@ describe('Scanner', () => {
 
       const result = runPhase2(ivData)
       // currentIV = 0.22, IVRank = (0.22 - 0.20) / (0.50 - 0.20) * 100 = 6.67
-      expect(result.passed).toBe(false)
-      expect(result.reason).toContain('IV Rank')
-      expect(result.ivRank).toBeLessThan(SCANNER.MIN_IV_RANK)
+      // MIN_IV_RANK = 0, so any positive IV rank passes
+      expect(result.passed).toBe(true)
+      expect(result.ivRank).toBeGreaterThanOrEqual(SCANNER.MIN_IV_RANK)
     })
 
     it('should fail for empty records', () => {
@@ -783,7 +783,7 @@ describe('Scanner', () => {
       expect(result.finalReason).toContain('Phase 1')
     })
 
-    it('should stop at phase 2 when IV rank is too low', async () => {
+    it('should pass phase 2 even with low IV rank (MIN_IV_RANK=0) and stop at phase 3 with no matching contracts', async () => {
       const priceRecords = makePriceRecords(250, 80, 2_000_000)
       fetchStockPriceHistory.mockResolvedValue({
         ticker: 'LOW',
@@ -810,28 +810,36 @@ describe('Scanner', () => {
         success: true,
       })
 
+      // Very low volume to fail phase 3 contract selection
       fetchOptionPrices.mockResolvedValue({
         contractName: 'LOW260321P00080000',
         records: [
-          { date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 50, openInterest: 600 },
-          { date: '2026-01-14', open: 1.5, high: 1.9, low: 1.4, close: 1.60, volume: 30, openInterest: 500 },
-          { date: '2025-08-14', open: 1.2, high: 1.5, low: 1.1, close: 1.30, volume: 25, openInterest: 450 },
+          { date: '2026-02-14', open: 2.0, high: 2.5, low: 1.9, close: 2.20, volume: 1, openInterest: 600 },
+          { date: '2026-01-14', open: 1.5, high: 1.9, low: 1.4, close: 1.60, volume: 1, openInterest: 500 },
+          { date: '2025-08-14', open: 1.2, high: 1.5, low: 1.1, close: 1.30, volume: 1, openInterest: 450 },
         ],
         success: true,
       })
 
       // Low IV rank: currentIV=0.22, low=0.20, high=0.50 → rank=6.67
+      // With MIN_IV_RANK=0, phase 2 still passes
       computeIVMock
         .mockReturnValueOnce(0.22)
         .mockReturnValueOnce(0.20)
         .mockReturnValueOnce(0.50)
+        .mockReturnValue(0.30)
+
+      prisma.trade.findFirst.mockResolvedValue(null)
+      prisma.position.findFirst.mockResolvedValue(null)
 
       const result = await scanTicker('LOW', 'user-1')
 
       expect(result.passedPhase1).toBe(true)
-      expect(result.passedPhase2).toBe(false)
+      expect(result.passedPhase2).toBe(true)
+      expect(result.ivRank).toBeCloseTo(6.67, 1)
+      // Phase 3 fails due to low volume (volume=1 < MIN_OPTION_VOLUME=20)
+      expect(result.passedPhase3).toBe(false)
       expect(result.passed).toBe(false)
-      expect(result.finalReason).toContain('Phase 2')
     })
 
     it('should include portfolio flags even when passing', async () => {

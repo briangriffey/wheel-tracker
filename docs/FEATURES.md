@@ -1,20 +1,61 @@
 # GreekWheel Features Guide
 
-**Version:** 1.0.0
-**Last Updated:** February 2026
+**Version:** 1.1.0
+**Last Updated:** March 2026
 **Status:** Production Ready
 
 ## Table of Contents
 
 1. [Introduction](#introduction)
-2. [Wheels Dashboard](#wheels-dashboard)
-3. [Wheel Detail View](#wheel-detail-view)
-4. [Notification System](#notification-system)
-5. [Trade Management](#trade-management)
-6. [Position Management](#position-management)
-7. [Dashboard & Analytics](#dashboard--analytics)
-8. [Data Export](#data-export)
-9. [Tips & Best Practices](#tips--best-practices)
+2. [Onboarding Slideshow](#onboarding-slideshow)
+3. [Wheels Dashboard](#wheels-dashboard)
+4. [Wheel Detail View](#wheel-detail-view)
+5. [Notification System](#notification-system)
+6. [Trade Management](#trade-management)
+7. [Position Management](#position-management)
+8. [Dashboard & Analytics](#dashboard--analytics)
+9. [Data Export](#data-export)
+10. [Tips & Best Practices](#tips--best-practices)
+
+---
+
+## Onboarding Slideshow
+
+New users see a 6-slide onboarding modal the first time they visit the P&L Dashboard.
+
+### Overview
+
+The slideshow introduces GreekWheel's core concepts and ends with CTAs to get started. It only appears once — after completion, it is never shown again unless the user explicitly replays it.
+
+### Slides
+
+1. **Welcome to GreekWheel** — Introduction and what to expect
+2. **Track Your Wheel Rotations** — Explains the PUT → assignment → CALL cycle
+3. **Start With Your Deposits** — Why recording deposits enables performance tracking
+4. **Log Your Trades** — How to record PUTs, CALLs, and assignments
+5. **Track Your Performance** — Dashboard, P&L, win rate, and Scanner overview
+6. **You're Ready to Roll** — Final slide with CTAs
+
+### Navigation
+
+- **Next / Back buttons** — progress through slides
+- **Progress dots** — click any dot to jump to that slide
+- **ArrowRight / Enter** — advance to next slide
+- **ArrowLeft** — go back one slide
+- **Escape / Skip / X button** — dismiss the slideshow
+- **Backdrop click** — does NOT dismiss (prevents accidental closure)
+
+### Final Slide CTAs
+
+- **Record a Deposit** (primary) — navigates to `/deposits`
+- **Create a Trade** (outline) — navigates to `/trades/new`
+- **Explore on My Own** (text link) — dismisses without navigating
+
+All dismiss paths (Skip, X, CTA, Explore) mark onboarding as complete in the database.
+
+### Replaying the Tour
+
+From the Help page (`/help`), click **Replay Intro Tour** in the Getting Started section. This resets your onboarding state and redirects to the dashboard where the slideshow reappears.
 
 ---
 

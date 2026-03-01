@@ -13,6 +13,17 @@ import type {
 // Mock fetch
 global.fetch = vi.fn()
 
+// Mock onboarding server action (pulled in via OnboardingSlideshow)
+vi.mock('@/lib/actions/onboarding', () => ({
+  completeOnboarding: vi.fn().mockResolvedValue({ success: true }),
+  resetOnboarding: vi.fn().mockResolvedValue({ success: true }),
+}))
+
+// Mock next/navigation for OnboardingSlideshow
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}))
+
 const mockMetrics: DashboardMetrics = {
   totalPortfolioValue: 50000,
   spyComparisonValue: 48000,
@@ -196,6 +207,49 @@ describe('PLDashboard', () => {
     expect(screen.getByText('Deployed Capital')).toBeInTheDocument()
     expect(screen.getByText('N/A')).toBeInTheDocument()
     expect(screen.getByText('Record deposits to track')).toBeInTheDocument()
+  })
+
+  it('renders OnboardingSlideshow when showOnboarding is true', () => {
+    render(
+      <PLDashboard
+        initialMetrics={mockMetrics}
+        initialPLOverTime={mockPLOverTime}
+        initialPLByTicker={mockPLByTicker}
+        initialWinRateData={mockWinRateData}
+        showOnboarding={true}
+      />
+    )
+
+    expect(screen.getByRole('dialog', { name: /welcome to greekwheel/i })).toBeInTheDocument()
+    expect(screen.getByText('Welcome to GreekWheel')).toBeInTheDocument()
+  })
+
+  it('does not render OnboardingSlideshow when showOnboarding is false', () => {
+    render(
+      <PLDashboard
+        initialMetrics={mockMetrics}
+        initialPLOverTime={mockPLOverTime}
+        initialPLByTicker={mockPLByTicker}
+        initialWinRateData={mockWinRateData}
+        showOnboarding={false}
+      />
+    )
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByText('Welcome to GreekWheel')).not.toBeInTheDocument()
+  })
+
+  it('does not render OnboardingSlideshow when showOnboarding is omitted', () => {
+    render(
+      <PLDashboard
+        initialMetrics={mockMetrics}
+        initialPLOverTime={mockPLOverTime}
+        initialPLByTicker={mockPLByTicker}
+        initialWinRateData={mockWinRateData}
+      />
+    )
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   it('handles fetch error gracefully', async () => {

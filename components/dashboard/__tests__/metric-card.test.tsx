@@ -62,6 +62,54 @@ describe('MetricCard', () => {
     expect(screen.getByText('This is a subtitle')).toBeInTheDocument()
   })
 
+  it('applies custom colorClassName when provided', () => {
+    render(
+      <MetricCard title="Deployed" value={62.5} formatAs="percentage" colorClassName="text-gray-900" />
+    )
+
+    const valueElement = screen.getByText('62.50%')
+    expect(valueElement).toHaveClass('text-gray-900')
+  })
+
+  it('colorClassName overrides colorize behavior', () => {
+    render(
+      <MetricCard
+        title="Deployed"
+        value={85}
+        formatAs="percentage"
+        colorize
+        colorClassName="text-red-600"
+      />
+    )
+
+    const valueElement = screen.getByText('85.00%')
+    expect(valueElement).toHaveClass('text-red-600')
+    expect(valueElement).not.toHaveClass('text-green-600')
+  })
+
+  it('colorClassName overrides default gray when colorize is false', () => {
+    render(
+      <MetricCard
+        title="Deployed"
+        value={45}
+        formatAs="percentage"
+        colorize={false}
+        colorClassName="text-green-600"
+      />
+    )
+
+    const valueElement = screen.getByText('45.00%')
+    expect(valueElement).toHaveClass('text-green-600')
+    expect(valueElement).not.toHaveClass('text-gray-900')
+  })
+
+  it('falls back to default color logic when colorClassName is not provided', () => {
+    render(<MetricCard title="P&L" value={100} formatAs="currency" colorize />)
+
+    const valueElement = screen.getByText('$100.00')
+    expect(valueElement).toHaveClass('text-green-600')
+  })
+
   it('shows loading state', () => {
     const { container } = render(<MetricCard title="Test" value={100} loading />)
 

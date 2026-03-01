@@ -10,6 +10,7 @@ import {
   getStatusColor,
   getPositionColor,
   getSemanticColor,
+  getDeploymentColorClass,
   getContrastRatio,
   meetsContrastAA,
   meetsContrastAAA,
@@ -362,6 +363,40 @@ describe('ColorVariant type', () => {
     expect(variant).toHaveProperty('text')
     expect(variant).toHaveProperty('bg')
     expect(variant).toHaveProperty('border')
+  })
+})
+
+describe('getDeploymentColorClass', () => {
+  it('returns green for deployment below 50%', () => {
+    expect(getDeploymentColorClass(0)).toBe('text-green-600')
+    expect(getDeploymentColorClass(49.9)).toBe('text-green-600')
+  })
+
+  it('returns gray for deployment between 50% and 70%', () => {
+    expect(getDeploymentColorClass(50)).toBe('text-gray-900')
+    expect(getDeploymentColorClass(62.5)).toBe('text-gray-900')
+    expect(getDeploymentColorClass(69.9)).toBe('text-gray-900')
+  })
+
+  it('returns yellow for deployment between 70% and 85%', () => {
+    expect(getDeploymentColorClass(70)).toBe('text-yellow-600')
+    expect(getDeploymentColorClass(77.5)).toBe('text-yellow-600')
+    expect(getDeploymentColorClass(84.9)).toBe('text-yellow-600')
+  })
+
+  it('returns red for deployment 85% or above', () => {
+    expect(getDeploymentColorClass(85)).toBe('text-red-600')
+    expect(getDeploymentColorClass(100)).toBe('text-red-600')
+    expect(getDeploymentColorClass(150)).toBe('text-red-600')
+  })
+
+  it('handles exact boundary values correctly', () => {
+    expect(getDeploymentColorClass(49.999)).toBe('text-green-600')
+    expect(getDeploymentColorClass(50)).toBe('text-gray-900')
+    expect(getDeploymentColorClass(69.999)).toBe('text-gray-900')
+    expect(getDeploymentColorClass(70)).toBe('text-yellow-600')
+    expect(getDeploymentColorClass(84.999)).toBe('text-yellow-600')
+    expect(getDeploymentColorClass(85)).toBe('text-red-600')
   })
 })
 

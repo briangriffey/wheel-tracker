@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import React, { useState, useMemo } from 'react'
 import { WheelCard } from './wheel-card'
 
 type WheelStatus = 'ACTIVE' | 'IDLE' | 'PAUSED' | 'COMPLETED'

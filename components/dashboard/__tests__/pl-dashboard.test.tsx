@@ -162,6 +162,42 @@ describe('PLDashboard', () => {
     expect(screen.getAllByText('Win Rate').length).toBeGreaterThan(0)
   })
 
+  it('renders deployed capital card with percentage and subtitle', () => {
+    render(
+      <PLDashboard
+        initialMetrics={mockMetrics}
+        initialPLOverTime={mockPLOverTime}
+        initialPLByTicker={mockPLByTicker}
+        initialWinRateData={mockWinRateData}
+      />
+    )
+
+    expect(screen.getByText('Deployed Capital')).toBeInTheDocument()
+    expect(screen.getByText('62.50%')).toBeInTheDocument()
+    // Subtitle shows dollar breakdown
+    expect(screen.getByText('$25,000.00 of $40,000.00')).toBeInTheDocument()
+  })
+
+  it('renders deployed capital card with N/A when deployedCapitalPercent is null', () => {
+    const nullMetrics: DashboardMetrics = {
+      ...mockMetrics,
+      deployedCapitalPercent: null,
+    }
+
+    render(
+      <PLDashboard
+        initialMetrics={nullMetrics}
+        initialPLOverTime={mockPLOverTime}
+        initialPLByTicker={mockPLByTicker}
+        initialWinRateData={mockWinRateData}
+      />
+    )
+
+    expect(screen.getByText('Deployed Capital')).toBeInTheDocument()
+    expect(screen.getByText('N/A')).toBeInTheDocument()
+    expect(screen.getByText('Record deposits to track')).toBeInTheDocument()
+  })
+
   it('handles fetch error gracefully', async () => {
     const user = userEvent.setup()
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})

@@ -71,7 +71,9 @@ Each wheel is displayed as a card showing:
 - **Current Step**: Where in the cycle (PUT, Position, CALL)
 - **Cycle Count**: Number of completed cycles
 - **Total P&L**: Cumulative profit/loss for this wheel
-- **Last Activity**: Most recent trade or action
+- **Total Premiums**: Sum of all premiums collected
+- **Capital Deployed**: Percentage of total account value currently tied up in this wheel's open PUTs and stock positions (hidden when zero or when no deposits are recorded)
+- **Avg Cycle P&L**: Average profit per completed cycle
 
 **Card Example**:
 ```
@@ -142,14 +144,11 @@ The Wheel Detail page provides in-depth information about a single wheel cycle.
 The header shows comprehensive metrics for this wheel:
 
 **Displayed Metrics**:
-- **Ticker**: Stock symbol
-- **Current Step**: Where you are in the cycle
-- **Cycle Count**: Number of completed full cycles
-- **Total P&L**: Overall profit/loss
-- **Return %**: Percentage return on capital
-- **Average Cycle Duration**: Mean days to complete a cycle
-- **Total Premium Collected**: Sum of all option premiums
-- **Active Capital**: Current amount invested
+- **Cycles Completed**: Number of completed full cycles
+- **Total Realized P&L**: Cumulative profit/loss
+- **Total Premiums Collected**: Sum of all option premiums
+- **Avg Cycle P&L**: Average profit per completed cycle
+- **Capital Deployed**: Dollar amount currently at risk in this wheel's open PUTs and stock position, with percentage of total account value shown alongside
 
 **Example**:
 ```
@@ -840,51 +839,26 @@ Get insights into your overall portfolio performance.
 
 ### Portfolio Overview
 
-**Four Summary Cards**:
+**Four Summary Cards** (2-column on tablet, 4-column on desktop):
 
 **1. Total Portfolio Value**
-```
-Total Portfolio Value
-$45,250
+- Current value of all positions plus cash from premiums
 
-+$5,250 (+13.1%)
-```
-- Current value of all positions
-- Plus cash from premiums
-- Total unrealized gains/losses
+**2. If You Bought SPY**
+- What the same cash deposits would be worth in SPY
 
-**2. Realized P&L**
-```
-Realized P&L
-+$3,200
+**3. vs SPY**
+- How your portfolio compares to SPY (green = outperforming, red = underperforming)
 
-12 closed trades
-```
-- Profit/loss from closed trades
-- Completed wheel cycles
-- Win rate percentage
-
-**3. Unrealized P&L**
-```
-Unrealized P&L
-+$2,050
-
-5 open positions
-```
-- Current gain/loss on open positions
-- Based on current market prices
-- Updates in real-time
-
-**4. Active Positions**
-```
-Active Positions
-5 positions
-
-Total Value: $28,400
-```
-- Number of stock positions
-- Total current value
-- Quick link to positions page
+**4. Deployed Capital**
+- Percentage of account value currently at risk in open PUTs and stock positions
+- Color-coded by risk level:
+  - Green: < 50% (conservative)
+  - Gray: 50–70% (moderate)
+  - Yellow: 70–85% (aggressive)
+  - Red: > 85% (over-deployed)
+- Subtitle shows the dollar breakdown (e.g., "$25,000 of $40,000")
+- Displays "N/A / Record deposits to track" when no cash deposits are recorded
 
 ### P&L Over Time
 

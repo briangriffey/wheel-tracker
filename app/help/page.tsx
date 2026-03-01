@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { ReplayTourButton } from '@/components/onboarding/replay-tour-button'
 
 export const metadata = {
   title: 'Help Center - GreekWheel',
@@ -134,6 +135,12 @@ export default function HelpPage() {
                 Understanding Benchmarks →
               </Link>
             </div>
+          </div>
+          <div className="mt-6 pt-4 border-t border-blue-200/50 text-center">
+            <p className="text-sm text-gray-600 mb-2">
+              Want to see the welcome tour again?
+            </p>
+            <ReplayTourButton />
           </div>
         </div>
 

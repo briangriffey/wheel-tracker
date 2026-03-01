@@ -13,7 +13,7 @@ export const slides: SlideContent[] = [
   {
     id: 1,
     heading: 'Welcome to GreekWheel',
-    body: "Your personal tracker for the options wheel strategy. Let us show you around -- this will take less than a minute.",
+    body: 'Your personal tracker for the options wheel strategy. Let us show you around -- this will take less than a minute.',
     Icon: null,
   },
   {

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import type { TradeStatus } from '@/lib/generated/prisma'
 
 /**
@@ -20,16 +21,9 @@ export interface BatchResult {
   errors: Array<{ tradeId: string; error: string }>
 }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -48,6 +42,7 @@ async function getCurrentUserId(): Promise<string> {
 export async function batchMarkExpired(tradeIds: string[]): Promise<ActionResult<BatchResult>> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
     const closeDate = new Date()
 
     const errors: Array<{ tradeId: string; error: string }> = []
@@ -142,6 +137,7 @@ export async function batchMarkExpired(tradeIds: string[]): Promise<ActionResult
 export async function batchMarkAssigned(tradeIds: string[]): Promise<ActionResult<BatchResult>> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
     const closeDate = new Date()
 
     const errors: Array<{ tradeId: string; error: string }> = []
@@ -234,6 +230,7 @@ export async function batchUpdateTradeStatus(
 ): Promise<ActionResult<BatchResult>> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
     const closeDate = status !== 'OPEN' ? new Date() : undefined
 
     const errors: Array<{ tradeId: string; error: string }> = []

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
+import { auth } from '@/lib/auth'
 import { fetchStockPrice } from '@/lib/services/market-data'
 import {
   calculateBenchmarkShares,
@@ -32,18 +33,9 @@ type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  // This is a placeholder - in production, get this from NextAuth session
-  // For now, return a test user ID
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -65,6 +57,7 @@ export async function setupBenchmark(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Check if benchmark already exists
     const existing = await prisma.marketBenchmark.findUnique({
@@ -153,6 +146,7 @@ export async function updateBenchmark(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Verify benchmark exists
     const benchmark = await prisma.marketBenchmark.findUnique({
@@ -239,6 +233,7 @@ export async function deleteBenchmark(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Delete benchmark
     await prisma.marketBenchmark.delete({
@@ -278,6 +273,7 @@ export async function getBenchmarks(): Promise<ActionResult<BenchmarkMetrics[]>>
   try {
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Get all benchmarks
     const benchmarks = await getAllBenchmarkMetrics(userId)
@@ -316,6 +312,7 @@ export async function getComparison(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     if (ticker) {
       // Compare against specific benchmark
@@ -363,6 +360,7 @@ export async function updateAllBenchmarks(): Promise<ActionResult<BenchmarkMetri
   try {
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Get all benchmarks
     const benchmarks = await prisma.marketBenchmark.findMany({

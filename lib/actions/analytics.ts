@@ -1,6 +1,7 @@
 'use server'
 
 import { getPortfolioMetrics, type PortfolioMetrics } from '@/lib/calculations/portfolio'
+import { auth } from '@/lib/auth'
 
 /**
  * Server action result type
@@ -9,19 +10,9 @@ type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  // This is a placeholder - in production, get this from NextAuth session
-  // For now, we'll use the same pattern as other actions
-  const { prisma } = await import('@/lib/db')
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -51,6 +42,7 @@ export async function getPortfolioAnalytics(): Promise<ActionResult<PortfolioMet
   try {
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Calculate portfolio metrics
     const metrics = await getPortfolioMetrics(userId)

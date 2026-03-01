@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import {
   CreateWheelSchema,
   UpdateWheelSchema,
@@ -19,18 +20,9 @@ type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  // This is a placeholder - in production, get this from NextAuth session
-  // For now, return a test user ID
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -55,6 +47,7 @@ export async function createWheel(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Check if user already has an ACTIVE wheel for this ticker
     const existingActiveWheel = await prisma.wheel.findFirst({
@@ -139,6 +132,7 @@ export async function getWheels(filters?: WheelFilters): Promise<
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Build where clause
     const where: Prisma.WheelWhereInput = { userId }
@@ -275,6 +269,7 @@ export async function getWheelDetail(wheelId: string): Promise<
   try {
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     const wheel = await prisma.wheel.findUnique({
       where: { id: wheelId },
@@ -408,6 +403,7 @@ export async function updateWheel(input: UpdateWheelInput): Promise<ActionResult
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Verify wheel exists and belongs to user
     const existingWheel = await prisma.wheel.findUnique({
@@ -466,6 +462,7 @@ export async function pauseWheel(wheelId: string): Promise<ActionResult<void>> {
   try {
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Verify wheel exists and belongs to user
     const existingWheel = await prisma.wheel.findUnique({
@@ -531,6 +528,7 @@ export async function completeWheel(wheelId: string): Promise<ActionResult<void>
   try {
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Verify wheel exists and belongs to user
     const existingWheel = await prisma.wheel.findUnique({

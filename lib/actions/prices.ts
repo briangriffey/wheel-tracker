@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
+import { auth } from '@/lib/auth'
 import { canRefreshPrice } from '@/lib/utils/market'
 
 /**
@@ -25,16 +26,9 @@ export interface PriceData {
   refreshReason: string
 }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -144,6 +138,7 @@ export async function refreshPositionPrices(): Promise<
 > {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Get all open positions
     const openPositions = await prisma.position.findMany({
@@ -237,6 +232,7 @@ export async function refreshSinglePositionPrice(
 ): Promise<ActionResult<{ currentValue: number; priceData: PriceData }>> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Get the position
     const position = await prisma.position.findUnique({

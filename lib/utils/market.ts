@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 
 /**
  * Market trading hours in Central Time (America/Chicago)
@@ -209,16 +210,9 @@ export function canRefreshPrice(updatedAt: Date, now: Date = new Date()): Refres
   }
 }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -227,7 +221,9 @@ async function getCurrentUserId(): Promise<string> {
  */
 export async function getActiveTickers(userId?: string): Promise<string[]> {
   try {
-    const actualUserId = userId || (await getCurrentUserId())
+    const resolvedId = userId ?? (await getCurrentUserId())
+    if (!resolvedId) throw new Error('Not authenticated')
+    const actualUserId = resolvedId
 
     // Get tickers from open positions
     const positions = await prisma.position.findMany({
@@ -276,7 +272,9 @@ export async function getActiveTickers(userId?: string): Promise<string[]> {
  */
 export async function getAllTickers(userId?: string): Promise<string[]> {
   try {
-    const actualUserId = userId || (await getCurrentUserId())
+    const resolvedId = userId ?? (await getCurrentUserId())
+    if (!resolvedId) throw new Error('Not authenticated')
+    const actualUserId = resolvedId
 
     // Get all tickers from positions
     const positions = await prisma.position.findMany({

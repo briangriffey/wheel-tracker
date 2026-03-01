@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
+import { auth } from '@/lib/auth'
 import { fetchStockPrice, getLatestPrice } from '@/lib/services/market-data'
 import {
   RecordDepositSchema,
@@ -53,16 +54,9 @@ export interface DepositSummary {
   lastDepositDate: Date | null
 }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -206,6 +200,7 @@ export async function recordCashDeposit(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Fetch SPY price for the deposit date
     const priceResult = await getSPYPriceForDate(depositDate)
@@ -287,6 +282,7 @@ export async function recordCashWithdrawal(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Check if user has enough invested capital
     const deposits = await prisma.cashDeposit.findMany({
@@ -375,6 +371,7 @@ export async function getCashDeposits(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Build where clause
     const where: Prisma.CashDepositWhereInput = {
@@ -435,6 +432,7 @@ export async function getCashDeposits(
 export async function getDepositSummary(): Promise<ActionResult<DepositSummary>> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     const deposits = await prisma.cashDeposit.findMany({
       where: { userId },
@@ -505,6 +503,7 @@ export async function deleteCashDeposit(input: DeleteDepositInput): Promise<Acti
     const { id } = validated
 
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Check if deposit exists and belongs to user
     const deposit = await prisma.cashDeposit.findUnique({

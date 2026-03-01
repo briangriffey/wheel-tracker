@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import {
   AssignPutSchema,
   AssignCallSchema,
@@ -19,18 +20,9 @@ type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  // This is a placeholder - in production, get this from NextAuth session
-  // For now, return a test user ID
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -72,6 +64,7 @@ export async function assignPut(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Verify trade exists and get details (including wheel relationship)
     const trade = await prisma.trade.findUnique({
@@ -204,6 +197,7 @@ export async function assignCall(
 
     // Get current user
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Verify trade exists and get details with position
     const trade = await prisma.trade.findUnique({
@@ -354,6 +348,7 @@ export async function getPositions(): Promise<
 > {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     const positions = await prisma.position.findMany({
       where: { userId },
@@ -413,6 +408,7 @@ export async function getActivePositions(): Promise<
 > {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     const positions = await prisma.position.findMany({
       where: {
@@ -489,6 +485,7 @@ export async function getPosition(id: string): Promise<
 > {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     const position = await prisma.position.findUnique({
       where: { id },
@@ -593,6 +590,7 @@ export async function updatePosition(
     const { id, notes, currentValue } = validated
 
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Verify position exists and belongs to user
     const existingPosition = await prisma.position.findUnique({

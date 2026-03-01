@@ -1,6 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import { getLatestPrice } from './prices'
 
 /**
@@ -10,16 +11,9 @@ type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -83,6 +77,7 @@ export async function getUpcomingExpirations(
 ): Promise<ActionResult<ExpirationNotification[]>> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Calculate date range
     const now = new Date()
@@ -163,6 +158,7 @@ export async function getUpcomingExpirations(
 export async function getITMOptions(): Promise<ActionResult<ITMNotification[]>> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Get all OPEN trades
     const trades = await prisma.trade.findMany({
@@ -273,6 +269,7 @@ export async function getPositionsWithoutCalls(): Promise<
 > {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) return { success: false, error: 'Not authenticated' }
 
     // Get all OPEN positions with their covered calls
     const positions = await prisma.position.findMany({

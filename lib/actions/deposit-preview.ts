@@ -1,5 +1,6 @@
 'use server'
 
+import { auth } from '@/lib/auth'
 import { fetchStockPrice, getLatestPrice } from '@/lib/services/market-data'
 
 /**
@@ -148,18 +149,19 @@ export async function calculateWithdrawalPreview(
       return { success: false, error: 'Withdrawal date cannot be in the future' }
     }
 
+    // Get current user
+    const session = await auth()
+    const userId = session?.user?.id
+    if (!userId) {
+      return { success: false, error: 'Not authenticated' }
+    }
+
     // Get current net invested amount
     const { prisma } = await import('@/lib/db')
 
-    // Get current user
-    const user = await prisma.user.findFirst()
-    if (!user) {
-      return { success: false, error: 'No user found' }
-    }
-
     // Calculate net invested
     const deposits = await prisma.cashDeposit.findMany({
-      where: { userId: user.id },
+      where: { userId },
     })
 
     const netInvested = deposits.reduce((sum, d) => sum + d.amount.toNumber(), 0)

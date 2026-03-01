@@ -56,3 +56,6 @@ next-env.d.ts
 state.json
 
 dist
+
+# Worktrees
+.worktrees/

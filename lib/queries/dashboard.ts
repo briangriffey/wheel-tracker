@@ -1,21 +1,13 @@
 import { cache } from 'react'
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import type { Prisma } from '@/lib/generated/prisma'
 import { getLatestPrice } from '@/lib/services/market-data'
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- * Cached to avoid duplicate queries within the same request
- */
-const getCurrentUserId = cache(async (): Promise<string> => {
-  // This is a placeholder - in production, get this from NextAuth session
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
-})
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
+}
 
 /**
  * Time range type for filtering dashboard data
@@ -118,6 +110,7 @@ export const getDashboardMetrics = async (
 ): Promise<DashboardMetrics> => {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) throw new Error('Not authenticated')
     const dateThreshold = getDateThreshold(timeRange)
 
     // Build date filter
@@ -290,6 +283,7 @@ export const getPLOverTime = cache(
   async (timeRange: TimeRange = 'All'): Promise<PLOverTimeDataPoint[]> => {
     try {
       const userId = await getCurrentUserId()
+      if (!userId) throw new Error('Not authenticated')
       const dateThreshold = getDateThreshold(timeRange)
 
       // Build date filter
@@ -482,6 +476,7 @@ export const getPLByTicker = cache(
   async (timeRange: TimeRange = 'All'): Promise<PLByTickerDataPoint[]> => {
     try {
       const userId = await getCurrentUserId()
+      if (!userId) throw new Error('Not authenticated')
       const dateThreshold = getDateThreshold(timeRange)
 
       // Build date filter
@@ -599,6 +594,7 @@ export const getPLByTicker = cache(
 export const getWinRateData = cache(async (timeRange: TimeRange = 'All'): Promise<WinRateData> => {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) throw new Error('Not authenticated')
     const dateThreshold = getDateThreshold(timeRange)
 
     // Build date filter

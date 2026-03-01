@@ -1,18 +1,11 @@
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import type { Position, PositionStatus } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  // This is a placeholder - in production, get this from NextAuth session
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -127,6 +120,7 @@ export async function getPositions(
 ): Promise<PositionWithCalculations[]> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) throw new Error('Not authenticated')
 
     const {
       status,
@@ -218,6 +212,7 @@ export async function getPositions(
 export async function getPosition(id: string): Promise<PositionWithCalculations | null> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) throw new Error('Not authenticated')
 
     const position = await prisma.position.findFirst({
       where: {
@@ -272,6 +267,7 @@ export async function getOpenPositions(): Promise<PositionWithCalculations[]> {
 export async function getPositionStats() {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) throw new Error('Not authenticated')
 
     const [totalPositions, openPositions, closedPositions, totals, openWithValues] =
       await Promise.all([

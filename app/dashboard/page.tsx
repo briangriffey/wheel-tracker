@@ -16,8 +16,8 @@ import {
 } from '@/lib/actions/notifications'
 import { prisma } from '@/lib/db'
 
-// Enable ISR with 60 second revalidation
-export const revalidate = 60
+// Dynamic rendering — dashboard is user-specific, cannot be statically cached
+export const dynamic = 'force-dynamic'
 
 // Add metadata for SEO
 export const metadata = {

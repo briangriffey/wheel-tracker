@@ -7,8 +7,8 @@ import {
   type TimeRange,
 } from '@/lib/queries/dashboard'
 
-// Cache for 60 seconds, revalidate in background
-export const revalidate = 60
+// Dynamic rendering — dashboard data is user-specific
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
       winRateData,
     })
 
-    // Add cache headers: cache for 60s, allow stale for 300s while revalidating
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
+    // Private cache — user-specific data must not be shared across users
+    response.headers.set('Cache-Control', 'private, no-store')
 
     return response
   } catch (error) {

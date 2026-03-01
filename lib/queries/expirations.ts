@@ -1,16 +1,10 @@
 import { prisma } from '@/lib/db'
+import { auth } from '@/lib/auth'
 import type { Trade } from '@/lib/generated/prisma'
 
-/**
- * Get the current user ID
- * TODO: Replace with actual session-based authentication
- */
-async function getCurrentUserId(): Promise<string> {
-  const user = await prisma.user.findFirst()
-  if (!user) {
-    throw new Error('No user found. Please create a user first.')
-  }
-  return user.id
+async function getCurrentUserId(): Promise<string | null> {
+  const session = await auth()
+  return session?.user?.id ?? null
 }
 
 /**
@@ -25,6 +19,7 @@ async function getCurrentUserId(): Promise<string> {
 export async function getExpiringTrades(daysAhead: number = 30): Promise<Trade[]> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) throw new Error('Not authenticated')
     const today = new Date()
     const futureDate = new Date()
     futureDate.setDate(today.getDate() + daysAhead)
@@ -68,6 +63,7 @@ export async function getExpiringTrades(daysAhead: number = 30): Promise<Trade[]
 export async function getTradesByExpirationDate(date: Date): Promise<Trade[]> {
   try {
     const userId = await getCurrentUserId()
+    if (!userId) throw new Error('Not authenticated')
 
     // Normalize date to midnight
     const startOfDay = new Date(date)

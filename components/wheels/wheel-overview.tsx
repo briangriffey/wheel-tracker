@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { pauseWheel, completeWheel } from '@/lib/actions/wheels'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import { formatCurrency } from '@/lib/utils/format'
 
 interface WheelOverviewProps {
   wheel: {
@@ -18,7 +19,9 @@ interface WheelOverviewProps {
     lastActivityAt: Date
     completedAt: Date | null
     notes: string | null
+    deployedCapital: number
   }
+  accountValue: number
 }
 
 function getStatusColor(status: string): string {
@@ -36,7 +39,7 @@ function getStatusColor(status: string): string {
   }
 }
 
-export function WheelOverview({ wheel }: WheelOverviewProps) {
+export function WheelOverview({ wheel, accountValue }: WheelOverviewProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -132,7 +135,7 @@ export function WheelOverview({ wheel }: WheelOverviewProps) {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 px-6 py-5">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-6 px-6 py-5">
         {/* Cycles Completed */}
         <div>
           <dt className="text-sm font-medium text-gray-500">Cycles Completed</dt>
@@ -182,6 +185,23 @@ export function WheelOverview({ wheel }: WheelOverviewProps) {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
+              </>
+            ) : (
+              <span className="text-gray-400">N/A</span>
+            )}
+          </dd>
+        </div>
+
+        {/* Capital Deployed */}
+        <div>
+          <dt className="text-sm font-medium text-gray-500">Capital Deployed</dt>
+          <dd className="mt-1 text-2xl font-semibold text-gray-900">
+            {accountValue > 0 ? (
+              <>
+                {formatCurrency(wheel.deployedCapital)}
+                <span className="text-sm font-normal text-gray-500 ml-1">
+                  ({((wheel.deployedCapital / accountValue) * 100).toFixed(1)}%)
+                </span>
               </>
             ) : (
               <span className="text-gray-400">N/A</span>

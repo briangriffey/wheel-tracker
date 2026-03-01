@@ -16,10 +16,12 @@ interface Wheel {
   notes: string | null
   tradeCount: number
   positionCount: number
+  deployedCapital: number
 }
 
 interface WheelCardProps {
   wheel: Wheel
+  accountValue: number
 }
 
 // Helper to determine current step in wheel cycle
@@ -104,7 +106,7 @@ function calculateAvgCyclePL(wheel: Wheel): number {
   return wheel.totalRealizedPL / wheel.cycleCount
 }
 
-export function WheelCard({ wheel }: WheelCardProps) {
+export function WheelCard({ wheel, accountValue }: WheelCardProps) {
   const router = useRouter()
   const currentStep = getCurrentStep(wheel)
   const winRate = calculateWinRate(wheel)
@@ -180,6 +182,16 @@ export function WheelCard({ wheel }: WheelCardProps) {
               })}
             </span>
           </div>
+
+          {/* Capital Deployed */}
+          {accountValue > 0 && wheel.deployedCapital > 0 && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Capital Deployed</span>
+              <span className="text-sm font-semibold text-gray-900">
+                {((wheel.deployedCapital / accountValue) * 100).toFixed(1)}%
+              </span>
+            </div>
+          )}
 
           {/* Average Cycle P&L */}
           {wheel.cycleCount > 0 && (

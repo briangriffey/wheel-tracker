@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import { getWheels } from '@/lib/actions/wheels'
+import { getDepositSummary } from '@/lib/actions/deposits'
 import { WheelsList } from '@/components/wheels/wheels-list'
 import { EmptyState } from '@/components/ui/empty-state'
 
@@ -50,7 +51,12 @@ function WheelsListSkeleton() {
 
 // Main server component
 export default async function WheelsPage() {
-  const result = await getWheels()
+  const [result, depositResult] = await Promise.all([
+    getWheels(),
+    getDepositSummary(),
+  ])
+
+  const accountValue = depositResult.success ? depositResult.data.netInvested : 0
 
   if (!result.success) {
     return (
@@ -100,7 +106,7 @@ export default async function WheelsPage() {
         />
       ) : (
         <Suspense fallback={<WheelsListSkeleton />}>
-          <WheelsList initialWheels={wheels} />
+          <WheelsList initialWheels={wheels} accountValue={accountValue} />
         </Suspense>
       )}
     </div>

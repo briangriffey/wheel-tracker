@@ -69,6 +69,11 @@ export interface DashboardMetrics {
   optionsWinRate: number
   assignmentRate: number
   openContracts: number
+
+  // Deployed capital
+  deployedCapitalAmount: number
+  deployedCapitalPercent: number | null
+  accountValue: number
 }
 
 /**
@@ -144,6 +149,9 @@ export const getDashboardMetrics = async (
           contracts: true,
           status: true,
           closePremium: true,
+          type: true,
+          strikePrice: true,
+          shares: true,
         },
       }),
       // Open positions for unrealized P&L (select only needed fields)
@@ -237,6 +245,21 @@ export const getDashboardMetrics = async (
     const totalPortfolioValue = netInvested + totalPremiumCollected + unrealizedPL
     const spyComparisonValue = totalSpyShares * currentSPYPrice
 
+    // Calculate deployed capital
+    const openPutCapital = trades
+      .filter((t) => t.status === 'OPEN' && t.type === 'PUT')
+      .reduce((sum, trade) => sum + trade.strikePrice.toNumber() * trade.shares, 0)
+
+    const openPositionCapital = openPositions.reduce(
+      (sum, position) => sum + position.totalCost.toNumber(),
+      0
+    )
+
+    const deployedCapitalAmount = openPutCapital + openPositionCapital
+    const deployedCapitalPercent = netInvested > 0
+      ? (deployedCapitalAmount / netInvested) * 100
+      : null
+
     return {
       totalPortfolioValue,
       spyComparisonValue,
@@ -249,6 +272,9 @@ export const getDashboardMetrics = async (
       optionsWinRate,
       assignmentRate,
       openContracts: openContractsCount,
+      deployedCapitalAmount,
+      deployedCapitalPercent,
+      accountValue: netInvested,
     }
   } catch (error) {
     console.error('Error fetching dashboard metrics:', error)

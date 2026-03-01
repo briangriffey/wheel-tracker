@@ -25,6 +25,9 @@ const mockMetrics: DashboardMetrics = {
   optionsWinRate: 75,
   assignmentRate: 25,
   openContracts: 10,
+  deployedCapitalAmount: 25000,
+  deployedCapitalPercent: 62.5,
+  accountValue: 40000,
 }
 
 const mockPLOverTime: PLOverTimeDataPoint[] = [

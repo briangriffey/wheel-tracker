@@ -8,6 +8,7 @@ interface MetricCardProps {
   value: number | null
   formatAs?: 'currency' | 'percentage' | 'number'
   colorize?: boolean
+  colorClassName?: string
   subtitle?: string
   loading?: boolean
 }
@@ -17,6 +18,7 @@ export function MetricCard({
   value,
   formatAs = 'currency',
   colorize = false,
+  colorClassName,
   subtitle,
   loading = false,
 }: MetricCardProps) {
@@ -36,6 +38,7 @@ export function MetricCard({
   }
 
   const getColorClass = (val: number | null): string => {
+    if (colorClassName) return colorClassName
     if (!colorize || val === null) return 'text-gray-900'
     return getPnLColorClass(val)
   }

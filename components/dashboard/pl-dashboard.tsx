@@ -12,6 +12,8 @@ import type {
 import { MetricCard } from './metric-card'
 import { StatCard } from './stat-card'
 import { TimeRangeSelector } from './time-range-selector'
+import { getDeploymentColorClass } from '@/lib/design/colors'
+import { formatCurrency } from '@/lib/utils/format'
 
 // Import Card for loading states
 const LoadingCard = ({ height = 'h-96' }: { height?: string }) => (
@@ -101,7 +103,7 @@ export function PLDashboard({
       {/* Row 1 — Portfolio Overview */}
       <div>
         <h2 className="text-lg font-semibold text-gray-700 mb-3">Portfolio Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             title="Total Portfolio Value"
             value={metrics.totalPortfolioValue}
@@ -119,6 +121,22 @@ export function PLDashboard({
             value={metrics.totalPortfolioValue - metrics.spyComparisonValue}
             formatAs="currency"
             colorize
+            loading={loading}
+          />
+          <MetricCard
+            title="Deployed Capital"
+            value={metrics.deployedCapitalPercent}
+            formatAs="percentage"
+            colorClassName={
+              metrics.deployedCapitalPercent !== null
+                ? getDeploymentColorClass(metrics.deployedCapitalPercent)
+                : undefined
+            }
+            subtitle={
+              metrics.deployedCapitalPercent !== null
+                ? `${formatCurrency(metrics.deployedCapitalAmount)} of ${formatCurrency(metrics.accountValue)}`
+                : 'Record deposits to track'
+            }
             loading={loading}
           />
         </div>

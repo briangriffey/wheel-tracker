@@ -216,6 +216,26 @@ export function getSemanticColor(state: 'success' | 'error' | 'warning' | 'info'
 }
 
 /**
+ * Get color class for deployed capital percentage.
+ * Lower deployment = healthier (green), higher = riskier (red).
+ *
+ * Thresholds:
+ * - < 50%: green (conservative)
+ * - 50-70%: gray (moderate, acceptable)
+ * - 70-85%: yellow/amber (getting aggressive)
+ * - > 85%: red (over-deployed)
+ *
+ * @param percent - The deployed capital percentage (0-100+)
+ * @returns Tailwind text color class
+ */
+export function getDeploymentColorClass(percent: number): string {
+  if (percent < 50) return 'text-green-600'
+  if (percent < 70) return 'text-gray-900'
+  if (percent < 85) return 'text-yellow-600'
+  return 'text-red-600'
+}
+
+/**
  * Calculate relative luminance of an RGB color
  * Used for WCAG contrast ratio calculations
  *

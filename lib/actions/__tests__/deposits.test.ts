@@ -59,6 +59,7 @@ describe('Deposit Actions', () => {
     stripeSubscriptionId: null,
     subscriptionStatus: null,
     subscriptionEndsAt: null,
+    onboardingCompletedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   }

@@ -14,6 +14,7 @@ import { StatCard } from './stat-card'
 import { TimeRangeSelector } from './time-range-selector'
 import { getDeploymentColorClass } from '@/lib/design/colors'
 import { formatCurrency } from '@/lib/utils/format'
+import { OnboardingSlideshow } from '@/components/onboarding'
 
 // Import Card for loading states
 const LoadingCard = ({ height = 'h-96' }: { height?: string }) => (
@@ -52,6 +53,7 @@ interface PLDashboardProps {
   initialPLOverTime: PLOverTimeDataPoint[]
   initialPLByTicker: PLByTickerDataPoint[]
   initialWinRateData: WinRateData
+  showOnboarding?: boolean
 }
 
 export function PLDashboard({
@@ -59,10 +61,12 @@ export function PLDashboard({
   initialPLOverTime,
   initialPLByTicker,
   initialWinRateData,
+  showOnboarding,
 }: PLDashboardProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('All')
   const [loading, setLoading] = useState(false)
   const [metrics, setMetrics] = useState<DashboardMetrics>(initialMetrics)
+  const [onboardingVisible, setOnboardingVisible] = useState(showOnboarding ?? false)
   const [plOverTime, setPLOverTime] = useState<PLOverTimeDataPoint[]>(initialPLOverTime)
   const [plByTicker, setPLByTicker] = useState<PLByTickerDataPoint[]>(initialPLByTicker)
   const [winRateData, setWinRateData] = useState<WinRateData>(initialWinRateData)
@@ -94,6 +98,13 @@ export function PLDashboard({
 
   return (
     <div className="space-y-6">
+      {onboardingVisible && (
+        <OnboardingSlideshow
+          isOpen={onboardingVisible}
+          onClose={() => setOnboardingVisible(false)}
+        />
+      )}
+
       {/* Header with Time Range Selector */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-900">P&L Dashboard</h1>

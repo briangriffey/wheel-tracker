@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import { fetchStockPrice } from '@/lib/services/market-data'
 import {
   calculateBenchmarkShares,
@@ -32,11 +32,6 @@ import {
 type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
 
 /**
  * Set up a new market benchmark

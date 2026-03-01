@@ -8,17 +8,12 @@ import {
   type AddWatchlistTickerInput,
   type RemoveWatchlistTickerInput,
 } from '@/lib/validations/watchlist'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import { runFullScan, type FullScanResult } from '@/lib/services/scanner'
 
 type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string }
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
 
 export interface WatchlistTickerData {
   id: string

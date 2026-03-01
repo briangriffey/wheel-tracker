@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 
 /**
  * Market trading hours in Central Time (America/Chicago)
@@ -208,11 +208,6 @@ export function canRefreshPrice(updatedAt: Date, now: Date = new Date()): Refres
     nextRefreshAt: nextOpen,
     reason: 'Already updated since last close',
   }
-}
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
 }
 
 /**

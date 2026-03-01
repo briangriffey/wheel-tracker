@@ -3,15 +3,10 @@
 import Stripe from 'stripe'
 import { prisma } from '@/lib/db'
 import { stripe, PLANS } from '@/lib/stripe'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import { recordAnalyticsEvent } from '@/lib/analytics-server'
 
 type ActionResult<T = unknown> = { success: true; data: T } | { success: false; error: string }
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
 
 /**
  * Create a Stripe Checkout session for subscribing to a plan.

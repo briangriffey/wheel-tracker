@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import {
   CreateWheelSchema,
   UpdateWheelSchema,
@@ -19,11 +19,6 @@ import { Prisma } from '@/lib/generated/prisma'
 type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
 
 /**
  * Create a new wheel for a ticker

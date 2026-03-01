@@ -1,11 +1,6 @@
 import { prisma } from '@/lib/db'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import type { Trade } from '@/lib/generated/prisma'
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
 
 /**
  * Get all OPEN trades grouped by expiration date

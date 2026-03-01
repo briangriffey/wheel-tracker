@@ -1,7 +1,7 @@
 'use server'
 
 import { getPortfolioMetrics, type PortfolioMetrics } from '@/lib/calculations/portfolio'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 
 /**
  * Server action result type
@@ -9,11 +9,6 @@ import { auth } from '@/lib/auth'
 type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
 
 /**
  * Get portfolio-wide analytics and metrics

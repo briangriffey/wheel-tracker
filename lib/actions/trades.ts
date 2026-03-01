@@ -13,7 +13,7 @@ import {
   type CloseOptionInput,
 } from '@/lib/validations/trade'
 import { Prisma } from '@/lib/generated/prisma'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import { FREE_TRADE_LIMIT } from '@/lib/constants'
 import { recordAnalyticsEvent } from '@/lib/analytics-server'
 
@@ -34,14 +34,6 @@ class TradeLimitError extends Error {
 type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
-
-/**
- * Get the current user ID from NextAuth session
- */
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
 
 /**
  * Create a new trade (PUT or CALL option)

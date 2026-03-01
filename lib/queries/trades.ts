@@ -1,14 +1,6 @@
 import { prisma } from '@/lib/db'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
-import { auth } from '@/lib/auth'
-
-/**
- * Get the current user ID from NextAuth session
- */
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
+import { getCurrentUserId } from '@/lib/auth'
 
 /**
  * Options for filtering trades

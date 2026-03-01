@@ -1,12 +1,7 @@
 import { prisma } from '@/lib/db'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import type { Position, PositionStatus } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
 
 /**
  * Extended Position type with calculated fields and relations

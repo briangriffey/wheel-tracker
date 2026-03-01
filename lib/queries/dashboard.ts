@@ -1,13 +1,8 @@
 import { cache } from 'react'
 import { prisma } from '@/lib/db'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import type { Prisma } from '@/lib/generated/prisma'
 import { getLatestPrice } from '@/lib/services/market-data'
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
-}
 
 /**
  * Time range type for filtering dashboard data

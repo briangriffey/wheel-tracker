@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import { fetchStockPrice, getLatestPrice } from '@/lib/services/market-data'
 import {
   RecordDepositSchema,
@@ -52,11 +52,6 @@ export interface DepositSummary {
   avgCostBasis: number
   firstDepositDate: Date | null
   lastDepositDate: Date | null
-}
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
 }
 
 /**

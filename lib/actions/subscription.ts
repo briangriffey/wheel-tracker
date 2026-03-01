@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from '@/lib/db'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import { FREE_TRADE_LIMIT } from '@/lib/constants'
 
 type ActionResult<T = unknown> = { success: true; data: T } | { success: false; error: string }
@@ -12,11 +12,6 @@ export interface TradeUsage {
   tier: 'FREE' | 'PRO'
   remaining: number
   limitReached: boolean
-}
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
 }
 
 /**

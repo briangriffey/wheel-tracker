@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { Prisma } from '@/lib/generated/prisma'
-import { auth } from '@/lib/auth'
+import { getCurrentUserId } from '@/lib/auth'
 import { canRefreshPrice } from '@/lib/utils/market'
 
 /**
@@ -24,11 +24,6 @@ export interface PriceData {
   canRefresh: boolean
   nextRefreshAt: Date | null
   refreshReason: string
-}
-
-async function getCurrentUserId(): Promise<string | null> {
-  const session = await auth()
-  return session?.user?.id ?? null
 }
 
 /**

@@ -284,7 +284,7 @@ export function AssignCallDialog({
                   <div className="col-span-2">
                     <span className="text-gray-600">Expiration:</span>
                     <span className="ml-2 font-semibold text-gray-900">
-                      {new Date(coveredCall.expirationDate).toLocaleDateString()}
+                      {new Date(coveredCall.expirationDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                     </span>
                   </div>
                 </div>

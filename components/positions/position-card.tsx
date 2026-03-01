@@ -468,14 +468,14 @@ export function PositionCard({
               <div>
                 <span className="font-medium text-gray-700">Acquired Date:</span>{' '}
                 <span className="text-gray-900">
-                  {new Date(position.acquiredDate).toLocaleDateString()}
+                  {new Date(position.acquiredDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                 </span>
               </div>
               {position.closedDate && (
                 <div>
                   <span className="font-medium text-gray-700">Closed Date:</span>{' '}
                   <span className="text-gray-900">
-                    {new Date(position.closedDate).toLocaleDateString()}
+                    {new Date(position.closedDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                   </span>
                 </div>
               )}
@@ -525,7 +525,7 @@ export function PositionCard({
                             <div>
                               <span>Expires:</span>{' '}
                               <span className="font-medium text-gray-900">
-                                {new Date(call.expirationDate).toLocaleDateString()}
+                                {new Date(call.expirationDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                               </span>
                             </div>
                           </div>

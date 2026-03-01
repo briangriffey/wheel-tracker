@@ -97,8 +97,8 @@ export function WheelOverview({ wheel }: WheelOverviewProps) {
             </div>
             {wheel.notes && <p className="mt-2 text-sm text-gray-600">{wheel.notes}</p>}
             <p className="mt-1 text-xs text-gray-500">
-              Started {new Date(wheel.startedAt).toLocaleDateString()} • Last activity{' '}
-              {new Date(wheel.lastActivityAt).toLocaleDateString()}
+              Started {new Date(wheel.startedAt).toLocaleDateString('en-US', { timeZone: 'UTC' })} • Last activity{' '}
+              {new Date(wheel.lastActivityAt).toLocaleDateString('en-US', { timeZone: 'UTC' })}
             </p>
           </div>
 

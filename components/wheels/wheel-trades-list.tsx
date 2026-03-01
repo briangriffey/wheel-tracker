@@ -98,7 +98,7 @@ export function WheelTradesList({ trades }: WheelTradesListProps) {
               <div className="col-span-2">
                 <span className="text-gray-500">Expiration</span>
                 <p className="font-medium text-gray-900">
-                  {new Date(trade.expirationDate).toLocaleDateString()}
+                  {new Date(trade.expirationDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                 </p>
               </div>
             </div>
@@ -184,7 +184,7 @@ export function WheelTradesList({ trades }: WheelTradesListProps) {
                     {trade.contracts}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {new Date(trade.expirationDate).toLocaleDateString()}
+                    {new Date(trade.expirationDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span

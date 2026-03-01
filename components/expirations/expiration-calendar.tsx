@@ -59,6 +59,7 @@ export function ExpirationCalendar({ groupedTrades, prices }: ExpirationCalendar
         month: 'short',
         day: 'numeric',
         year: 'numeric',
+        timeZone: 'UTC',
       })
     }
   }

@@ -88,6 +88,7 @@ export function ScannerClient({
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'UTC',
     })
   }
 
@@ -97,6 +98,7 @@ export function ScannerClient({
       month: 'short',
       day: 'numeric',
       year: '2-digit',
+      timeZone: 'UTC',
     })
   }
 

@@ -88,9 +88,9 @@ export function WheelPositionsList({ positions, ticker }: WheelPositionsListProp
               </div>
 
               <div className="mt-4 text-xs text-gray-500">
-                Acquired {new Date(position.acquiredDate).toLocaleDateString()}
+                Acquired {new Date(position.acquiredDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                 {position.closedDate && (
-                  <> • Closed {new Date(position.closedDate).toLocaleDateString()}</>
+                  <> • Closed {new Date(position.closedDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}</>
                 )}
               </div>
             </div>

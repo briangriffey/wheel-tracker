@@ -184,20 +184,20 @@ export function TradeDetailClient({ trade }: TradeDetailClientProps) {
             <div className="flex justify-between">
               <span className="text-gray-600">Expiration Date:</span>
               <span className="font-medium text-gray-900">
-                {new Date(trade.expirationDate).toLocaleDateString()}
+                {new Date(trade.expirationDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Open Date:</span>
               <span className="font-medium text-gray-900">
-                {new Date(trade.openDate).toLocaleDateString()}
+                {new Date(trade.openDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
               </span>
             </div>
             {trade.closeDate && (
               <div className="flex justify-between">
                 <span className="text-gray-600">Close Date:</span>
                 <span className="font-medium text-gray-900">
-                  {new Date(trade.closeDate).toLocaleDateString()}
+                  {new Date(trade.closeDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                 </span>
               </div>
             )}

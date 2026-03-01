@@ -56,8 +56,8 @@ export function BillingContent({ subscription, usage }: BillingContentProps) {
             {isPro && subscription?.currentPeriodEnd && (
               <p className="mt-1 text-sm text-neutral-500">
                 {subscription.status === 'canceled'
-                  ? `Access until ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
-                  : `Renews ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`}
+                  ? `Access until ${new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { timeZone: 'UTC' })}`
+                  : `Renews ${new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { timeZone: 'UTC' })}`}
               </p>
             )}
           </div>

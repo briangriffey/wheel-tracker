@@ -59,6 +59,7 @@ export function BenchmarkComparisonChart({
     displayDate: new Date(point.date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
+      timeZone: 'UTC',
     }),
   }))
 

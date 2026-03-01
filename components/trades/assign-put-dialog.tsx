@@ -316,7 +316,7 @@ export function AssignPutDialog({
                   <div className="col-span-2">
                     <span className="text-gray-600">Expiration:</span>
                     <span className="ml-2 font-semibold text-gray-900">
-                      {new Date(trade.expirationDate).toLocaleDateString()}
+                      {new Date(trade.expirationDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                     </span>
                   </div>
                 </div>

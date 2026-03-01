@@ -55,6 +55,7 @@ export function PLOverTimeChart({ data, loading = false }: PLOverTimeChartProps)
     date: new Date(point.date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
+      timeZone: 'UTC',
     }),
   }))
 

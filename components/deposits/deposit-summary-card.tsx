@@ -23,6 +23,7 @@ export function DepositSummaryCard({ summary }: DepositSummaryCardProps) {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+      timeZone: 'UTC',
     })
   }
 

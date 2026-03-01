@@ -112,6 +112,7 @@ function PLOverTimeChart({ trades }: { trades: Trade[] }) {
           month: 'short',
           day: 'numeric',
           year: '2-digit',
+          timeZone: 'UTC',
         }),
         pl: cumulativePL,
       }
@@ -201,6 +202,7 @@ function PremiumsByMonthChart({ trades }: { trades: Trade[] }) {
           month: date.toLocaleDateString('en-US', {
             month: 'short',
             year: '2-digit',
+            timeZone: 'UTC',
           }),
           premium,
         }

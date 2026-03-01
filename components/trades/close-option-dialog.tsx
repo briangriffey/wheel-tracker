@@ -315,7 +315,7 @@ export function CloseOptionDialog({
                 <div className="col-span-2">
                   <span className="text-gray-600">Expiration:</span>
                   <span className="ml-2 font-semibold text-gray-900">
-                    {new Date(expirationDate).toLocaleDateString()}
+                    {new Date(expirationDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}
                   </span>
                 </div>
                 <div className="col-span-2">

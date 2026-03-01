@@ -62,7 +62,7 @@ export function WheelCycleHistory({ closedPositions }: WheelCycleHistoryProps) {
                 <div className="text-left">
                   <h4 className="text-sm font-semibold text-gray-900">Cycle {cycleNumber}</h4>
                   <p className="text-xs text-gray-500">
-                    {new Date(position.acquiredDate).toLocaleDateString()} -{' '}
+                    {new Date(position.acquiredDate).toLocaleDateString('en-US', { timeZone: 'UTC' })} -{' '}
                     {position.closedDate
                       ? new Date(position.closedDate).toLocaleDateString()
                       : 'Open'}

@@ -129,6 +129,7 @@ export async function getWheels(filters?: WheelFilters): Promise<
       notes: string | null
       tradeCount: number
       positionCount: number
+      deployedCapital: number
     }>
   >
 > {
@@ -162,6 +163,19 @@ export async function getWheels(filters?: WheelFilters): Promise<
         lastActivityAt: true,
         completedAt: true,
         notes: true,
+        trades: {
+          where: { status: 'OPEN', type: 'PUT' },
+          select: {
+            strikePrice: true,
+            shares: true,
+          },
+        },
+        positions: {
+          where: { status: 'OPEN' },
+          select: {
+            totalCost: true,
+          },
+        },
         _count: {
           select: {
             trades: true,
@@ -171,21 +185,33 @@ export async function getWheels(filters?: WheelFilters): Promise<
       },
     })
 
-    // Convert Decimal to number and flatten _count
-    const serialized = wheels.map((wheel: (typeof wheels)[number]) => ({
-      id: wheel.id,
-      ticker: wheel.ticker,
-      status: wheel.status,
-      cycleCount: wheel.cycleCount,
-      totalPremiums: Number(wheel.totalPremiums),
-      totalRealizedPL: Number(wheel.totalRealizedPL),
-      startedAt: wheel.startedAt,
-      lastActivityAt: wheel.lastActivityAt,
-      completedAt: wheel.completedAt,
-      notes: wheel.notes,
-      tradeCount: wheel._count.trades,
-      positionCount: wheel._count.positions,
-    }))
+    // Convert Decimal to number, compute deployedCapital, and flatten _count
+    const serialized = wheels.map((wheel: (typeof wheels)[number]) => {
+      const openPutCapital = wheel.trades.reduce(
+        (sum, t) => sum + t.strikePrice.toNumber() * t.shares,
+        0
+      )
+      const openPositionCapital = wheel.positions.reduce(
+        (sum, p) => sum + p.totalCost.toNumber(),
+        0
+      )
+
+      return {
+        id: wheel.id,
+        ticker: wheel.ticker,
+        status: wheel.status,
+        cycleCount: wheel.cycleCount,
+        totalPremiums: Number(wheel.totalPremiums),
+        totalRealizedPL: Number(wheel.totalRealizedPL),
+        startedAt: wheel.startedAt,
+        lastActivityAt: wheel.lastActivityAt,
+        completedAt: wheel.completedAt,
+        notes: wheel.notes,
+        deployedCapital: openPutCapital + openPositionCapital,
+        tradeCount: wheel._count.trades,
+        positionCount: wheel._count.positions,
+      }
+    })
 
     return { success: true, data: serialized }
   } catch (error) {
@@ -220,6 +246,7 @@ export async function getWheelDetail(wheelId: string): Promise<
     lastActivityAt: Date
     completedAt: Date | null
     notes: string | null
+    deployedCapital: number
     trades: Array<{
       id: string
       type: string
@@ -228,6 +255,7 @@ export async function getWheelDetail(wheelId: string): Promise<
       strikePrice: number
       premium: number
       contracts: number
+      shares: number
       expirationDate: Date
       openDate: Date
       closeDate: Date | null
@@ -271,6 +299,7 @@ export async function getWheelDetail(wheelId: string): Promise<
             strikePrice: true,
             premium: true,
             contracts: true,
+            shares: true,
             expirationDate: true,
             openDate: true,
             closeDate: true,
@@ -301,6 +330,17 @@ export async function getWheelDetail(wheelId: string): Promise<
       return { success: false, error: 'Unauthorized' }
     }
 
+    // Calculate per-wheel deployed capital
+    const wheelOpenPutCapital = wheel.trades
+      .filter((t) => t.status === 'OPEN' && t.type === 'PUT')
+      .reduce((sum, t) => sum + t.strikePrice.toNumber() * t.shares, 0)
+
+    const wheelOpenPositionCapital = wheel.positions
+      .filter((p) => p.status === 'OPEN')
+      .reduce((sum, p) => sum + p.totalCost.toNumber(), 0)
+
+    const wheelDeployedCapital = wheelOpenPutCapital + wheelOpenPositionCapital
+
     // Convert Decimals to numbers
     const serialized = {
       id: wheel.id,
@@ -313,6 +353,7 @@ export async function getWheelDetail(wheelId: string): Promise<
       lastActivityAt: wheel.lastActivityAt,
       completedAt: wheel.completedAt,
       notes: wheel.notes,
+      deployedCapital: wheelDeployedCapital,
       trades: wheel.trades.map((trade: (typeof wheel.trades)[number]) => ({
         id: trade.id,
         type: trade.type,
@@ -321,6 +362,7 @@ export async function getWheelDetail(wheelId: string): Promise<
         strikePrice: Number(trade.strikePrice),
         premium: Number(trade.premium),
         contracts: trade.contracts,
+        shares: trade.shares,
         expirationDate: trade.expirationDate,
         openDate: trade.openDate,
         closeDate: trade.closeDate,

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getWheelDetail } from '@/lib/actions/wheels'
+import { getDepositSummary } from '@/lib/actions/deposits'
 import { WheelOverview } from '@/components/wheels/wheel-overview'
 import { WheelCurrentStatus } from '@/components/wheels/wheel-current-status'
 import { WheelTradesList } from '@/components/wheels/wheel-trades-list'
@@ -20,7 +21,12 @@ interface WheelDetailPageProps {
 
 export default async function WheelDetailPage({ params }: WheelDetailPageProps) {
   const { id } = await params
-  const result = await getWheelDetail(id)
+  const [result, depositResult] = await Promise.all([
+    getWheelDetail(id),
+    getDepositSummary(),
+  ])
+
+  const accountValue = depositResult.success ? depositResult.data.netInvested : 0
 
   if (!result.success) {
     if (result.error === 'Wheel not found' || result.error === 'Unauthorized') {
@@ -55,7 +61,7 @@ export default async function WheelDetailPage({ params }: WheelDetailPageProps) 
       </nav>
 
       {/* Page Header with Overview */}
-      <WheelOverview wheel={wheel} />
+      <WheelOverview wheel={wheel} accountValue={accountValue} />
 
       {/* Current Status - Step in Cycle */}
       <div className="mt-8">

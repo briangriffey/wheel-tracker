@@ -18,10 +18,12 @@ interface Wheel {
   notes: string | null
   tradeCount: number
   positionCount: number
+  deployedCapital: number
 }
 
 interface WheelsListProps {
   initialWheels: Wheel[]
+  accountValue: number
 }
 
 const statusFilters: { value: WheelStatus | 'ALL'; label: string }[] = [
@@ -32,7 +34,7 @@ const statusFilters: { value: WheelStatus | 'ALL'; label: string }[] = [
   { value: 'COMPLETED', label: 'Completed' },
 ]
 
-export function WheelsList({ initialWheels }: WheelsListProps) {
+export function WheelsList({ initialWheels, accountValue }: WheelsListProps) {
   const [statusFilter, setStatusFilter] = useState<WheelStatus | 'ALL'>('ALL')
 
   // Filter wheels based on status
@@ -144,7 +146,7 @@ export function WheelsList({ initialWheels }: WheelsListProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredWheels.map((wheel) => (
-            <WheelCard key={wheel.id} wheel={wheel} />
+            <WheelCard key={wheel.id} wheel={wheel} accountValue={accountValue} />
           ))}
         </div>
       )}

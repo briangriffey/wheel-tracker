@@ -14,6 +14,7 @@ import {
   getITMOptions,
   getPositionsWithoutCalls,
 } from '@/lib/actions/notifications'
+import { prisma } from '@/lib/db'
 
 // Enable ISR with 60 second revalidation
 export const revalidate = 60
@@ -32,7 +33,7 @@ export default async function DashboardPage() {
   }
 
   // Fetch initial dashboard data for 'All' time range and notifications
-  const [metrics, plOverTime, plByTicker, winRateData, expirations, itmOptions, positions] =
+  const [metrics, plOverTime, plByTicker, winRateData, expirations, itmOptions, positions, onboardingUser] =
     await Promise.all([
       getDashboardMetrics('All'),
       getPLOverTime('All'),
@@ -41,7 +42,13 @@ export default async function DashboardPage() {
       getUpcomingExpirations(7),
       getITMOptions(),
       getPositionsWithoutCalls(),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { onboardingCompletedAt: true },
+      }),
     ])
+
+  const showOnboarding = onboardingUser ? onboardingUser.onboardingCompletedAt === null : false
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
@@ -60,6 +67,7 @@ export default async function DashboardPage() {
           initialPLOverTime={plOverTime}
           initialPLByTicker={plByTicker}
           initialWinRateData={winRateData}
+          showOnboarding={showOnboarding}
         />
         <div className="mb-6">
           <PLExportButton />

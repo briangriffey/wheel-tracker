@@ -67,6 +67,9 @@ model User {
   subscriptionStatus       String?          // "active" | "past_due" | "canceled" | "trialing"
   subscriptionEndsAt       DateTime?        // End of current billing period (for grace period)
 
+  // Onboarding
+  onboardingCompletedAt    DateTime?        // null = not completed, timestamp = when completed/skipped
+
   trades           Trade[]
   positions        Position[]
   wheels           Wheel[]

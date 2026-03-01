@@ -8,7 +8,7 @@ export const SCANNER = {
   SMA_TREND_LOOKBACK: 20,
 
   // Phase 2: Implied Volatility Screen
-  MIN_IV_RANK: 20,
+  MIN_IV_RANK: 0,
 
   // Phase 3: Option Selection
   TARGET_MIN_DTE: 5,

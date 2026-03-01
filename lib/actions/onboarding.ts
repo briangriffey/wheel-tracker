@@ -31,3 +31,30 @@ export async function completeOnboarding(): Promise<ActionResult> {
     return { success: false, error: 'Failed to complete onboarding' }
   }
 }
+
+/**
+ * Reset the current user's onboarding state so the slideshow appears again.
+ * Called from the "Replay intro tour" button on the Help page.
+ */
+export async function resetOnboarding(): Promise<ActionResult> {
+  try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return { success: false, error: 'Not authenticated' }
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { onboardingCompletedAt: null },
+    })
+
+    revalidatePath('/dashboard')
+    revalidatePath('/help')
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error resetting onboarding:', error)
+    return { success: false, error: 'Failed to reset onboarding' }
+  }
+}

@@ -24,7 +24,7 @@ export interface AssignCallDialogProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
-  onStartNewPut?: () => void
+  onStartNewPut?: (ticker: string) => void
 }
 
 export function AssignCallDialog({
@@ -86,7 +86,7 @@ export function AssignCallDialog({
   }
 
   const handleStartNewPut = () => {
-    onStartNewPut?.()
+    onStartNewPut?.(ticker)
     onClose()
   }
 

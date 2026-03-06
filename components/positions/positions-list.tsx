@@ -38,6 +38,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false)
   const [sellCallPosition, setSellCallPosition] = useState<PositionWithCalculations | null>(null)
+  const [newPutTicker, setNewPutTicker] = useState<string | null>(null)
 
   // Helper to safely convert Prisma Decimal (or serialized string/number) to number
   const toDecimalNumber = (value: Prisma.Decimal | number | string): number => {
@@ -225,6 +226,12 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
     }
   }
 
+  const handleStartNewPut = (ticker: string) => {
+    setSellCallPosition(null)
+    setNewPutTicker(ticker)
+    setIsTradeModalOpen(true)
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleViewDetails = (_positionId: string) => {
     // TODO: Implement view details functionality
@@ -273,6 +280,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
             <Button
               onClick={() => {
                 setSellCallPosition(null)
+                setNewPutTicker(null)
                 setIsTradeModalOpen(true)
               }}
               variant="primary"
@@ -462,6 +470,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               position={position}
               onSellCall={handleSellCall}
               onViewDetails={handleViewDetails}
+              onStartNewPut={handleStartNewPut}
               priceData={priceData[position.ticker] || null}
               onPriceRefresh={handlePositionRefresh}
             />
@@ -478,6 +487,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               position={position}
               onSellCall={handleSellCall}
               onViewDetails={handleViewDetails}
+              onStartNewPut={handleStartNewPut}
               priceData={priceData[position.ticker] || null}
               onPriceRefresh={handlePositionRefresh}
             />
@@ -494,6 +504,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               position={position}
               onSellCall={handleSellCall}
               onViewDetails={handleViewDetails}
+              onStartNewPut={handleStartNewPut}
               priceData={priceData[position.ticker] || null}
               onPriceRefresh={handlePositionRefresh}
             />
@@ -501,22 +512,27 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
         </div>
       )}
 
-      {/* New Trade / Sell Covered Call Modal */}
+      {/* New Trade / Sell Covered Call / Start New PUT Modal */}
       <Modal
         isOpen={isTradeModalOpen}
         onClose={() => {
           setIsTradeModalOpen(false)
           setSellCallPosition(null)
+          setNewPutTicker(null)
         }}
         title={
           sellCallPosition
             ? `Sell Covered Call on ${sellCallPosition.ticker}`
-            : 'Create New Trade'
+            : newPutTicker
+              ? `Sell New PUT on ${newPutTicker}`
+              : 'Create New Trade'
         }
         description={
           sellCallPosition
             ? `Selling a covered call against your ${sellCallPosition.shares} shares of ${sellCallPosition.ticker}`
-            : 'Enter the details of your options trade'
+            : newPutTicker
+              ? `Start the next wheel cycle by selling a PUT on ${newPutTicker}`
+              : 'Enter the details of your options trade'
         }
         size="lg"
       >
@@ -524,11 +540,13 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
           onSuccess={() => {
             setIsTradeModalOpen(false)
             setSellCallPosition(null)
+            setNewPutTicker(null)
             router.refresh()
           }}
           onCancel={() => {
             setIsTradeModalOpen(false)
             setSellCallPosition(null)
+            setNewPutTicker(null)
           }}
           prefill={
             sellCallPosition
@@ -539,7 +557,13 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
                   positionId: sellCallPosition.id,
                   contracts: sellCallPosition.shares / 100,
                 } satisfies TradeEntryFormPrefill)
-              : undefined
+              : newPutTicker
+                ? ({
+                    ticker: newPutTicker,
+                    type: 'PUT',
+                    action: 'SELL_TO_OPEN',
+                  } satisfies TradeEntryFormPrefill)
+                : undefined
           }
           readOnlyFields={
             sellCallPosition ? ['ticker', 'type', 'action', 'positionId'] : undefined

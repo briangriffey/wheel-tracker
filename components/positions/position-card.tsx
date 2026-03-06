@@ -38,6 +38,7 @@ interface PositionCardProps {
   position: PositionCardData | PositionWithCalculations
   onSellCall?: (positionId: string) => void
   onViewDetails?: (positionId: string) => void
+  onStartNewPut?: (ticker: string) => void
   isLoadingPrice?: boolean
   priceError?: string | null
   priceData?: PriceData | null
@@ -48,6 +49,7 @@ export function PositionCard({
   position,
   onSellCall,
   onViewDetails,
+  onStartNewPut,
   isLoadingPrice = false,
   priceError = null,
   priceData = null,
@@ -605,6 +607,7 @@ export function PositionCard({
             isOpen={assignDialogOpen}
             onClose={() => setAssignDialogOpen(false)}
             onSuccess={handleAssignSuccess}
+            onStartNewPut={onStartNewPut}
           />
 
           {/* Close Option Dialog */}

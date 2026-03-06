@@ -26,28 +26,31 @@ export interface ActiveWheelForForm {
 }
 
 /**
- * Get open positions for a specific ticker (used by trade entry form)
+ * Get open positions for a specific ticker (used by trade entry form).
+ * Returns all OPEN positions for the authenticated user matching the given ticker.
+ * Includes a computed `hasOpenCall` flag indicating whether the position has an active covered call.
  */
 export async function getOpenPositionsForTicker(
   ticker: string
 ): Promise<ActionResult<OpenPositionForForm[]>> {
+  const userId = await getCurrentUserId()
+  if (!userId) {
+    return { success: false, error: 'Not authenticated' }
+  }
+
+  const normalizedTicker = ticker.trim().toUpperCase()
+  if (!normalizedTicker) {
+    return { success: false, error: 'Ticker is required' }
+  }
+
   try {
-    const userId = await getCurrentUserId()
-    if (!userId) {
-      return { success: false, error: 'Unauthorized. Please log in.' }
-    }
-
-    const normalizedTicker = ticker.trim().toUpperCase()
-    if (!normalizedTicker) {
-      return { success: false, error: 'Ticker is required' }
-    }
-
     const positions = await prisma.position.findMany({
       where: {
         userId,
         ticker: normalizedTicker,
         status: 'OPEN',
       },
+      orderBy: { acquiredDate: 'desc' },
       select: {
         id: true,
         ticker: true,
@@ -60,10 +63,9 @@ export async function getOpenPositionsForTicker(
           select: { id: true },
         },
       },
-      orderBy: { acquiredDate: 'desc' },
     })
 
-    const result: OpenPositionForForm[] = positions.map((pos) => ({
+    const data: OpenPositionForForm[] = positions.map((pos: typeof positions[number]) => ({
       id: pos.id,
       ticker: pos.ticker,
       shares: pos.shares,
@@ -73,7 +75,7 @@ export async function getOpenPositionsForTicker(
       hasOpenCall: pos.coveredCalls.length > 0,
     }))
 
-    return { success: true, data: result }
+    return { success: true, data }
   } catch (error) {
     console.error('Error fetching open positions for ticker:', error)
 
@@ -86,22 +88,24 @@ export async function getOpenPositionsForTicker(
 }
 
 /**
- * Get active/idle wheel for a specific ticker (used by trade entry form)
+ * Get the active or idle wheel for a specific ticker (used by trade entry form).
+ * Returns the most recently active wheel for the authenticated user and given ticker,
+ * or null if none exists.
  */
 export async function getActiveWheelForTicker(
   ticker: string
 ): Promise<ActionResult<ActiveWheelForForm | null>> {
+  const userId = await getCurrentUserId()
+  if (!userId) {
+    return { success: false, error: 'Not authenticated' }
+  }
+
+  const normalizedTicker = ticker.trim().toUpperCase()
+  if (!normalizedTicker) {
+    return { success: false, error: 'Ticker is required' }
+  }
+
   try {
-    const userId = await getCurrentUserId()
-    if (!userId) {
-      return { success: false, error: 'Unauthorized. Please log in.' }
-    }
-
-    const normalizedTicker = ticker.trim().toUpperCase()
-    if (!normalizedTicker) {
-      return { success: false, error: 'Ticker is required' }
-    }
-
     const wheel = await prisma.wheel.findFirst({
       where: {
         userId,
@@ -122,16 +126,15 @@ export async function getActiveWheelForTicker(
       return { success: true, data: null }
     }
 
-    return {
-      success: true,
-      data: {
-        id: wheel.id,
-        ticker: wheel.ticker,
-        status: wheel.status,
-        cycleCount: wheel.cycleCount,
-        totalPremiums: Number(wheel.totalPremiums),
-      },
+    const data: ActiveWheelForForm = {
+      id: wheel.id,
+      ticker: wheel.ticker,
+      status: wheel.status,
+      cycleCount: wheel.cycleCount,
+      totalPremiums: Number(wheel.totalPremiums),
     }
+
+    return { success: true, data }
   } catch (error) {
     console.error('Error fetching active wheel for ticker:', error)
 

@@ -450,8 +450,8 @@ describe('getDashboardMetrics', () => {
       // Total P&L: 750 + 600 = 1350
       expect(result.totalPL).toBe(1350)
 
-      // Options win rate: 2 winners (1 CLOSED winner + 1 EXPIRED) / 2 closed+expired = 100%
-      expect(result.optionsWinRate).toBe(100)
+      // Options win rate: 2 winners (1 CLOSED winner + 1 EXPIRED) / 3 resolved (CLOSED + EXPIRED + ASSIGNED) ≈ 66.67%
+      expect(result.optionsWinRate).toBeCloseTo(66.67, 1)
 
       // Assignment rate: 1 assigned / 4 total = 25%
       expect(result.assignmentRate).toBe(25)

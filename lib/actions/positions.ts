@@ -30,7 +30,7 @@ type ActionResult<T = unknown> =
  * 3. Calculates cost basis including the premium collected
  *
  * Cost Basis Calculation:
- * - Cost per share = strike price - (premium / shares)
+ * - Cost per share = strike price - premium (premium is already per-share)
  * - Total cost = cost per share * shares
  * - The premium collected effectively reduces your purchase price
  *
@@ -100,11 +100,11 @@ export async function assignPut(
 
     // Calculate cost basis
     // When assigned on a PUT: buyer pays strike price but keeps the premium
-    // Cost per share = strike price - (premium / shares)
+    // Premium is already per-share, so cost per share = strike - premium
     const strikePrice = Number(trade.strikePrice)
     const premium = Number(trade.premium)
     const shares = trade.shares
-    const costBasisPerShare = strikePrice - premium / shares
+    const costBasisPerShare = strikePrice - premium
     const totalCost = costBasisPerShare * shares
 
     // Create position and update trade in a transaction
@@ -118,7 +118,43 @@ export async function assignPut(
         },
       })
 
-      // Create position (with wheel linkage if applicable)
+      // Resolve wheel: use trade's wheelId, or find/create one for this ticker
+      let wheelId = trade.wheelId
+      if (!wheelId) {
+        const existingWheel = await tx.wheel.findFirst({
+          where: {
+            userId,
+            ticker: trade.ticker,
+            status: { in: ['ACTIVE', 'IDLE'] },
+          },
+          orderBy: { lastActivityAt: 'desc' },
+        })
+
+        if (existingWheel) {
+          wheelId = existingWheel.id
+        } else {
+          const totalPremium = premium * shares
+          const newWheel = await tx.wheel.create({
+            data: {
+              userId,
+              ticker: trade.ticker,
+              status: 'ACTIVE',
+              cycleCount: 0,
+              totalPremiums: totalPremium,
+              lastActivityAt: new Date(),
+            },
+          })
+          wheelId = newWheel.id
+        }
+
+        // Link the trade to the wheel
+        await tx.trade.update({
+          where: { id: tradeId },
+          data: { wheelId },
+        })
+      }
+
+      // Create position (with wheel linkage)
       const position = await tx.position.create({
         data: {
           userId,
@@ -129,21 +165,19 @@ export async function assignPut(
           status: 'OPEN',
           acquiredDate: new Date(),
           assignmentTradeId: tradeId,
-          ...(trade.wheelId && { wheelId: trade.wheelId }),
+          wheelId,
         },
       })
 
-      // Update wheel if this trade belongs to a wheel
-      if (trade.wheelId) {
-        await tx.wheel.update({
-          where: { id: trade.wheelId },
-          data: {
-            lastActivityAt: new Date(),
-          },
-        })
-      }
+      // Update wheel activity
+      await tx.wheel.update({
+        where: { id: wheelId },
+        data: {
+          lastActivityAt: new Date(),
+        },
+      })
 
-      return { position, trade }
+      return { position, trade, wheelId }
     })
 
     // Revalidate relevant paths
@@ -152,10 +186,10 @@ export async function assignPut(
     revalidatePath('/positions')
     revalidatePath('/dashboard')
 
-    // Revalidate wheel page if applicable
-    if (trade.wheelId) {
+    // Revalidate wheel page
+    if (result.wheelId) {
       revalidatePath('/wheels')
-      revalidatePath(`/wheels/${trade.wheelId}`)
+      revalidatePath(`/wheels/${result.wheelId}`)
     }
 
     return {

@@ -203,16 +203,17 @@ export const getDashboardMetrics = async (
       return sum + (trade.premium.toNumber() - closePremium) * trade.contracts * 100
     }, 0)
 
-    // Calculate options win rate from trades (EXPIRED and CLOSED)
-    const closedOrExpiredTrades = trades.filter(
-      (t) => t.status === 'EXPIRED' || t.status === 'CLOSED'
+    // Calculate options win rate from trades (EXPIRED, CLOSED, and ASSIGNED)
+    const resolvedTrades = trades.filter(
+      (t) => t.status === 'EXPIRED' || t.status === 'CLOSED' || t.status === 'ASSIGNED'
     )
-    const optionWinners = closedOrExpiredTrades.filter((t) => {
+    const optionWinners = resolvedTrades.filter((t) => {
       if (t.status === 'EXPIRED') return true // kept full premium
+      if (t.status === 'ASSIGNED') return false // assignment = loss
       const closePremium = t.closePremium?.toNumber() ?? 0
       return t.premium.toNumber() - closePremium > 0
     }).length
-    const totalClosedTrades = closedOrExpiredTrades.length
+    const totalClosedTrades = resolvedTrades.length
     const optionsWinRate = totalClosedTrades > 0 ? (optionWinners / totalClosedTrades) * 100 : 0
 
     // Calculate assignment rate from already-fetched data
@@ -610,7 +611,7 @@ export const getWinRateData = cache(async (timeRange: TimeRange = 'All'): Promis
       prisma.trade.findMany({
         where: {
           userId,
-          status: { in: ['EXPIRED', 'CLOSED'] },
+          status: { in: ['EXPIRED', 'CLOSED', 'ASSIGNED'] },
           ...(dateFilter && { closeDate: dateFilter }),
         },
         select: {
@@ -639,6 +640,9 @@ export const getWinRateData = cache(async (timeRange: TimeRange = 'All'): Promis
       if (trade.status === 'EXPIRED') {
         // Expired trades kept full premium - always winners
         winners++
+      } else if (trade.status === 'ASSIGNED') {
+        // Assigned trades went against the seller - count as losses
+        losers++
       } else {
         // CLOSED trades - check realizedGainLoss
         const gl = trade.realizedGainLoss?.toNumber() ?? 0

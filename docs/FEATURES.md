@@ -65,6 +65,7 @@ GreekWheel provides a comprehensive suite of features to help you manage your op
 
 ### What You Can Do
 
+- **Automated Wheel Lifecycle**: Trades are automatically linked to wheels — no manual setup required
 - **Track Complete Wheel Cycles**: Monitor each wheel from initial PUT to final CALL assignment
 - **Get Smart Notifications**: Receive alerts for expiring options, ITM positions, and opportunities
 - **Visualize Performance**: See P&L charts, benchmarks, and performance metrics
@@ -551,6 +552,60 @@ Actions:
 - Check notifications the day before options expire
 - Make final decisions on assignments
 - Close or roll options if needed
+
+---
+
+## Automated Wheel Lifecycle
+
+GreekWheel automatically links trades, positions, and wheels so you never have to manually manage these associations.
+
+### How Auto-Linking Works
+
+When you create a **SELL_TO_OPEN PUT**, the system:
+1. Looks for an existing ACTIVE or IDLE wheel for that ticker.
+2. If found (and IDLE), reactivates it to ACTIVE and links the trade.
+3. If none found, creates a new ACTIVE wheel and links the trade.
+4. Adds the trade's total premium (`premium × contracts × 100`) to the wheel's `totalPremiums`.
+
+When you create a **SELL_TO_OPEN CALL** (covered call):
+- If you specify a `positionId`, the trade inherits the wheel from that position.
+- The wheel's `totalPremiums` is updated with the CALL premium as well.
+
+When a **covered CALL is assigned** (`assignCall`):
+- The wheel's `cycleCount` increments by 1.
+- `totalRealizedPL` increases by the cycle's realized gain/loss.
+- Wheel status changes to **IDLE** (cycle complete, ready for a new PUT).
+
+When a **trade expires worthless** (status → EXPIRED):
+- The full premium (`premium × shares`) is added to `totalRealizedPL`.
+
+When an **option is closed early** (BUY_TO_CLOSE via `closeOption`):
+- `totalPremiums` is decremented by the close premium cost.
+- `totalRealizedPL` is updated with the net P&L.
+
+When a **BUY_TO_CLOSE trade is created** via `createTrade`:
+- The system finds the matching open SELL_TO_OPEN trade and inherits its `wheelId`.
+
+### Premium Calculation Note
+
+All premium fields in the data model are **per-share** values. Total dollar amounts always multiply by `contracts × 100` (shares). For example:
+- Premium: `$2.50/share`, Contracts: `2` → Total: `$2.50 × 200 = $500`
+
+### Smart Trade Entry Form
+
+The trade entry form shows contextual information:
+- **Wheel badge**: When creating a SELL_TO_OPEN trade, a badge indicates whether the trade will be added to an existing wheel or create a new one.
+- **Position selector**: When creating a SELL_TO_OPEN CALL, a dropdown shows open positions for that ticker. Positions that already have an open covered call are shown but disabled.
+- **Auto-selection**: If exactly one open position exists for the ticker, it is automatically selected.
+- **Multiple positions warning**: If more than one open position exists, a warning is shown.
+
+### Wheel Status Lifecycle
+
+| Status | Meaning |
+|--------|---------|
+| ACTIVE | Wheel has an open PUT or covered CALL in progress |
+| IDLE | Cycle complete (CALL assigned); ready for a new PUT |
+| COMPLETED | Wheel is closed (set manually) |
 
 ---
 

@@ -35,6 +35,13 @@ type ActionResult<T = unknown> =
   | { success: true; data: T }
   | { success: false; error: string; details?: unknown }
 
+type CreateTradeResult = {
+  id: string
+  wheelId?: string
+  wheelTicker?: string
+  warnings?: string[]
+}
+
 /**
  * Create a new trade (PUT or CALL option)
  *
@@ -57,7 +64,9 @@ type ActionResult<T = unknown> =
  *
  * @throws {Error} If validation fails or database operation fails
  */
-export async function createTrade(input: CreateTradeInput): Promise<ActionResult<{ id: string }>> {
+export async function createTrade(
+  input: CreateTradeInput
+): Promise<ActionResult<CreateTradeResult>> {
   let userId: string | null = null
   try {
     // Validate input
@@ -90,11 +99,14 @@ export async function createTrade(input: CreateTradeInput): Promise<ActionResult
 
     // Calculate shares (contracts * 100)
     const shares = validated.contracts * 100
+    // Total premium in dollars (premium is per-share)
+    const totalPremium = validated.premium * shares
 
     // Use a serializable transaction to atomically check the limit and create
     // the trade. This prevents race conditions where concurrent requests both
-    // read the same count and both proceed past the limit.
-    const trade = await prisma.$transaction(
+    // read the same count and both proceed past the limit, and also ensures
+    // the wheel find-or-create is atomic with trade creation.
+    const { trade, wheelId, wheelTicker, warnings } = await prisma.$transaction(
       async (tx) => {
         if (!hasProAccess) {
           const tradeCount = await tx.trade.count({
@@ -106,7 +118,128 @@ export async function createTrade(input: CreateTradeInput): Promise<ActionResult
           }
         }
 
-        return tx.trade.create({
+        let resolvedWheelId: string | undefined
+        let resolvedWheelTicker: string | undefined
+        const tradeWarnings: string[] = []
+
+        // --- Wheel auto-linking logic ---
+        if (validated.action === 'SELL_TO_OPEN' && validated.type === 'PUT') {
+          // Find an existing ACTIVE or IDLE wheel for this user+ticker
+          const existingWheel = await tx.wheel.findFirst({
+            where: {
+              userId: userId!,
+              ticker: validated.ticker,
+              status: { in: ['ACTIVE', 'IDLE'] },
+            },
+            orderBy: { lastActivityAt: 'desc' },
+          })
+
+          if (existingWheel) {
+            resolvedWheelId = existingWheel.id
+            resolvedWheelTicker = existingWheel.ticker
+            // Reactivate IDLE wheel
+            await tx.wheel.update({
+              where: { id: existingWheel.id },
+              data: {
+                status: 'ACTIVE',
+                lastActivityAt: new Date(),
+                totalPremiums: { increment: totalPremium },
+              },
+            })
+          } else {
+            // Create a new wheel
+            const newWheel = await tx.wheel.create({
+              data: {
+                userId: userId!,
+                ticker: validated.ticker,
+                status: 'ACTIVE',
+                cycleCount: 0,
+                totalPremiums: totalPremium,
+                lastActivityAt: new Date(),
+              },
+            })
+            resolvedWheelId = newWheel.id
+            resolvedWheelTicker = newWheel.ticker
+          }
+        } else if (validated.action === 'SELL_TO_OPEN' && validated.type === 'CALL') {
+          if (validated.positionId) {
+            // Inherit wheelId from the position
+            const position = await tx.position.findUnique({
+              where: { id: validated.positionId },
+              select: { wheelId: true },
+            })
+            if (position?.wheelId) {
+              resolvedWheelId = position.wheelId
+              const wheel = await tx.wheel.findUnique({
+                where: { id: position.wheelId },
+                select: { ticker: true },
+              })
+              resolvedWheelTicker = wheel?.ticker
+
+              await tx.wheel.update({
+                where: { id: position.wheelId },
+                data: {
+                  lastActivityAt: new Date(),
+                  totalPremiums: { increment: totalPremium },
+                },
+              })
+            }
+
+            // Check if multiple open positions exist for warnings
+            const openPositionCount = await tx.position.count({
+              where: {
+                userId: userId!,
+                ticker: validated.ticker,
+                status: 'OPEN',
+              },
+            })
+            if (openPositionCount > 1) {
+              tradeWarnings.push(
+                `Multiple open positions found for ${validated.ticker}. Verify the correct position was selected.`
+              )
+            }
+          } else {
+            // No positionId: find ACTIVE wheel for user+ticker
+            const activeWheel = await tx.wheel.findFirst({
+              where: {
+                userId: userId!,
+                ticker: validated.ticker,
+                status: 'ACTIVE',
+              },
+              orderBy: { lastActivityAt: 'desc' },
+            })
+            if (activeWheel) {
+              resolvedWheelId = activeWheel.id
+              resolvedWheelTicker = activeWheel.ticker
+              await tx.wheel.update({
+                where: { id: activeWheel.id },
+                data: {
+                  lastActivityAt: new Date(),
+                  totalPremiums: { increment: totalPremium },
+                },
+              })
+            }
+          }
+        } else if (validated.action === 'BUY_TO_CLOSE') {
+          // Find the matching open SELL_TO_OPEN trade to inherit its wheelId
+          const openTrade = await tx.trade.findFirst({
+            where: {
+              userId: userId!,
+              ticker: validated.ticker,
+              type: validated.type,
+              action: 'SELL_TO_OPEN',
+              status: 'OPEN',
+            },
+            orderBy: { openDate: 'desc' },
+            select: { wheelId: true, wheel: { select: { ticker: true } } },
+          })
+          if (openTrade?.wheelId) {
+            resolvedWheelId = openTrade.wheelId
+            resolvedWheelTicker = openTrade.wheel?.ticker
+          }
+        }
+
+        const createdTrade = await tx.trade.create({
           data: {
             userId: userId!,
             ticker: validated.ticker,
@@ -120,8 +253,16 @@ export async function createTrade(input: CreateTradeInput): Promise<ActionResult
             openDate: validated.openDate ?? new Date(),
             notes: validated.notes,
             positionId: validated.positionId,
+            wheelId: resolvedWheelId,
           },
         })
+
+        return {
+          trade: createdTrade,
+          wheelId: resolvedWheelId,
+          wheelTicker: resolvedWheelTicker,
+          warnings: tradeWarnings.length > 0 ? tradeWarnings : undefined,
+        }
       },
       {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
@@ -132,8 +273,20 @@ export async function createTrade(input: CreateTradeInput): Promise<ActionResult
     revalidatePath('/trades')
     revalidatePath('/dashboard')
     revalidatePath('/positions')
+    revalidatePath('/wheels')
+    if (wheelId) {
+      revalidatePath(`/wheels/${wheelId}`)
+    }
 
-    return { success: true, data: { id: trade.id } }
+    return {
+      success: true,
+      data: {
+        id: trade.id,
+        wheelId,
+        wheelTicker,
+        warnings,
+      },
+    }
   } catch (error) {
     if (error instanceof TradeLimitError) {
       if (userId) {
@@ -285,7 +438,14 @@ export async function updateTradeStatus(
     // Verify trade exists and belongs to user
     const existingTrade = await prisma.trade.findUnique({
       where: { id },
-      select: { userId: true, status: true, expirationDate: true },
+      select: {
+        userId: true,
+        status: true,
+        expirationDate: true,
+        wheelId: true,
+        shares: true,
+        premium: true,
+      },
     })
 
     if (!existingTrade) {
@@ -312,19 +472,41 @@ export async function updateTradeStatus(
       }
     }
 
-    // Update trade status
-    const trade = await prisma.trade.update({
-      where: { id },
-      data: {
-        status,
-        closeDate: closeDate ?? (status !== 'OPEN' ? new Date() : undefined),
-      },
+    // Update trade status (and wheel stats for EXPIRED) in a transaction
+    const trade = await prisma.$transaction(async (tx) => {
+      const updatedTrade = await tx.trade.update({
+        where: { id },
+        data: {
+          status,
+          closeDate: closeDate ?? (status !== 'OPEN' ? new Date() : undefined),
+        },
+      })
+
+      // When a trade expires worthless, the full premium is realized profit
+      if (status === 'EXPIRED' && existingTrade.wheelId) {
+        const fullPremium = Number(existingTrade.premium) * existingTrade.shares
+        await tx.wheel.update({
+          where: { id: existingTrade.wheelId },
+          data: {
+            lastActivityAt: new Date(),
+            totalRealizedPL: { increment: fullPremium },
+          },
+        })
+      }
+
+      return updatedTrade
     })
 
     // Revalidate relevant paths
     revalidatePath('/trades')
     revalidatePath(`/trades/${id}`)
     revalidatePath('/dashboard')
+
+    // Revalidate wheel paths if a wheel was updated
+    if (status === 'EXPIRED' && existingTrade.wheelId) {
+      revalidatePath('/wheels')
+      revalidatePath(`/wheels/${existingTrade.wheelId}`)
+    }
 
     return { success: true, data: { id: trade.id } }
   } catch (error) {
@@ -389,6 +571,7 @@ export async function closeOption(
         type: true,
         status: true,
         premium: true,
+        shares: true,
         positionId: true,
         wheelId: true,
         position: {
@@ -443,12 +626,16 @@ export async function closeOption(
         })
       }
 
-      // Update wheel's lastActivityAt if this trade belongs to a wheel
+      // Update wheel stats if this trade belongs to a wheel
       if (trade.wheelId) {
         await tx.wheel.update({
           where: { id: trade.wheelId },
           data: {
             lastActivityAt: new Date(),
+            // Subtract the cost of buying back (reduces net premiums collected)
+            totalPremiums: { decrement: closePremium * trade.shares },
+            // Add net P&L (openPremium - closePremium) * shares
+            totalRealizedPL: { increment: netPL * trade.shares },
           },
         })
       }

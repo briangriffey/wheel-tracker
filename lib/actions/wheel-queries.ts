@@ -17,6 +17,14 @@ export interface OpenPositionForForm {
   hasOpenCall: boolean
 }
 
+export interface ActiveWheelForForm {
+  id: string
+  ticker: string
+  status: string
+  cycleCount: number
+  totalPremiums: number
+}
+
 /**
  * Get open positions for a specific ticker (used by trade entry form).
  * Returns all OPEN positions for the authenticated user matching the given ticker.
@@ -70,16 +78,13 @@ export async function getOpenPositionsForTicker(
     return { success: true, data }
   } catch (error) {
     console.error('Error fetching open positions for ticker:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
     return { success: false, error: 'Failed to fetch positions' }
   }
-}
-
-export interface ActiveWheelForForm {
-  id: string
-  ticker: string
-  status: string
-  cycleCount: number
-  totalPremiums: number
 }
 
 /**
@@ -132,6 +137,11 @@ export async function getActiveWheelForTicker(
     return { success: true, data }
   } catch (error) {
     console.error('Error fetching active wheel for ticker:', error)
+
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+
     return { success: false, error: 'Failed to fetch wheel' }
   }
 }

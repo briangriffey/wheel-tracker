@@ -1,13 +1,14 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
+import type { TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
 import { getStatusColor, getPnlColor } from '@/lib/design/colors'
 import { Button } from '@/components/design-system/button/button'
 import type { StockPriceResult } from '@/lib/services/market-data'
 import { formatTimeAgo, formatNextRefreshTime } from '@/lib/utils/format'
 import { TradeActionsDialog } from './trade-actions-dialog'
+import type { TradeWithWheel } from '@/lib/queries/trades'
 
 export interface RefreshInfo {
   canRefresh: boolean
@@ -17,7 +18,7 @@ export interface RefreshInfo {
 }
 
 interface TradeListProps {
-  initialTrades: Trade[]
+  initialTrades: TradeWithWheel[]
   prices: Map<string, StockPriceResult>
   refreshInfo?: Record<string, RefreshInfo>
 }
@@ -33,7 +34,7 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
   const [dateRangeEnd, setDateRangeEnd] = useState('')
   const [sortField, setSortField] = useState<SortField>('expirationDate')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
-  const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null)
+  const [selectedTrade, setSelectedTrade] = useState<TradeWithWheel | null>(null)
 
   // Filter and sort trades
   const filteredTrades = useMemo(() => {
@@ -152,8 +153,28 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
     return type === 'PUT' ? 'bg-orange-100 text-orange-800' : 'bg-indigo-100 text-indigo-800'
   }
 
+  // Render wheel badge for a trade
+  const renderWheelBadge = (trade: TradeWithWheel) => {
+    if (!trade.wheel) return null
+    return (
+      <a
+        href={`/wheels/${trade.wheel.id}`}
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
+        title={`Part of ${trade.wheel.ticker} wheel`}
+        onClick={(e) => e.stopPropagation()}
+        aria-label={`View ${trade.wheel.ticker} wheel`}
+      >
+        <svg className="w-3 h-3" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+          <circle cx="12" cy="12" r="3" fill="currentColor" />
+        </svg>
+        Wheel
+      </a>
+    )
+  }
+
   // Calculate if a trade is in the money or out of the money
-  const getMoneyStatus = (trade: Trade, currentPrice: number | undefined) => {
+  const getMoneyStatus = (trade: TradeWithWheel, currentPrice: number | undefined) => {
     if (!currentPrice) return null
 
     const strikePrice = toDecimalNumber(
@@ -171,7 +192,7 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
 
   // Get realized P&L for closed/expired trades
   // P&L = (premium - closePremium) * 100 * contracts
-  const getClosedTradePnL = (trade: Trade): number | null => {
+  const getClosedTradePnL = (trade: TradeWithWheel): number | null => {
     if (trade.status === 'EXPIRED') {
       // Expired = full premium kept as profit
       const premium = toDecimalNumber(trade.premium as unknown as Prisma.Decimal | string | number)
@@ -188,7 +209,7 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
   }
 
   // Get row background color based on money status (open) or P&L (closed)
-  const getRowBgColor = (trade: Trade, currentPrice: number | undefined) => {
+  const getRowBgColor = (trade: TradeWithWheel, currentPrice: number | undefined) => {
     // Closed/expired trades: color by realized P&L
     const closedPnL = getClosedTradePnL(trade)
     if (closedPnL !== null) {
@@ -468,7 +489,10 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                       onClick={() => setSelectedTrade(trade)}
                     >
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {trade.ticker}
+                        <div className="flex items-center gap-2">
+                          {trade.ticker}
+                          {renderWheelBadge(trade)}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {currentPrice ? (
@@ -552,7 +576,10 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
+                        {renderWheelBadge(trade)}
+                      </div>
                       {currentPrice && (
                         <div className="text-sm mt-1 text-gray-700">
                           ${currentPrice.price.toFixed(2)}
@@ -736,7 +763,10 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                     onClick={() => setSelectedTrade(trade)}
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {trade.ticker}
+                      <div className="flex items-center gap-2">
+                        {trade.ticker}
+                        {renderWheelBadge(trade)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
@@ -804,7 +834,10 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
               >
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold text-gray-900">{trade.ticker}</h3>
+                      {renderWheelBadge(trade)}
+                    </div>
                     <div className="flex gap-2 mt-1">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(trade.type)}`}

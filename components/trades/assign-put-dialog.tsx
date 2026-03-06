@@ -67,8 +67,10 @@ export function AssignPutDialog({
   }, [isOpen, trade.ticker])
 
   // Calculate cost breakdown
+  // trade.premium is per-share, so total premium = premium * shares
   const totalCost = trade.strikePrice * trade.shares
-  const costBasisPerShare = trade.strikePrice - trade.premium / trade.shares
+  const totalPremium = trade.premium * trade.shares
+  const costBasisPerShare = trade.strikePrice - trade.premium
   const effectiveTotalCost = costBasisPerShare * trade.shares
 
   // Calculate unrealized P&L if we have current price
@@ -339,7 +341,7 @@ export function AssignPutDialog({
                   <div className="flex justify-between">
                     <span className="text-gray-600">Premium Credit:</span>
                     <span className="font-medium text-green-600">
-                      -{formatCurrency(trade.premium)}
+                      -{formatCurrency(totalPremium)}
                     </span>
                   </div>
                   <div className="pt-2 border-t border-gray-300 flex justify-between">

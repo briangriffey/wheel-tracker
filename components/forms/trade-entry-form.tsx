@@ -1,12 +1,18 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import { CreateTradeSchema, type CreateTradeInput } from '@/lib/validations/trade'
 import { createTrade } from '@/lib/actions/trades'
 import { getTradeUsage, type TradeUsage } from '@/lib/actions/subscription'
+import {
+  getOpenPositionsForTicker,
+  getActiveWheelForTicker,
+  type OpenPositionForForm,
+  type ActiveWheelForForm,
+} from '@/lib/actions/wheel-queries'
 import { Input } from '@/components/design-system/input/input'
 import { Select } from '@/components/design-system/select/select'
 import { Button } from '@/components/design-system/button/button'
@@ -14,9 +20,19 @@ import { InfoTooltip } from '@/components/ui/tooltip'
 import { UpgradePrompt } from '@/components/trades/upgrade-prompt'
 import { TradeUsageBanner } from '@/components/trades/trade-usage-banner'
 
-interface TradeEntryFormProps {
+export interface TradeEntryFormPrefill {
+  ticker?: string
+  type?: 'PUT' | 'CALL'
+  action?: 'SELL_TO_OPEN' | 'BUY_TO_CLOSE'
+  positionId?: string
+  contracts?: number
+}
+
+export interface TradeEntryFormProps {
   onSuccess?: () => void
   onCancel?: () => void
+  prefill?: TradeEntryFormPrefill
+  readOnlyFields?: ('ticker' | 'type' | 'action' | 'positionId' | 'contracts')[]
 }
 
 // Form data type - HTML inputs return strings for dates
@@ -25,10 +41,16 @@ type TradeFormData = Omit<CreateTradeInput, 'expirationDate' | 'openDate'> & {
   openDate?: string
 }
 
-export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
+export function TradeEntryForm({ onSuccess, onCancel, prefill, readOnlyFields }: TradeEntryFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tradeUsage, setTradeUsage] = useState<TradeUsage | null>(null)
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false)
+
+  // Wheel/position state for context-aware form
+  const [positions, setPositions] = useState<OpenPositionForForm[]>([])
+  const [activeWheel, setActiveWheel] = useState<ActiveWheelForForm | null>(null)
+  const [isLoadingPositions, setIsLoadingPositions] = useState(false)
+  const [multiplePositionsWarning, setMultiplePositionsWarning] = useState(false)
 
   useEffect(() => {
     getTradeUsage().then((result) => {
@@ -46,14 +68,90 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = useForm<TradeFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(CreateTradeSchema) as any,
     defaultValues: {
-      action: 'SELL_TO_OPEN',
+      action: prefill?.action ?? 'SELL_TO_OPEN',
+      ticker: prefill?.ticker ?? '',
+      type: prefill?.type ?? undefined,
+      contracts: prefill?.contracts ?? undefined,
       openDate: new Date().toISOString().split('T')[0],
     },
   })
+
+  const watchedTicker = watch('ticker')
+  const watchedType = watch('type')
+  const watchedAction = watch('action')
+
+  // Apply prefill values on mount
+  useEffect(() => {
+    if (prefill) {
+      if (prefill.ticker) setValue('ticker', prefill.ticker)
+      if (prefill.type) setValue('type', prefill.type)
+      if (prefill.action) setValue('action', prefill.action)
+      if (prefill.positionId) setValue('positionId', prefill.positionId)
+      if (prefill.contracts) setValue('contracts', prefill.contracts)
+    }
+  }, [prefill, setValue])
+
+  // Fetch wheel/position data when ticker, type, or action changes
+  const fetchWheelData = useCallback(
+    async (ticker: string, type: string | undefined, action: string | undefined) => {
+      const normalizedTicker = ticker.trim().toUpperCase()
+      if (!normalizedTicker) {
+        setPositions([])
+        setActiveWheel(null)
+        return
+      }
+
+      // Fetch wheel info for any SELL_TO_OPEN trade
+      if (action === 'SELL_TO_OPEN') {
+        const wheelResult = await getActiveWheelForTicker(normalizedTicker)
+        if (wheelResult.success) {
+          setActiveWheel(wheelResult.data)
+        }
+      } else {
+        setActiveWheel(null)
+      }
+
+      // Fetch positions only for CALL + SELL_TO_OPEN
+      if (type === 'CALL' && action === 'SELL_TO_OPEN') {
+        setIsLoadingPositions(true)
+        const posResult = await getOpenPositionsForTicker(normalizedTicker)
+        if (posResult.success) {
+          setPositions(posResult.data)
+          setMultiplePositionsWarning(posResult.data.length > 1)
+          // Auto-select if exactly one position and no prefill positionId
+          if (posResult.data.length === 1 && !prefill?.positionId) {
+            setValue('positionId', posResult.data[0].id)
+          }
+        }
+        setIsLoadingPositions(false)
+      } else {
+        setPositions([])
+        setMultiplePositionsWarning(false)
+      }
+    },
+    [prefill?.positionId, setValue]
+  )
+
+  useEffect(() => {
+    const ticker = watchedTicker ?? ''
+    if (!ticker) {
+      setPositions([])
+      setActiveWheel(null)
+      return
+    }
+
+    const timer = setTimeout(() => {
+      fetchWheelData(ticker, watchedType, watchedAction)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [watchedTicker, watchedType, watchedAction, fetchWheelData])
 
   const onSubmit = async (formData: TradeFormData) => {
     setIsSubmitting(true)
@@ -69,7 +167,12 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
         }
         toast.error(result.error || 'Failed to create trade')
       } else {
-        toast.success('Trade created successfully!')
+        const data = result.data as { id: string; wheelId?: string; wheelTicker?: string }
+        if (data.wheelId && data.wheelTicker) {
+          toast.success(`Trade created and linked to ${data.wheelTicker} wheel!`)
+        } else {
+          toast.success('Trade created successfully!')
+        }
         reset()
         onSuccess?.()
       }
@@ -80,13 +183,37 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
     }
   }
 
+  const isReadOnly = (field: 'ticker' | 'type' | 'action' | 'positionId' | 'contracts') =>
+    readOnlyFields?.includes(field) ?? false
+
   if (showUpgradePrompt) {
     return <UpgradePrompt tradesUsed={tradeUsage?.tradesUsed} onCancel={onCancel} />
   }
 
+  const normalizedTicker = (watchedTicker ?? '').trim().toUpperCase()
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" aria-label="Trade entry form">
       {tradeUsage && <TradeUsageBanner usage={tradeUsage} />}
+
+      {/* Wheel badge — shown when SELL_TO_OPEN and ticker has been entered */}
+      {watchedAction === 'SELL_TO_OPEN' && normalizedTicker && (
+        activeWheel ? (
+          <div className="rounded-md bg-green-50 p-3 border border-green-200">
+            <p className="text-sm text-green-800">
+              This trade will be added to your <strong>{activeWheel.ticker}</strong> wheel
+              (Cycle {activeWheel.cycleCount + 1}).
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-md bg-blue-50 p-3 border border-blue-200">
+            <p className="text-sm text-blue-800">
+              A new wheel will be created for <strong>{normalizedTicker}</strong>.
+            </p>
+          </div>
+        )
+      )}
+
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {/* Ticker */}
         <div>
@@ -105,6 +232,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             error={errors.ticker?.message}
             required
             aria-required="true"
+            disabled={isReadOnly('ticker')}
             {...register('ticker')}
           />
         </div>
@@ -127,6 +255,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             error={errors.type?.message}
             required
             aria-required="true"
+            disabled={isReadOnly('type')}
             {...register('type')}
           >
             <option value="">Select type</option>
@@ -153,6 +282,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             error={errors.action?.message}
             required
             aria-required="true"
+            disabled={isReadOnly('action')}
             {...register('action')}
           >
             <option value="SELL_TO_OPEN">Sell to Open</option>
@@ -230,6 +360,7 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             helpText="Each contract = 100 shares"
             required
             aria-required="true"
+            disabled={isReadOnly('contracts')}
             {...register('contracts', { valueAsNumber: true })}
           />
         </div>
@@ -275,6 +406,44 @@ export function TradeEntryForm({ onSuccess, onCancel }: TradeEntryFormProps) {
             {...register('expirationDate')}
           />
         </div>
+
+        {/* Position Selector — only shown for CALL + SELL_TO_OPEN */}
+        {watchedType === 'CALL' && watchedAction === 'SELL_TO_OPEN' && (
+          <div className="col-span-1 sm:col-span-2">
+            <label htmlFor="positionId" className="block text-sm font-medium text-neutral-700">
+              Position
+            </label>
+            {isLoadingPositions ? (
+              <p className="mt-1 text-sm text-neutral-500">Loading positions...</p>
+            ) : positions.length > 0 ? (
+              <div className="mt-1">
+                <Select
+                  id="positionId"
+                  error={errors.positionId?.message}
+                  disabled={isReadOnly('positionId')}
+                  {...register('positionId')}
+                >
+                  <option value="">Select a position</option>
+                  {positions.map((pos) => (
+                    <option key={pos.id} value={pos.id} disabled={pos.hasOpenCall}>
+                      {pos.shares} shares @ ${pos.costBasis.toFixed(2)}/share (acquired{' '}
+                      {new Date(pos.acquiredDate).toLocaleDateString('en-US', { timeZone: 'UTC' })}){pos.hasOpenCall ? ' [Has Open Call]' : ''}
+                    </option>
+                  ))}
+                </Select>
+                {multiplePositionsWarning && (
+                  <p className="mt-1 text-xs text-yellow-600">
+                    Multiple positions found for this ticker. Please select the correct one.
+                  </p>
+                )}
+              </div>
+            ) : normalizedTicker ? (
+              <p className="mt-1 text-sm text-neutral-500">
+                No open positions found for {normalizedTicker}.
+              </p>
+            ) : null}
+          </div>
+        )}
       </div>
 
       {/* Notes */}

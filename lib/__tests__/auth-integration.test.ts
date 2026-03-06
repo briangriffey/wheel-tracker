@@ -38,12 +38,18 @@ vi.mock('@/lib/db', () => ({
     $transaction: vi.fn((callback) =>
       callback({
         trade: {
-          update: mockPrismaTradeUpdateStatus,
+          update: (...args: unknown[]) => mockPrismaTradeUpdate(...args),
           create: (...args: unknown[]) => mockPrismaTradeCreate(...args),
           count: (...args: unknown[]) => mockPrismaTradeCount(...args),
+          findFirst: vi.fn().mockResolvedValue(null),
         },
-        position: { update: vi.fn() },
-        wheel: { update: vi.fn() },
+        position: { update: vi.fn(), findUnique: vi.fn(), count: vi.fn().mockResolvedValue(0) },
+        wheel: {
+          update: vi.fn(),
+          findFirst: vi.fn().mockResolvedValue(null),
+          findUnique: vi.fn().mockResolvedValue(null),
+          create: vi.fn().mockResolvedValue({ id: 'wheel-stub', ticker: 'AAPL' }),
+        },
       })
     ),
   },

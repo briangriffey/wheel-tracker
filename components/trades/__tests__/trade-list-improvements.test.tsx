@@ -363,6 +363,44 @@ describe('TradeList - Price Staleness Logic', () => {
   })
 })
 
+describe('TradeList - Contracts Column', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should display Contracts column header in open trades table', () => {
+    render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
+
+    const headers = screen.getAllByText('Contracts')
+    // At least one header for desktop table (open trades has one, closed may have one too)
+    expect(headers.length).toBeGreaterThan(0)
+  })
+
+  it('should display contracts count in open trades table rows', () => {
+    render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
+
+    // AAPL has 5 contracts (open trade, appears in desktop table + mobile card)
+    const fives = screen.getAllByText('5')
+    expect(fives.length).toBeGreaterThan(0)
+  })
+
+  it('should display contracts count in closed trades table rows', () => {
+    render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
+
+    // TSLA has 3 contracts (expired/closed trade, appears in desktop table + mobile card)
+    const threes = screen.getAllByText('3')
+    expect(threes.length).toBeGreaterThan(0)
+  })
+
+  it('should display contracts in mobile card view', () => {
+    render(<TradeList initialTrades={mockTrades} prices={mockPrices} />)
+
+    // Mobile cards show "Contracts:" label
+    const contractLabels = screen.getAllByText('Contracts:')
+    expect(contractLabels.length).toBeGreaterThan(0)
+  })
+})
+
 describe('TradeList - Mobile Card View', () => {
   beforeEach(() => {
     vi.clearAllMocks()

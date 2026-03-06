@@ -424,6 +424,12 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                   </th>
                   <th
                     scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Contracts
+                  </th>
+                  <th
+                    scope="col"
                     onClick={() => handleSort('expirationDate')}
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     aria-sort={
@@ -503,6 +509,9 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                         {formatCurrency(
                           trade.premium as unknown as Prisma.Decimal | string | number
                         )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {trade.contracts}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatDate(trade.expirationDate)}
@@ -674,6 +683,12 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                   </th>
                   <th
                     scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Contracts
+                  </th>
+                  <th
+                    scope="col"
                     onClick={() => handleSort('expirationDate')}
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                     aria-sort={
@@ -739,6 +754,9 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
                       {formatCurrency(
                         trade.premium as unknown as Prisma.Decimal | string | number
                       )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {trade.contracts}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatDate(trade.expirationDate)}

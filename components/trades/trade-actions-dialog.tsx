@@ -10,12 +10,14 @@ import { getStatusColor } from '@/lib/design/colors'
 import { Button } from '@/components/design-system/button/button'
 import type { StockPriceResult } from '@/lib/services/market-data'
 import { formatTimeAgo } from '@/lib/utils/format'
+import { AssignPutDialog } from './assign-put-dialog'
 
 interface TradeActionsDialogProps {
   trade: Trade
   isOpen: boolean
   onClose: () => void
   currentPrice?: StockPriceResult
+  onSellCoveredCall?: (ticker: string, positionId: string, contracts: number) => void
 }
 
 export function TradeActionsDialog({
@@ -23,11 +25,46 @@ export function TradeActionsDialog({
   isOpen,
   onClose,
   currentPrice,
+  onSellCoveredCall,
 }: TradeActionsDialogProps) {
   const router = useRouter()
   const [loading, setLoading] = React.useState(false)
+  const [showAssignPutDialog, setShowAssignPutDialog] = React.useState(false)
 
   if (!isOpen) return null
+
+  // Show AssignPutDialog when user clicks "Assign PUT"
+  if (showAssignPutDialog && trade.type === 'PUT' && trade.status === 'OPEN') {
+    return (
+      <AssignPutDialog
+        trade={{
+          id: trade.id,
+          ticker: trade.ticker,
+          strikePrice: Number(trade.strikePrice),
+          premium: Number(trade.premium),
+          contracts: trade.contracts,
+          shares: trade.shares,
+          expirationDate: trade.expirationDate,
+          status: trade.status,
+          type: trade.type,
+        }}
+        wheelId={trade.wheelId}
+        isOpen={true}
+        onClose={() => {
+          setShowAssignPutDialog(false)
+          onClose()
+        }}
+        onSuccess={() => {
+          router.refresh()
+        }}
+        onSellCoveredCall={onSellCoveredCall ? (ticker, positionId, contracts) => {
+          setShowAssignPutDialog(false)
+          onClose()
+          onSellCoveredCall(ticker, positionId, contracts)
+        } : undefined}
+      />
+    )
+  }
 
   // Helper to safely convert Prisma Decimal to number
   const toDecimalNumber = (value: Prisma.Decimal | number | string): number => {
@@ -249,14 +286,25 @@ export function TradeActionsDialog({
                 >
                   Mark as Expired
                 </Button>
-                <Button
-                  onClick={() => handleStatusUpdate('ASSIGNED')}
-                  disabled={loading}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Mark as Assigned
-                </Button>
+                {trade.type === 'PUT' ? (
+                  <Button
+                    onClick={() => setShowAssignPutDialog(true)}
+                    disabled={loading}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Assign PUT
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => handleStatusUpdate('ASSIGNED')}
+                    disabled={loading}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Mark as Assigned
+                  </Button>
+                )}
                 <div className="pt-2 border-t border-gray-200">
                   <Button
                     onClick={handleDelete}

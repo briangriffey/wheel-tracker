@@ -17,6 +17,27 @@ vi.mock('@/lib/actions/trades', () => ({
   updateTradeStatus: vi.fn(),
 }))
 
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn(),
+  getCurrentUserId: vi.fn(),
+}))
+
+vi.mock('@/lib/actions/wheel-queries', () => ({
+  getOpenPositionsForTicker: vi.fn(),
+  getActiveWheelForTicker: vi.fn(),
+}))
+
+vi.mock('@/lib/actions/subscription', () => ({
+  getTradeUsage: vi.fn().mockResolvedValue({
+    success: true,
+    data: { tradesUsed: 0, tradeLimit: 10, limitReached: false },
+  }),
+}))
+
+vi.mock('@/components/trades/assign-put-dialog', () => ({
+  AssignPutDialog: () => null,
+}))
+
 vi.mock('react-hot-toast', () => ({
   default: {
     success: vi.fn(),

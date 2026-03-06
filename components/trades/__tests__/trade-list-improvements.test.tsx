@@ -27,6 +27,27 @@ vi.mock('@/lib/actions/trades', () => ({
   updateTradeStatus: vi.fn(),
 }))
 
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn(),
+  getCurrentUserId: vi.fn(),
+}))
+
+vi.mock('@/lib/actions/wheel-queries', () => ({
+  getOpenPositionsForTicker: vi.fn(),
+  getActiveWheelForTicker: vi.fn(),
+}))
+
+vi.mock('@/lib/actions/subscription', () => ({
+  getTradeUsage: vi.fn().mockResolvedValue({
+    success: true,
+    data: { tradesUsed: 0, tradeLimit: 10, limitReached: false },
+  }),
+}))
+
+vi.mock('@/components/trades/assign-put-dialog', () => ({
+  AssignPutDialog: () => <div data-testid="assign-put-dialog-stub" />,
+}))
+
 vi.mock('@/lib/design/colors', () => ({
   getStatusColor: () => ({
     bg: 'bg-green-100',
@@ -226,7 +247,8 @@ describe('TradeList - Action Button', () => {
       expect(screen.getByText('View Full Details')).toBeInTheDocument()
       expect(screen.getByText('Close Early')).toBeInTheDocument()
       expect(screen.getByText('Mark as Expired')).toBeInTheDocument()
-      expect(screen.getByText('Mark as Assigned')).toBeInTheDocument()
+      // AAPL is a PUT trade — now shows "Assign PUT" (opens AssignPutDialog flow)
+      expect(screen.getByText('Assign PUT')).toBeInTheDocument()
       expect(screen.getByText('Delete Trade')).toBeInTheDocument()
     })
   })

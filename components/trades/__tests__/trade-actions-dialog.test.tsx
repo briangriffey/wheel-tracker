@@ -43,6 +43,27 @@ vi.mock('@/lib/design/colors', () => ({
   }),
 }))
 
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn(),
+  getCurrentUserId: vi.fn(),
+}))
+
+vi.mock('@/lib/actions/wheel-queries', () => ({
+  getOpenPositionsForTicker: vi.fn(),
+  getActiveWheelForTicker: vi.fn(),
+}))
+
+vi.mock('@/lib/actions/subscription', () => ({
+  getTradeUsage: vi.fn().mockResolvedValue({
+    success: true,
+    data: { tradesUsed: 0, tradeLimit: 10, limitReached: false },
+  }),
+}))
+
+vi.mock('@/components/trades/assign-put-dialog', () => ({
+  AssignPutDialog: () => <div data-testid="assign-put-dialog-stub" />,
+}))
+
 global.confirm = vi.fn() as unknown as typeof window.confirm
 
 const mockOpenTrade: Trade = {
@@ -206,14 +227,24 @@ describe('TradeActionsDialog - Actions for OPEN Trades', () => {
     vi.clearAllMocks()
   })
 
-  it('should show all action buttons for OPEN trades', () => {
+  it('should show all action buttons for OPEN PUT trades', () => {
     render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
 
     expect(screen.getByText('View Full Details')).toBeInTheDocument()
     expect(screen.getByText('Close Early')).toBeInTheDocument()
     expect(screen.getByText('Mark as Expired')).toBeInTheDocument()
-    expect(screen.getByText('Mark as Assigned')).toBeInTheDocument()
+    // PUT trades now show "Assign PUT" which opens the AssignPutDialog flow
+    expect(screen.getByText('Assign PUT')).toBeInTheDocument()
+    expect(screen.queryByText('Mark as Assigned')).not.toBeInTheDocument()
     expect(screen.getByText('Delete Trade')).toBeInTheDocument()
+  })
+
+  it('should show Mark as Assigned for OPEN CALL trades', () => {
+    const openCallTrade = { ...mockOpenTrade, type: 'CALL' as const }
+    render(<TradeActionsDialog trade={openCallTrade} isOpen={true} onClose={vi.fn()} />)
+
+    expect(screen.getByText('Mark as Assigned')).toBeInTheDocument()
+    expect(screen.queryByText('Assign PUT')).not.toBeInTheDocument()
   })
 
   it('should only show View Details for non-OPEN trades', () => {
@@ -278,11 +309,25 @@ describe('TradeActionsDialog - User Interactions', () => {
     })
   })
 
-  it('should call updateTradeStatus when Mark as Assigned is clicked', async () => {
+  it('should open AssignPutDialog when Assign PUT is clicked for PUT trades', async () => {
+    const user = userEvent.setup()
+
+    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
+
+    const assignButton = screen.getByText('Assign PUT')
+    await user.click(assignButton)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('assign-put-dialog-stub')).toBeInTheDocument()
+    })
+  })
+
+  it('should call updateTradeStatus when Mark as Assigned is clicked for CALL trades', async () => {
     const user = userEvent.setup()
     mockUpdateTradeStatus.mockResolvedValue({ success: true, data: { id: '1' } })
 
-    render(<TradeActionsDialog trade={mockOpenTrade} isOpen={true} onClose={vi.fn()} />)
+    const openCallTrade = { ...mockOpenTrade, type: 'CALL' as const }
+    render(<TradeActionsDialog trade={openCallTrade} isOpen={true} onClose={vi.fn()} />)
 
     const assignedButton = screen.getByText('Mark as Assigned')
     await user.click(assignedButton)

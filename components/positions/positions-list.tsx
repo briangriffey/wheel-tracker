@@ -8,7 +8,7 @@ import { PositionCard } from './position-card'
 import { refreshPositionPrices, getLatestPrices, type PriceData } from '@/lib/actions/prices'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/modal'
-import { TradeEntryForm } from '@/components/forms/trade-entry-form'
+import { TradeEntryForm, type TradeEntryFormPrefill } from '@/components/forms/trade-entry-form'
 import { getPnLColorClass } from '@/lib/design/colors'
 import { Button } from '@/components/design-system/button/button'
 
@@ -37,6 +37,8 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
   const [refreshError, setRefreshError] = useState<string | null>(null)
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true)
   const [isTradeModalOpen, setIsTradeModalOpen] = useState(false)
+  const [sellCallPosition, setSellCallPosition] = useState<PositionWithCalculations | null>(null)
+  const [newPutTicker, setNewPutTicker] = useState<string | null>(null)
 
   // Helper to safely convert Prisma Decimal (or serialized string/number) to number
   const toDecimalNumber = (value: Prisma.Decimal | number | string): number => {
@@ -216,10 +218,18 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
   }
 
   // Handle quick actions
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSellCall = (_positionId: string) => {
-    // TODO: Implement sell call functionality
-    toast('Sell covered call functionality coming soon!', { icon: 'ℹ️' })
+  const handleSellCall = (positionId: string) => {
+    const position = positions.find((p) => p.id === positionId)
+    if (position) {
+      setSellCallPosition(position)
+      setIsTradeModalOpen(true)
+    }
+  }
+
+  const handleStartNewPut = (ticker: string) => {
+    setSellCallPosition(null)
+    setNewPutTicker(ticker)
+    setIsTradeModalOpen(true)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -227,13 +237,6 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
     // TODO: Implement view details functionality
     toast('Position details view coming soon!', { icon: 'ℹ️' })
   }
-
-  // Handle successful trade creation
-  const handleTradeSuccess = useCallback(() => {
-    setIsTradeModalOpen(false)
-    // Refresh the page to get updated positions
-    router.refresh()
-  }, [router])
 
   return (
     <div className="w-full">
@@ -275,7 +278,11 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
             </label>
             {/* New Trade button */}
             <Button
-              onClick={() => setIsTradeModalOpen(true)}
+              onClick={() => {
+                setSellCallPosition(null)
+                setNewPutTicker(null)
+                setIsTradeModalOpen(true)
+              }}
               variant="primary"
               size="sm"
               leftIcon={
@@ -463,6 +470,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               position={position}
               onSellCall={handleSellCall}
               onViewDetails={handleViewDetails}
+              onStartNewPut={handleStartNewPut}
               priceData={priceData[position.ticker] || null}
               onPriceRefresh={handlePositionRefresh}
             />
@@ -479,6 +487,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               position={position}
               onSellCall={handleSellCall}
               onViewDetails={handleViewDetails}
+              onStartNewPut={handleStartNewPut}
               priceData={priceData[position.ticker] || null}
               onPriceRefresh={handlePositionRefresh}
             />
@@ -495,6 +504,7 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
               position={position}
               onSellCall={handleSellCall}
               onViewDetails={handleViewDetails}
+              onStartNewPut={handleStartNewPut}
               priceData={priceData[position.ticker] || null}
               onPriceRefresh={handlePositionRefresh}
             />
@@ -502,17 +512,62 @@ export function PositionsList({ initialPositions }: PositionsListProps) {
         </div>
       )}
 
-      {/* New Trade Modal */}
+      {/* New Trade / Sell Covered Call / Start New PUT Modal */}
       <Modal
         isOpen={isTradeModalOpen}
-        onClose={() => setIsTradeModalOpen(false)}
-        title="Create New Trade"
-        description="Enter the details of your options trade"
+        onClose={() => {
+          setIsTradeModalOpen(false)
+          setSellCallPosition(null)
+          setNewPutTicker(null)
+        }}
+        title={
+          sellCallPosition
+            ? `Sell Covered Call on ${sellCallPosition.ticker}`
+            : newPutTicker
+              ? `Sell New PUT on ${newPutTicker}`
+              : 'Create New Trade'
+        }
+        description={
+          sellCallPosition
+            ? `Selling a covered call against your ${sellCallPosition.shares} shares of ${sellCallPosition.ticker}`
+            : newPutTicker
+              ? `Start the next wheel cycle by selling a PUT on ${newPutTicker}`
+              : 'Enter the details of your options trade'
+        }
         size="lg"
       >
         <TradeEntryForm
-          onSuccess={handleTradeSuccess}
-          onCancel={() => setIsTradeModalOpen(false)}
+          onSuccess={() => {
+            setIsTradeModalOpen(false)
+            setSellCallPosition(null)
+            setNewPutTicker(null)
+            router.refresh()
+          }}
+          onCancel={() => {
+            setIsTradeModalOpen(false)
+            setSellCallPosition(null)
+            setNewPutTicker(null)
+          }}
+          prefill={
+            sellCallPosition
+              ? ({
+                  ticker: sellCallPosition.ticker,
+                  type: 'CALL',
+                  action: 'SELL_TO_OPEN',
+                  positionId: sellCallPosition.id,
+                  contracts: sellCallPosition.shares / 100,
+                } satisfies TradeEntryFormPrefill)
+              : newPutTicker
+                ? ({
+                    ticker: newPutTicker,
+                    type: 'PUT',
+                    action: 'SELL_TO_OPEN',
+                  } satisfies TradeEntryFormPrefill)
+                : undefined
+          }
+          readOnlyFields={
+            sellCallPosition ? ['ticker', 'type', 'action', 'positionId'] : undefined
+          }
         />
       </Modal>
     </div>

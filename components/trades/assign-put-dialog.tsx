@@ -22,7 +22,7 @@ export interface AssignPutDialogProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
-  onSellCoveredCall?: () => void
+  onSellCoveredCall?: (ticker: string, positionId: string, contracts: number) => void
 }
 
 export function AssignPutDialog({
@@ -35,6 +35,7 @@ export function AssignPutDialog({
 }: AssignPutDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSellCallPrompt, setShowSellCallPrompt] = useState(false)
+  const [assignedPositionId, setAssignedPositionId] = useState<string | null>(null)
   const [currentPrice, setCurrentPrice] = useState<number | null>(null)
   const [isPriceLoading, setIsPriceLoading] = useState(true)
   const [priceError, setPriceError] = useState<string | null>(null)
@@ -87,6 +88,7 @@ export function AssignPutDialog({
 
       if (result.success) {
         toast.success('PUT assigned and position created successfully!')
+        setAssignedPositionId(result.data.positionId)
         onSuccess()
 
         // Show "Sell Covered Call?" prompt if callback is provided
@@ -107,7 +109,9 @@ export function AssignPutDialog({
   }
 
   const handleSellCoveredCall = () => {
-    onSellCoveredCall?.()
+    if (assignedPositionId) {
+      onSellCoveredCall?.(trade.ticker, assignedPositionId, trade.contracts)
+    }
     onClose()
   }
 

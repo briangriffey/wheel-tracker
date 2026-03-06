@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import type { TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { Prisma } from '@/lib/generated/prisma'
 import { getStatusColor, getPnlColor } from '@/lib/design/colors'
@@ -8,6 +9,8 @@ import { Button } from '@/components/design-system/button/button'
 import type { StockPriceResult } from '@/lib/services/market-data'
 import { formatTimeAgo, formatNextRefreshTime } from '@/lib/utils/format'
 import { TradeActionsDialog } from './trade-actions-dialog'
+import { Modal } from '@/components/ui/modal'
+import { TradeEntryForm } from '@/components/forms/trade-entry-form'
 import type { TradeWithWheel } from '@/lib/queries/trades'
 
 export interface RefreshInfo {
@@ -27,6 +30,7 @@ type SortField = 'expirationDate' | 'ticker' | 'premium'
 type SortDirection = 'asc' | 'desc'
 
 export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: TradeListProps) {
+  const router = useRouter()
   const [tickerFilter, setTickerFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState<TradeStatus | 'ALL'>('ALL')
   const [typeFilter, setTypeFilter] = useState<TradeType | 'ALL'>('ALL')
@@ -35,6 +39,19 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
   const [sortField, setSortField] = useState<SortField>('expirationDate')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [selectedTrade, setSelectedTrade] = useState<TradeWithWheel | null>(null)
+  const [coveredCallPrefill, setCoveredCallPrefill] = useState<{
+    ticker: string
+    positionId: string
+    contracts: number
+  } | null>(null)
+
+  const handleSellCoveredCall = (ticker: string, positionId: string, contracts: number) => {
+    setCoveredCallPrefill({ ticker, positionId, contracts })
+  }
+
+  const handleCoveredCallModalClose = () => {
+    setCoveredCallPrefill(null)
+  }
 
   // Filter and sort trades
   const filteredTrades = useMemo(() => {
@@ -917,8 +934,30 @@ export function TradeList({ initialTrades: trades, prices, refreshInfo = {} }: T
           isOpen={!!selectedTrade}
           onClose={() => setSelectedTrade(null)}
           currentPrice={prices.get(selectedTrade.ticker)}
+          onSellCoveredCall={handleSellCoveredCall}
         />
       )}
+
+      {/* Sell Covered Call Modal (opened after PUT assignment) */}
+      <Modal
+        isOpen={!!coveredCallPrefill}
+        onClose={handleCoveredCallModalClose}
+        title={coveredCallPrefill ? `Sell Covered Call on ${coveredCallPrefill.ticker}` : ''}
+        description={
+          coveredCallPrefill
+            ? `Sell a covered call against your newly acquired ${coveredCallPrefill.ticker} shares`
+            : undefined
+        }
+        size="lg"
+      >
+        <TradeEntryForm
+          onSuccess={() => {
+            handleCoveredCallModalClose()
+            router.refresh()
+          }}
+          onCancel={handleCoveredCallModalClose}
+        />
+      </Modal>
     </div>
   )
 }

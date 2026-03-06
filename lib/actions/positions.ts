@@ -207,6 +207,7 @@ export async function assignCall(
         premium: true,
         shares: true,
         positionId: true,
+        wheelId: true,
         position: {
           select: {
             id: true,
@@ -292,6 +293,19 @@ export async function assignCall(
         },
       })
 
+      // Update wheel stats if this trade belongs to a wheel
+      if (trade.wheelId) {
+        await tx.wheel.update({
+          where: { id: trade.wheelId },
+          data: {
+            status: 'IDLE',
+            cycleCount: { increment: 1 },
+            totalRealizedPL: { increment: realizedGainLoss },
+            lastActivityAt: new Date(),
+          },
+        })
+      }
+
       return { position: updatedPosition, trade }
     })
 
@@ -301,6 +315,12 @@ export async function assignCall(
     revalidatePath('/positions')
     revalidatePath(`/positions/${position.id}`)
     revalidatePath('/dashboard')
+
+    // Revalidate wheel paths if applicable
+    if (trade.wheelId) {
+      revalidatePath('/wheels')
+      revalidatePath(`/wheels/${trade.wheelId}`)
+    }
 
     return {
       success: true,

@@ -12,6 +12,17 @@ vi.mock('@/lib/db', () => ({
     trade: {
       count: vi.fn(),
       create: vi.fn(),
+      findFirst: vi.fn(),
+    },
+    wheel: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    position: {
+      findUnique: vi.fn(),
+      count: vi.fn(),
     },
     $transaction: vi.fn(),
   },
@@ -63,6 +74,9 @@ describe('Edge Cases & Hardening', () => {
     } as never)
     vi.mocked(getCurrentUserId).mockResolvedValue(mockUserId)
     setupTransaction()
+    // Default wheel mock: no existing wheel, create returns a stub
+    vi.mocked(prisma.wheel.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.wheel.create).mockResolvedValue({ id: 'wheel-stub', ticker: 'AAPL' } as never)
   })
 
   describe('Trade Limit Boundary: exactly 20 trades', () => {

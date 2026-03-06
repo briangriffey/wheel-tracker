@@ -2,6 +2,14 @@ import { prisma } from '@/lib/db'
 import type { Trade, TradeStatus, TradeType } from '@/lib/generated/prisma'
 import { getCurrentUserId } from '@/lib/auth'
 
+export type TradeWithWheel = Trade & {
+  wheel?: {
+    id: string
+    ticker: string
+    status: string
+  } | null
+}
+
 /**
  * Options for filtering trades
  */
@@ -18,7 +26,7 @@ export interface GetTradesOptions {
 /**
  * Get all trades for the current user with optional filters
  */
-export async function getTrades(options: GetTradesOptions = {}): Promise<Trade[]> {
+export async function getTrades(options: GetTradesOptions = {}): Promise<TradeWithWheel[]> {
   try {
     const userId = await getCurrentUserId()
 
@@ -66,6 +74,13 @@ export async function getTrades(options: GetTradesOptions = {}): Promise<Trade[]
             id: true,
             ticker: true,
             shares: true,
+            status: true,
+          },
+        },
+        wheel: {
+          select: {
+            id: true,
+            ticker: true,
             status: true,
           },
         },
@@ -132,7 +147,7 @@ export async function getTrade(id: string) {
 /**
  * Get all open trades for the current user
  */
-export async function getOpenTrades(): Promise<Trade[]> {
+export async function getOpenTrades(): Promise<TradeWithWheel[]> {
   try {
     const userId = await getCurrentUserId()
 
@@ -152,6 +167,13 @@ export async function getOpenTrades(): Promise<Trade[]> {
             id: true,
             ticker: true,
             shares: true,
+            status: true,
+          },
+        },
+        wheel: {
+          select: {
+            id: true,
+            ticker: true,
             status: true,
           },
         },

@@ -25,3 +25,5 @@ When the user requests a new feature, execute this pipeline:
 4. **QA Engineer** — reviews PRs, writes tests, validates acceptance criteria, merges to main
 
 The team lead coordinates handoffs, makes product decisions on open questions, and splits work between frontend devs to avoid file conflicts.
+
+**Important:** The team lead should assign QA to review and test PRs as soon as they are opened — do NOT wait until all dev work is complete. QA should be reviewing PRs in parallel with ongoing development to keep the pipeline moving.

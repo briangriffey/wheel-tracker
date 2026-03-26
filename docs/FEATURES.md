@@ -968,13 +968,18 @@ Line chart showing cumulative profit/loss over time.
 
 ### Performance by Ticker
 
-Bar chart comparing P&L across different stocks.
+Bar chart comparing P&L across different stocks in the selected time range.
 
 **Shows**:
-- Profit/loss per ticker
-- Number of trades per ticker
-- Win rate per ticker
-- Sorted by P&L (best to worst)
+- Realized P&L per ticker
+- Unrealized P&L per ticker
+- Premium P&L per ticker
+- Total P&L per ticker
+
+**Expand/Collapse**:
+- An expand icon button in the card header toggles the chart between collapsed (300px) and expanded (600px desktop / 400px mobile) height
+- When expanded, the chart spans the full dashboard width
+- The expand button is hidden when there is no data to display
 
 ### Benchmark Comparison
 

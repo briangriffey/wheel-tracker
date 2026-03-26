@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import {
   BarChart,
   Bar,
@@ -11,16 +11,27 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
+import { Maximize2, Minimize2 } from 'lucide-react'
 import type { PLByTickerDataPoint } from '@/lib/queries/dashboard'
 import { formatCurrency } from '@/lib/utils/format'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/design-system'
+import { cn } from '@/lib/utils/cn'
 
 interface PLByTickerChartProps {
   data: PLByTickerDataPoint[]
   loading?: boolean
+  onExpandChange?: (expanded: boolean) => void
 }
 
-export function PLByTickerChart({ data, loading = false }: PLByTickerChartProps) {
+export function PLByTickerChart({ data, loading = false, onExpandChange }: PLByTickerChartProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const handleToggle = () => {
+    const next = !isExpanded
+    setIsExpanded(next)
+    onExpandChange?.(next)
+  }
+
   if (loading) {
     return (
       <Card variant="elevated">
@@ -51,28 +62,42 @@ export function PLByTickerChart({ data, loading = false }: PLByTickerChartProps)
 
   return (
     <Card variant="elevated">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>P&L by Ticker</CardTitle>
+        <button
+          onClick={handleToggle}
+          className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          aria-label={isExpanded ? 'Collapse chart' : 'Expand chart'}
+        >
+          {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+        </button>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="ticker" tick={{ fontSize: 12 }} />
-            <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `$${value.toFixed(0)}`} />
-            <Tooltip
-              formatter={(value: number | undefined) =>
-                value !== undefined ? formatCurrency(value) : 'N/A'
-              }
-              labelStyle={{ color: '#111827' }}
-            />
-            <Legend />
-            <Bar dataKey="realizedPL" fill="#10b981" name="Realized P&L" />
-            <Bar dataKey="unrealizedPL" fill="#f59e0b" name="Unrealized P&L" />
-            <Bar dataKey="premiumPL" fill="#8b5cf6" name="Premium P&L" />
-            <Bar dataKey="totalPL" fill="#3b82f6" name="Total P&L" />
-          </BarChart>
-        </ResponsiveContainer>
+        <div
+          className={cn(
+            'transition-[height] duration-300 ease-in-out',
+            isExpanded ? 'h-[400px] md:h-[600px]' : 'h-[300px]'
+          )}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="ticker" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `$${value.toFixed(0)}`} />
+              <Tooltip
+                formatter={(value: number | undefined) =>
+                  value !== undefined ? formatCurrency(value) : 'N/A'
+                }
+                labelStyle={{ color: '#111827' }}
+              />
+              <Legend />
+              <Bar dataKey="realizedPL" fill="#10b981" name="Realized P&L" />
+              <Bar dataKey="unrealizedPL" fill="#f59e0b" name="Unrealized P&L" />
+              <Bar dataKey="premiumPL" fill="#8b5cf6" name="Premium P&L" />
+              <Bar dataKey="totalPL" fill="#3b82f6" name="Total P&L" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   )

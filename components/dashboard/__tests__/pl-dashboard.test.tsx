@@ -252,6 +252,47 @@ describe('PLDashboard', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
+  it('expands PLByTickerChart to full width when expand button is clicked', async () => {
+    const user = userEvent.setup()
+    const { container } = render(
+      <PLDashboard
+        initialMetrics={mockMetrics}
+        initialPLOverTime={mockPLOverTime}
+        initialPLByTicker={mockPLByTicker}
+        initialWinRateData={mockWinRateData}
+      />
+    )
+
+    // Before expand: only PLOverTime has lg:col-span-2
+    const colSpansBefore = container.querySelectorAll('.lg\\:col-span-2')
+    expect(colSpansBefore).toHaveLength(1)
+
+    await user.click(screen.getByLabelText('Expand chart'))
+
+    // After expand: PLByTickerChart wrapper also gets lg:col-span-2
+    const colSpansAfter = container.querySelectorAll('.lg\\:col-span-2')
+    expect(colSpansAfter).toHaveLength(2)
+  })
+
+  it('collapses PLByTickerChart removing full-width class when collapse button is clicked', async () => {
+    const user = userEvent.setup()
+    const { container } = render(
+      <PLDashboard
+        initialMetrics={mockMetrics}
+        initialPLOverTime={mockPLOverTime}
+        initialPLByTicker={mockPLByTicker}
+        initialWinRateData={mockWinRateData}
+      />
+    )
+
+    await user.click(screen.getByLabelText('Expand chart'))
+    await user.click(screen.getByLabelText('Collapse chart'))
+
+    // Back to only the PLOverTime chart's lg:col-span-2 wrapper
+    const colSpansAfterCollapse = container.querySelectorAll('.lg\\:col-span-2')
+    expect(colSpansAfterCollapse).toHaveLength(1)
+  })
+
   it('handles fetch error gracefully', async () => {
     const user = userEvent.setup()
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})

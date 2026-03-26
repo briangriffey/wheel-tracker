@@ -66,6 +66,7 @@ export function PLDashboard({
   const [timeRange, setTimeRange] = useState<TimeRange>('All')
   const [loading, setLoading] = useState(false)
   const [metrics, setMetrics] = useState<DashboardMetrics>(initialMetrics)
+  const [plByTickerExpanded, setPLByTickerExpanded] = useState(false)
   const [onboardingVisible, setOnboardingVisible] = useState(showOnboarding ?? false)
   const [plOverTime, setPLOverTime] = useState<PLOverTimeDataPoint[]>(initialPLOverTime)
   const [plByTicker, setPLByTicker] = useState<PLByTickerDataPoint[]>(initialPLByTicker)
@@ -218,7 +219,13 @@ export function PLDashboard({
         <div className="lg:col-span-2">
           <PLOverTimeChart data={plOverTime} loading={loading} />
         </div>
-        <PLByTickerChart data={plByTicker} loading={loading} />
+        <div className={plByTickerExpanded ? 'lg:col-span-2' : ''}>
+          <PLByTickerChart
+            data={plByTicker}
+            loading={loading}
+            onExpandChange={setPLByTickerExpanded}
+          />
+        </div>
         <WinRateChart data={winRateData} loading={loading} />
       </div>
 

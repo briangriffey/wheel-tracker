@@ -104,15 +104,17 @@ export function PLByTickerChart({ data, loading = false, onExpandChange }: PLByT
 
   return (
     <Card variant="elevated">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>P&L by Ticker</CardTitle>
-        <button
-          onClick={handleToggle}
-          className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-          aria-label={isExpanded ? 'Collapse chart' : 'Expand chart'}
-        >
-          {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-        </button>
+      <CardHeader>
+        <div className="flex flex-row items-center justify-between">
+          <CardTitle>P&L by Ticker</CardTitle>
+          <button
+            onClick={handleToggle}
+            className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            aria-label={isExpanded ? 'Collapse chart' : 'Expand chart'}
+          >
+            {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          </button>
+        </div>
       </CardHeader>
       <CardContent>
         <div

@@ -51,8 +51,8 @@ next-env.d.ts
 /lib/generated/prisma
 
 # Gas Town (added by gt)
-.claude/
-!.claude/agents
+.claude/*
+!.claude/agents/
 .logs/
 state.json
 

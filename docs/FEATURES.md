@@ -981,13 +981,6 @@ Bar chart comparing P&L across different stocks in the selected time range.
 - When expanded, the chart spans the full dashboard width
 - The expand button is hidden when there is no data to display
 
-**Horizontal Scrolling** (when expanded with more than 6 tickers):
-- A fixed Y-axis panel (60px) stays visible on the left while the chart scrolls horizontally
-- Both the fixed Y-axis and scrollable chart share the same computed scale (`yDomain`) to ensure accuracy
-- Each ticker group is allocated 100px of width for readability
-- Fade gradient overlays on the left and right edges indicate scroll availability
-- Scrolling is handled natively (`overflow-x: auto`) and works with mouse, trackpad, and touch
-
 ### Benchmark Comparison
 
 Compare your performance against market indices.

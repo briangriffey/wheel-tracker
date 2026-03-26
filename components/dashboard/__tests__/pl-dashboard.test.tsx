@@ -263,13 +263,14 @@ describe('PLDashboard', () => {
       />
     )
 
-    // Before expand: only PLOverTime has lg:col-span-2
+    // Before expand: no extra lg:col-span-2 div for PLByTickerChart
+    // (the PLOverTime chart already has one, so count should be 1)
     const colSpansBefore = container.querySelectorAll('.lg\\:col-span-2')
     expect(colSpansBefore).toHaveLength(1)
 
     await user.click(screen.getByLabelText('Expand chart'))
 
-    // After expand: PLByTickerChart wrapper also gets lg:col-span-2
+    // After expand: PLByTickerChart wrapper also gets lg:col-span-2 — count becomes 2
     const colSpansAfter = container.querySelectorAll('.lg\\:col-span-2')
     expect(colSpansAfter).toHaveLength(2)
   })
@@ -285,6 +286,7 @@ describe('PLDashboard', () => {
       />
     )
 
+    // Expand then collapse
     await user.click(screen.getByLabelText('Expand chart'))
     await user.click(screen.getByLabelText('Collapse chart'))
 

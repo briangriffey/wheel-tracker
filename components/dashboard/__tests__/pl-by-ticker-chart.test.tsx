@@ -57,7 +57,8 @@ describe('PLByTickerChart', () => {
       const user = userEvent.setup()
       render(<PLByTickerChart data={twoTickers} />)
 
-      await user.click(screen.getByLabelText('Expand chart'))
+      const expandBtn = screen.getByLabelText('Expand chart')
+      await user.click(expandBtn)
 
       expect(screen.getByLabelText('Collapse chart')).toBeInTheDocument()
       expect(screen.queryByLabelText('Expand chart')).not.toBeInTheDocument()
@@ -96,10 +97,12 @@ describe('PLByTickerChart', () => {
       expect(onExpandChange).toHaveBeenLastCalledWith(false)
     })
 
-    it('does not throw when onExpandChange is not provided', async () => {
+    it('does not call onExpandChange when prop is not provided', async () => {
       const user = userEvent.setup()
+      // Should not throw
       render(<PLByTickerChart data={twoTickers} />)
       await user.click(screen.getByLabelText('Expand chart'))
+      // No assertion needed — test passes if no error thrown
     })
   })
 
@@ -116,6 +119,7 @@ describe('PLByTickerChart', () => {
 
       await user.click(screen.getByLabelText('Expand chart'))
 
+      // Should have expanded height class (mobile: 400px, desktop: 600px via Tailwind md: prefix)
       const expandedWrapper = container.querySelector('.h-\\[400px\\]')
       expect(expandedWrapper).toBeInTheDocument()
     })
@@ -132,10 +136,18 @@ describe('PLByTickerChart', () => {
     })
   })
 
+  describe('card title', () => {
+    it('renders P&L by Ticker title when data is present', () => {
+      render(<PLByTickerChart data={twoTickers} />)
+      expect(screen.getByText('P&L by Ticker')).toBeInTheDocument()
+    })
+  })
+
   describe('accessibility', () => {
     it('expand button has correct aria-label when collapsed', () => {
       render(<PLByTickerChart data={twoTickers} />)
-      expect(screen.getByRole('button', { name: 'Expand chart' })).toBeInTheDocument()
+      const btn = screen.getByRole('button', { name: 'Expand chart' })
+      expect(btn).toBeInTheDocument()
     })
 
     it('expand button has correct aria-label when expanded', async () => {
@@ -144,79 +156,16 @@ describe('PLByTickerChart', () => {
 
       await user.click(screen.getByLabelText('Expand chart'))
 
-      expect(screen.getByRole('button', { name: 'Collapse chart' })).toBeInTheDocument()
+      const btn = screen.getByRole('button', { name: 'Collapse chart' })
+      expect(btn).toBeInTheDocument()
     })
   })
 
-  describe('scroll layout — Tasks 3.1 and 3.2', () => {
-    it('does not render scroll container when collapsed regardless of data count', () => {
+  describe('chart rendering with data', () => {
+    it('renders single ResponsiveContainer when collapsed regardless of data count', () => {
       const { container } = render(<PLByTickerChart data={manyTickers} />)
+      // In collapsed state, no scroll container is present
       expect(container.querySelector('.overflow-x-auto')).not.toBeInTheDocument()
-    })
-
-    it('does not render scroll container when expanded with <= 6 tickers', async () => {
-      const user = userEvent.setup()
-      const sixTickers = Array.from({ length: 6 }, (_, i) => makeTicker(`T${i}`))
-      const { container } = render(<PLByTickerChart data={sixTickers} />)
-
-      await user.click(screen.getByLabelText('Expand chart'))
-
-      expect(container.querySelector('.overflow-x-auto')).not.toBeInTheDocument()
-    })
-
-    it('renders scroll container when expanded with > 6 tickers', async () => {
-      const user = userEvent.setup()
-      const { container } = render(<PLByTickerChart data={manyTickers} />)
-
-      await user.click(screen.getByLabelText('Expand chart'))
-
-      expect(container.querySelector('.overflow-x-auto')).toBeInTheDocument()
-    })
-
-    it('renders fixed Y-axis panel when scroll layout is active', async () => {
-      const user = userEvent.setup()
-      const { container } = render(<PLByTickerChart data={manyTickers} />)
-
-      await user.click(screen.getByLabelText('Expand chart'))
-
-      // Fixed Y-axis panel has w-[60px] flex-shrink-0
-      expect(container.querySelector('.flex-shrink-0.w-\\[60px\\]')).toBeInTheDocument()
-    })
-
-    it('collapses back to single chart layout when collapse is clicked', async () => {
-      const user = userEvent.setup()
-      const { container } = render(<PLByTickerChart data={manyTickers} />)
-
-      await user.click(screen.getByLabelText('Expand chart'))
-      expect(container.querySelector('.overflow-x-auto')).toBeInTheDocument()
-
-      await user.click(screen.getByLabelText('Collapse chart'))
-      expect(container.querySelector('.overflow-x-auto')).not.toBeInTheDocument()
-    })
-
-    it('gradient containers use pointer-events-none', async () => {
-      const user = userEvent.setup()
-      const { container } = render(<PLByTickerChart data={manyTickers} />)
-
-      await user.click(screen.getByLabelText('Expand chart'))
-
-      // At least one gradient overlay should be present (right gradient on initial render)
-      // and all gradient overlays must have pointer-events-none
-      const gradients = container.querySelectorAll('.pointer-events-none')
-      // There may be 0 or 1 gradients rendered (jsdom doesn't measure scroll dimensions)
-      // But any that do render must have pointer-events-none class
-      gradients.forEach((el) => {
-        expect(el.className).toContain('pointer-events-none')
-      })
-    })
-
-    it('renders the card title in all states', async () => {
-      const user = userEvent.setup()
-      render(<PLByTickerChart data={manyTickers} />)
-      expect(screen.getByText('P&L by Ticker')).toBeInTheDocument()
-
-      await user.click(screen.getByLabelText('Expand chart'))
-      expect(screen.getByText('P&L by Ticker')).toBeInTheDocument()
     })
   })
 })

@@ -52,6 +52,7 @@ next-env.d.ts
 
 # Gas Town (added by gt)
 .claude/
+!.claude/agents
 .logs/
 state.json
 
